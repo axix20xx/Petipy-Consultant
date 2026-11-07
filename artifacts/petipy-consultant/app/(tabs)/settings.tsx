@@ -142,6 +142,12 @@ export default function SettingsScreen() {
               <Text style={[styles.body, { color: colors.mutedForeground }]}>
                 ورود با نشست تازه‌ی Petipy انجام می‌شود. نشست برنامه‌ی مشتری از اینجا خوانده یا کپی نمی‌شود.
               </Text>
+              <View style={[styles.authNotice, { backgroundColor: colors.accent }]}>
+                <Ionicons name="information-circle-outline" size={17} color={colors.warning} />
+                <Text style={[styles.authNoticeText, { color: colors.accentForeground }]}>
+                  ورود وب فعلی Petipy کوکی وب می‌سازد. تا ارائه‌ی API تبادل نشست برای Android، ورود خودکار کامل نیست؛ فقط توکن تازه‌ی رسمی را وارد کنید، نه توکن برنامه‌ی مشتری.
+                </Text>
+              </View>
               <Pressable
                 testID="open-petipy-sign-in"
                 accessibilityRole="link"
@@ -270,6 +276,8 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 15, fontWeight: '700', writingDirection: 'rtl' },
   profileName: { fontSize: 17, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
   body: { textAlign: 'right', fontSize: 12, lineHeight: 21, writingDirection: 'rtl' },
+  authNotice: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 8, borderRadius: 13, padding: 11 },
+  authNoticeText: { flex: 1, fontSize: 10, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
   fieldLabel: { textAlign: 'right', fontSize: 12, fontWeight: '700', writingDirection: 'rtl', marginTop: 4 },
   tokenInput: { minHeight: 47, borderWidth: 1, borderRadius: 14, paddingHorizontal: 12, fontSize: 12, textAlign: 'left' },
   error: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },

@@ -1,40 +1,20 @@
 import BackgroundService from 'react-native-background-actions';
-import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 import { getIncomingCalls } from '@/lib/petipy-api';
 
-const NOTIFICATION_CHANNEL = 'petipy-incoming-calls';
 const POLL_INTERVAL_MS = 10_000;
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
-
-async function ensureNotificationPermission() {
+async function ensureForegroundNotificationPermission() {
   if (Platform.OS !== 'android') return false;
+  if (Number(Platform.Version) < 33) return true;
 
-  await Notifications.setNotificationChannelAsync(NOTIFICATION_CHANNEL, {
-    name: 'تماس‌های مشاوره',
-    importance: Notifications.AndroidImportance.MAX,
-    vibrationPattern: [0, 300, 150, 300],
-    sound: 'default',
-    lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-  });
-
-  const existing = await Notifications.getPermissionsAsync();
-  const permission = existing.granted
-    ? existing
-    : await Notifications.requestPermissionsAsync();
-  return permission.granted;
+  const permission = PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS;
+  const result = await PermissionsAndroid.request(permission);
+  return result === PermissionsAndroid.RESULTS.GRANTED;
 }
 
 export async function requestAvailabilityPermissions() {
-  return ensureNotificationPermission();
+  return ensureForegroundNotificationPermission();
 }
 
 async function sleep(milliseconds: number) {
@@ -46,32 +26,23 @@ type MonitorParams = { sessionToken: string };
 async function monitorIncomingCalls(params?: MonitorParams) {
   if (!params?.sessionToken) return;
   const { sessionToken } = params;
-  const seenIds = new Set<string>();
   let connectionNoticeShown = false;
 
   while (BackgroundService.isRunning()) {
     try {
       const calls = await getIncomingCalls(sessionToken);
       connectionNoticeShown = false;
+      const hasCalls = calls.length > 0;
       await BackgroundService.updateNotification({
-        taskTitle: 'پتی پای؛ آماده‌ی تماس',
-        taskDesc: 'در انتظار درخواست مشاوره',
+        taskTitle: hasCalls
+          ? `تماس ورودی مشاوره · ${calls.length}`
+          : 'پتی پای؛ آماده‌ی تماس',
+        taskDesc: hasCalls
+          ? calls.length === 1
+            ? 'یک درخواست تماس دارید؛ برای پاسخ، برنامه را باز کنید.'
+            : `${calls.length} درخواست تماس دارید؛ برای پاسخ، برنامه را باز کنید.`
+          : 'در انتظار درخواست مشاوره',
       });
-
-      for (const call of calls) {
-        if (seenIds.has(call.id)) continue;
-        seenIds.add(call.id);
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'درخواست تماس مشاوره',
-            body: call.callerName,
-            sound: 'default',
-            data: { callId: call.id },
-            categoryIdentifier: 'petipy-incoming-call',
-          },
-          trigger: null,
-        });
-      }
     } catch {
       if (!connectionNoticeShown) {
         connectionNoticeShown = true;
@@ -87,18 +58,10 @@ async function monitorIncomingCalls(params?: MonitorParams) {
 
 export async function startAvailabilityService(sessionToken: string) {
   if (Platform.OS !== 'android' || BackgroundService.isRunning()) return;
-  const permissionGranted = await ensureNotificationPermission();
+  const permissionGranted = await ensureForegroundNotificationPermission();
   if (!permissionGranted) {
-    throw new Error('برای اعلان تماس‌های ورودی، مجوز اعلان Android لازم است.');
+    throw new Error('برای اجرای سرویس تماس، مجوز اعلان Android لازم است.');
   }
-
-  await Notifications.setNotificationCategoryAsync('petipy-incoming-call', [
-    {
-      identifier: 'open',
-      buttonTitle: 'نمایش درخواست',
-      options: { opensAppToForeground: true },
-    },
-  ]);
 
   await BackgroundService.start(monitorIncomingCalls, {
     taskName: 'PetipyConsultantAvailability',

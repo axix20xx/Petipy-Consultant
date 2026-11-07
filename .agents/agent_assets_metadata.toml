@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "6VbzqGyB6yqLMVYovNWVu"
+uri = "file://generated-artifacts/petipy-consultant-arm64-v8a.apk"
+type = "unspecified"
+title = "Petipy Consultant Video Call APK"
+description = "Verified arm64-v8a Android release APK with receive-only customer video. No FCM or Google STUN; debug-signed for sideload testing."
+logical_id = "f30e4798-f317-429c-bc7f-54f2f5b0b932"
+content_hash = "sha256:d9ead8a5b6160a6a38f8a7ad23c343db58158cbf40f65b0073eeb27965e0083b"
+size = 60270873
+mtime_ms = 1794055927173
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/f30e4798-f317-429c-bc7f-54f2f5b0b932/30d5eb78-56d3-40c4-9530-5a87343a779f"
+storage_version_token = "1794055948672949"
+content_type = "application/octet-stream"

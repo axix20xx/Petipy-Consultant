@@ -13,6 +13,7 @@ export type VoiceCallCallbacks = {
   onConnected: () => void;
   onEnded: () => void;
   onError: (message: string) => void;
+  onRemoteVideo: (stream: MediaStream | null) => void;
 };
 
 type SignalMessage = {
@@ -94,6 +95,16 @@ export class VoiceCallClient {
           payload: candidate.toJSON(),
         });
       }
+    };
+
+    this.peer.ontrack = (event) => {
+      const trackEvent = event as unknown as {
+        track?: { kind?: string };
+        streams?: MediaStream[];
+      };
+      if (trackEvent.track?.kind !== 'video') return;
+      const remoteStream = trackEvent.streams?.[0];
+      if (remoteStream) callbacks.onRemoteVideo(remoteStream);
     };
 
     this.peer.onconnectionstatechange = () => {
@@ -226,6 +237,7 @@ export class VoiceCallClient {
     this.peer = null;
     this.localStream?.getTracks().forEach((track) => track.stop());
     this.localStream = null;
+    this.callbacks?.onRemoteVideo(null);
     this.pendingCandidates = [];
     if (Platform.OS === 'android') InCallManager.stop();
   }

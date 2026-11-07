@@ -2,12 +2,17 @@ import { useColors } from '@/hooks/useColors';
 import { finishCall, joinCall } from '@/lib/petipy-api';
 import { VoiceCallClient } from '@/lib/voice-call';
 import { useConsultantSession } from '@/providers/consultant-session';
+import RemoteVideo from '@/components/RemoteVideo';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
+import type { MediaStream } from 'react-native-webrtc';
 import {
   ActivityIndicator,
+  Alert,
   BackHandler,
+  Linking,
+  PermissionsAndroid,
   Platform,
   Pressable,
   StyleSheet,
@@ -38,6 +43,12 @@ export default function ConsultantCallScreen() {
   const [elapsed, setElapsed] = useState(0);
   const [joining, setJoining] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const permissionIssue =
+    Boolean(error) && /permission|denied|میکروفون|دسترسی/i.test(error ?? '');
+  const hasRemoteVideo =
+    remoteStream?.getVideoTracks().some((track) => track.readyState === 'live') ??
+    false;
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
@@ -55,6 +66,7 @@ export default function ConsultantCallScreen() {
     setError(null);
     setConnected(false);
     setElapsed(0);
+    setRemoteStream(null);
     connectedAtRef.current = null;
 
     void client
@@ -79,9 +91,15 @@ export default function ConsultantCallScreen() {
         onError: (message) => {
           if (isMounted) setError(message);
         },
+        onRemoteVideo: (stream) => {
+          if (isMounted) setRemoteStream(stream);
+        },
       })
       .catch((startError: unknown) => {
+        client.close();
+        if (clientRef.current === client) clientRef.current = null;
         if (isMounted) {
+          setRemoteStream(null);
           setError(
             startError instanceof Error
               ? startError.message
@@ -93,11 +111,12 @@ export default function ConsultantCallScreen() {
     return () => {
       isMounted = false;
       client.close();
+      setRemoteStream(null);
       if (clientRef.current === client) clientRef.current = null;
     };
-    // The active session is intentionally captured only for this call ID.
+    // Restart the peer when a rejoin returns a fresh call-session token.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchingCall?.callId]);
+  }, [matchingCall]);
 
   useEffect(() => {
     if (!connected) return;
@@ -145,6 +164,34 @@ export default function ConsultantCallScreen() {
     }
   }
 
+  async function retryConnection() {
+    if (Platform.OS === 'android') {
+      const permission = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        {
+          title: 'اجازه‌ی میکروفون',
+          message: 'برای ادامه‌ی تماس مشاوره، دسترسی میکروفون را فعال کنید.',
+          buttonPositive: 'اجازه می‌دهم',
+          buttonNegative: 'بعداً',
+        },
+      );
+      if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
+        setError('دسترسی میکروفون لازم است؛ آن را فعال کنید و دوباره تلاش کنید.');
+        return;
+      }
+    }
+    await reconnect();
+  }
+
+  function openPermissionSettings() {
+    void Linking.openSettings().catch(() => {
+      Alert.alert(
+        'تنظیمات در دسترس نیست',
+        'از تنظیمات Android یا iOS، دسترسی میکروفون Petipy را فعال کنید.',
+      );
+    });
+  }
+
   function toggleMute() {
     const next = !muted;
     clientRef.current?.setMuted(next);
@@ -169,19 +216,41 @@ export default function ConsultantCallScreen() {
       </View>
 
       <View style={styles.center}>
-        <View
-          style={[
-            styles.avatarOuter,
-            {
-              backgroundColor: colors.secondary,
-              borderColor: connected ? colors.success : colors.primary,
-            },
-          ]}
-        >
-          <View style={[styles.avatarInner, { backgroundColor: colors.card }]}>
-            <Ionicons name="paw" size={39} color={colors.primary} />
+        {hasRemoteVideo && remoteStream ? (
+          <View
+            style={[
+              styles.videoStage,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <RemoteVideo
+              stream={remoteStream}
+              label="تصویر زنده‌ی مشتری یا حیوان خانگی"
+            />
+            <View
+              style={[styles.videoBadge, { backgroundColor: colors.foreground }]}
+            >
+              <Ionicons name="videocam" size={14} color={colors.background} />
+              <Text style={[styles.videoBadgeText, { color: colors.background }]}>
+                تصویر زنده
+              </Text>
+            </View>
           </View>
-        </View>
+        ) : (
+          <View
+            style={[
+              styles.avatarOuter,
+              {
+                backgroundColor: colors.secondary,
+                borderColor: connected ? colors.success : colors.primary,
+              },
+            ]}
+          >
+            <View style={[styles.avatarInner, { backgroundColor: colors.card }]}>
+              <Ionicons name="paw" size={39} color={colors.primary} />
+            </View>
+          </View>
+        )}
         <Text style={[styles.kicker, { color: colors.primary }]}>
           مشاور صوتی Petipy
         </Text>
@@ -222,12 +291,40 @@ export default function ConsultantCallScreen() {
         ) : null}
 
         {error ? (
-          <Text
-            accessibilityRole="alert"
-            style={[styles.errorText, { color: colors.destructive }]}
-          >
-            {error}
-          </Text>
+          <View style={styles.errorActions}>
+            <Text
+              accessibilityRole="alert"
+              style={[styles.errorText, { color: colors.destructive }]}
+            >
+              {error}
+            </Text>
+            <Pressable
+              testID="retry-call"
+              accessibilityRole="button"
+              onPress={() => void retryConnection()}
+              disabled={joining || !token || !callId}
+              style={[styles.retryButton, { backgroundColor: colors.primary }]}
+            >
+              {joining ? (
+                <ActivityIndicator color={colors.primaryForeground} />
+              ) : (
+                <Text style={[styles.retryText, { color: colors.primaryForeground }]}>
+                  تلاش دوباره برای اتصال
+                </Text>
+              )}
+            </Pressable>
+            {permissionIssue ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={openPermissionSettings}
+                style={[styles.settingsButton, { borderColor: colors.border }]}
+              >
+                <Text style={[styles.settingsText, { color: colors.foreground }]}>
+                  باز کردن تنظیمات دسترسی
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : null}
       </View>
 
@@ -304,13 +401,21 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 13 },
   avatarOuter: { width: 120, height: 120, borderRadius: 44, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 5 },
   avatarInner: { width: 102, height: 102, borderRadius: 37, alignItems: 'center', justifyContent: 'center' },
+  videoStage: { width: '100%', height: '58%', minHeight: 220, maxHeight: 430, borderRadius: 26, borderWidth: 1, overflow: 'hidden', position: 'relative', marginBottom: 3 },
+  videoBadge: { position: 'absolute', right: 12, bottom: 12, zIndex: 1, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 11, paddingVertical: 8, borderRadius: 14 },
+  videoBadgeText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   kicker: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
   name: { fontSize: 24, fontWeight: '700', writingDirection: 'rtl' },
   liveStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7 },
   liveDot: { width: 7, height: 7, borderRadius: 4 },
   status: { fontSize: 12, writingDirection: 'rtl' },
   timer: { fontSize: 33, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  errorActions: { alignItems: 'center', gap: 9, maxWidth: 320 },
   errorText: { maxWidth: 310, textAlign: 'center', lineHeight: 20, fontSize: 12, writingDirection: 'rtl' },
+  retryButton: { minHeight: 44, minWidth: 190, paddingHorizontal: 16, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  retryText: { fontWeight: '700', fontSize: 12, writingDirection: 'rtl' },
+  settingsButton: { minHeight: 42, paddingHorizontal: 14, borderWidth: 1, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  settingsText: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
   rejoinButton: { minHeight: 44, flexDirection: 'row-reverse', gap: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, borderRadius: 15, marginTop: 8 },
   rejoinText: { fontWeight: '700', fontSize: 12, writingDirection: 'rtl' },
   controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 16, paddingBottom: 10 },

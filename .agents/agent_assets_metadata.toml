@@ -84,3 +84,17 @@ mtime_ms = 1794064211630
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/e74dfa96-208a-42f2-9ce4-65d33a74d5c6/ff4f66a1-3018-4780-834d-d2308aaf06ca"
 storage_version_token = "1794064228740066"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "IvOyDyacwOtQj5b6RWoy2"
+uri = "file://generated-artifacts/petipy-consultant-fcm-arm64-v8a.apk"
+type = "unspecified"
+title = "Petipy Consultant — Android APK"
+description = "Standalone ARM64 APK for sideloading. Signed with the Android debug key and built with development OTP sign-in enabled."
+logical_id = "b8321b1c-fa89-4aee-a01e-cb14767b09e1"
+content_hash = "sha256:fece4f4bac0a1dce8b21a0c29b032b383919ae9ec172cc60aa8da527648ca634"
+size = 62329156
+mtime_ms = 1794068783222
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/b8321b1c-fa89-4aee-a01e-cb14767b09e1/42ae8f69-d422-4713-b648-20f393ac21fe"
+storage_version_token = "1794068893022074"
+content_type = "application/octet-stream"

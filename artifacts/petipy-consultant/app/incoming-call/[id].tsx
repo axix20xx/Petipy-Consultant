@@ -7,6 +7,7 @@ import {
   cancelIncomingCallNotification,
   stopIncomingCallRingtone,
 } from '@/lib/incoming-call-alerts';
+import { findActiveIncomingCall } from '@/lib/incoming-push-routing';
 import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -44,7 +45,10 @@ export default function IncomingCallScreen() {
     refetchInterval: 5_000,
     refetchIntervalInBackground: true,
   });
-  const call = queue.data?.find((item) => item.id === callId);
+  const call =
+    queue.data && callId
+      ? findActiveIncomingCall(queue.data, callId)
+      : null;
 
   if (sessionState === 'loading') {
     return (

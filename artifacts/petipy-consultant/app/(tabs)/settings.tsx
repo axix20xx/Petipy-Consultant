@@ -50,6 +50,9 @@ export default function SettingsScreen() {
     state,
     message,
     disconnect,
+    pushSetupState,
+    pushSetupMessage,
+    retryPushSetup,
   } = useConsultantSession();
   const [signingOut, setSigningOut] = useState(false);
   const isConnected = state === 'connected' && Boolean(token);
@@ -68,7 +71,13 @@ export default function SettingsScreen() {
       );
     }
     try {
-      await disconnect();
+      const result = await disconnect();
+      if (!result.pushRevoked) {
+        Alert.alert(
+          'اعلان دستگاه قطع نشد',
+          'خروج انجام شد، اما اتصال اعلان این دستگاه از سرور حذف نشد. هنگام اتصال دوباره، وضعیت را بررسی کنید.',
+        );
+      }
     } catch {
       Alert.alert(
         'خروج امن انجام نشد',
@@ -165,6 +174,42 @@ export default function SettingsScreen() {
             detail="برای تمام‌صفحه‌شدن در Android 14+، دسترسی Full-screen notifications را در Special app access فعال کنید. هنگام استفاده از گوشی ممکن است Android فقط بنر تماس نشان دهد."
             color={colors.primary}
           />
+          <InfoRow
+            icon="notifications-outline"
+            title="وضعیت اعلان FCM"
+            detail={
+              pushSetupMessage ??
+              (pushSetupState === 'idle'
+                ? 'پس از ورود مشاور، دستگاه برای اعلان ثبت می‌شود.'
+                : 'در انتظار وضعیت سرویس اعلان…')
+            }
+            color={
+              pushSetupState === 'ready'
+                ? colors.success
+                : pushSetupState === 'error' ||
+                    pushSetupState === 'permission-denied' ||
+                    pushSetupState === 'server-disabled'
+                  ? colors.warning
+                  : colors.primary
+            }
+          />
+          {isConnected && pushSetupState !== 'ready' ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={retryPushSetup}
+              style={styles.infoRow}
+              testID="retry-fcm-registration"
+            >
+              <View style={[styles.rowIcon, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="refresh-outline" size={19} color={colors.primary} />
+              </View>
+              <View style={styles.rowCopy}>
+                <Text style={[styles.rowTitle, { color: colors.primary }]}>
+                  تلاش دوباره برای ثبت اعلان
+                </Text>
+              </View>
+            </Pressable>
+          ) : null}
           {Platform.OS === 'android' ? (
             <Pressable
               accessibilityRole="button"
@@ -199,7 +244,7 @@ export default function SettingsScreen() {
             color={colors.destructive}
           />
           <Text style={[styles.footnote, { color: colors.mutedForeground }]}>
-            بدون FCM، تماس ورودی فقط وقتی قابل دریافت است که سرویس foreground از قبل اجرا باشد و سیستم آن را نکشته باشد.
+            اگر FCM یا مجوز اعلان در دسترس نباشد، سرویس foreground هنگام آنلاین‌بودن صف تماس را بررسی می‌کند. پس از Force stop، Android دریافت اعلان و اجرای سرویس را متوقف می‌کند.
           </Text>
         </View>
 
@@ -209,7 +254,7 @@ export default function SettingsScreen() {
             <Text style={[styles.cardTitle, { color: colors.foreground }]}>سرویس تماس</Text>
           </View>
           <Text style={[styles.body, { color: colors.mutedForeground }]}>
-            API از Petipy استفاده می‌کند و TURN relay-only را از نشست تماس دریافت می‌کند. Google STUN و FCM برای دریافت تماس استفاده نمی‌شوند.
+            تماس با API پتی‌پای برقرار می‌شود و TURN relay-only از نشست دریافت می‌شود. FCM فقط اعلان را می‌رساند و هیچ Google STUN استفاده نمی‌شود.
           </Text>
           <View style={[styles.statusBadge, { backgroundColor: colors.accent }]}>
             <View style={[styles.badgeDot, { backgroundColor: colors.warning }]} />

@@ -2,18 +2,18 @@
   "name": "@workspace/petipy-consultant",
   "version": "0.0.0",
   "private": true,
-  "main": "expo-router/entry",
+  "main": "index.js",
   "scripts": {
     "dev": "sh -c 'if [ -n \"$REPLIT_EXPO_SESSION_SECRET\" ]; then pnpm exec create-launch login --session \"$REPLIT_EXPO_SESSION_SECRET\" || true; fi' && EXPO_PUBLIC_PETIPY_AUTH_MODE=development EXPO_PACKAGER_PROXY_URL=https://$REPLIT_EXPO_DEV_DOMAIN EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOMAIN EXPO_PUBLIC_REPL_ID=$REPL_ID REACT_NATIVE_PACKAGER_HOSTNAME=$REPLIT_DEV_DOMAIN pnpm exec expo start --localhost --port $PORT",
     "build": "node scripts/build.js",
     "serve": "node server/serve.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:auth": "tsx --test tests/consultant-auth.test.ts"
+    "test:auth": "tsx --test tests/consultant-auth.test.ts",
+    "test:push": "tsx --test tests/push-notifications.test.ts"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@expo-google-fonts/inter": "^0.4.0",
-    "@expo/config-plugins": "~58.0.12",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native/metro-config": "0.88.1",
@@ -57,7 +57,10 @@
   "dependencies": {
     "@config-plugins/react-native-webrtc": "^15.0.2",
     "@notifee/react-native": "^9.1.8",
+    "@react-native-firebase/app": "^27.1.0",
+    "@react-native-firebase/messaging": "^27.1.0",
     "expo": "~58.0.23",
+    "expo-crypto": "~58.0.7",
     "expo-secure-store": "~58.0.2",
     "react": "19.3.0",
     "react-native": "0.88.1",

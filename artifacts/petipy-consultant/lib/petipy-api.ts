@@ -17,6 +17,12 @@ export type IncomingCall = {
   status?: string;
 };
 
+export type ConsultantPushDevice = {
+  deviceId: string;
+  platform: 'android';
+  pushToken: string;
+};
+
 export type CallHistoryEntry = {
   id: string;
   callerName: string;
@@ -252,6 +258,31 @@ export async function getConsultantProfile(token: string) {
 export async function getIncomingCalls(token: string): Promise<IncomingCall[]> {
   const result = await request<unknown>('/voice/consultant/me/requests', token);
   return findList(result, ['requests', 'items', 'calls']).map(normalizeCall);
+}
+
+export async function registerConsultantPushDevice(
+  token: string,
+  device: ConsultantPushDevice,
+) {
+  return request<unknown>('/voice/consultant/me/devices', token, {
+    method: 'POST',
+    body: JSON.stringify(device),
+  });
+}
+
+export async function getConsultantPushStatus(token: string) {
+  return request<unknown>('/voice/consultant/me/push-status', token);
+}
+
+export async function revokeConsultantPushDevice(
+  token: string,
+  deviceId: string,
+) {
+  return request<unknown>(
+    `/voice/consultant/me/devices/${encodeURIComponent(deviceId)}`,
+    token,
+    { method: 'DELETE' },
+  );
 }
 
 export async function getCallHistory(

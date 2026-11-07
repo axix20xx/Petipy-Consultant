@@ -98,10 +98,16 @@ export default function ConsultantHome() {
     void (async () => {
       try {
         const microphoneGranted = await requestMicrophone();
-        const notificationGranted = await requestAvailabilityPermissions();
-        if (!microphoneGranted || !notificationGranted) {
+        if (!microphoneGranted) {
           throw new Error(
-            'برای دریافت تماس در پس‌زمینه، مجوز میکروفون و اعلان لازم است.',
+            'برای دریافت تماس، دسترسی میکروفون را در تنظیمات Android فعال کنید.',
+          );
+        }
+        const notificationGranted = await requestAvailabilityPermissions();
+        if (!notificationGranted && !cancelled) {
+          Alert.alert(
+            'اعلان‌ها محدود هستند',
+            'سرویس foreground همچنان صف تماس را بررسی می‌کند، اما Android ممکن است اعلان تماس را نمایش ندهد.',
           );
         }
         await startAvailabilityService(token, tokenExpiresAt);
@@ -158,10 +164,9 @@ export default function ConsultantHome() {
         const notificationGranted = await requestAvailabilityPermissions();
         if (!notificationGranted) {
           Alert.alert(
-            'اجازه‌ی اعلان لازم است',
-            'برای دیدن درخواست تماس در پس‌زمینه، اعلان‌های Petipy را فعال کنید.',
+            'اعلان‌ها محدود هستند',
+            'دستگاه آنلاین می‌شود و سرویس foreground صف تماس را بررسی می‌کند؛ اما ممکن است Android اعلان تماس را پنهان کند.',
           );
-          return;
         }
       }
 

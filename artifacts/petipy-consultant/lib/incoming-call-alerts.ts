@@ -8,7 +8,7 @@ import notifee, {
 import InCallManager from 'react-native-incall-manager';
 import { Platform } from 'react-native';
 
-const INCOMING_CALL_CHANNEL_ID = 'petipy-incoming-calls-v1';
+export const INCOMING_CALL_CHANNEL_ID = 'incoming-calls';
 const NOTIFICATION_PREFIX = 'petipy-incoming-call-';
 
 function notificationId(callId: string) {

@@ -1,4 +1,4 @@
-const { withAndroidManifest } = require('@expo/config-plugins');
+const { withAndroidManifest } = require('expo/config-plugins');
 
 const SERVICE_NAME =
   'com.asterinet.react.bgactions.RNBackgroundActionsTask';
@@ -10,6 +10,8 @@ module.exports = function withPetipyForegroundService(config) {
     if (!app) {
       throw new Error('Petipy Android application manifest is missing.');
     }
+    app.$ ??= {};
+    app.$['android:supportsRtl'] = 'true';
 
     const permissions = new Set(
       (manifest['uses-permission'] ?? []).map(

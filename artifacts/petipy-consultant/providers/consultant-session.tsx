@@ -12,6 +12,11 @@ import {
   type ApiProfile,
   type CallSession,
 } from '@/lib/petipy-api';
+import {
+  revokePushDeviceForSession,
+  startPushRegistration,
+  type PushSetupState,
+} from '@/lib/push-notifications';
 import { stopAvailabilityService } from '@/lib/background-monitor';
 import * as SecureStore from 'expo-secure-store';
 import { useQueryClient } from '@tanstack/react-query';
@@ -45,9 +50,12 @@ type SessionContextValue = {
   authBusy: boolean;
   devAuthAvailable: boolean;
   signIn: (phone: string, code: string) => Promise<boolean>;
-  disconnect: () => Promise<void>;
+  disconnect: () => Promise<{ pushRevoked: boolean }>;
   refresh: () => Promise<void>;
   setActiveCall: (call: CallSession | null) => void;
+  pushSetupState: PushSetupState;
+  pushSetupMessage: string | null;
+  retryPushSetup: () => void;
 };
 
 const LIVE_AUTH_MESSAGE =
@@ -82,6 +90,11 @@ export function ConsultantSessionProvider({
   const [message, setMessage] = useState<string | null>(null);
   const [authBusy, setAuthBusy] = useState(false);
   const [devAuthUnavailable, setDevAuthUnavailable] = useState(false);
+  const [pushSetupState, setPushSetupState] = useState<PushSetupState>(
+    Platform.OS === 'android' ? 'idle' : 'unsupported',
+  );
+  const [pushSetupMessage, setPushSetupMessage] = useState<string | null>(null);
+  const [pushSetupAttempt, setPushSetupAttempt] = useState(0);
 
   const devAuthAvailable =
     Platform.OS !== 'web' &&
@@ -207,6 +220,30 @@ export function ConsultantSessionProvider({
   }, [expireSession, state, tokenExpiresAt]);
 
   useEffect(() => {
+    if (Platform.OS !== 'android') {
+      setPushSetupState('unsupported');
+      setPushSetupMessage('اعلان FCM فقط در نسخه‌ی Android فعال است.');
+      return;
+    }
+    if (state !== 'connected' || !token) {
+      setPushSetupState('idle');
+      setPushSetupMessage(null);
+      return;
+    }
+
+    let mounted = true;
+    const stop = startPushRegistration(token, (nextState, nextMessage) => {
+      if (!mounted) return;
+      setPushSetupState(nextState);
+      setPushSetupMessage(nextMessage);
+    });
+    return () => {
+      mounted = false;
+      stop();
+    };
+  }, [pushSetupAttempt, state, token]);
+
+  useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
       if (
         nextState === 'active' &&
@@ -268,6 +305,9 @@ export function ConsultantSessionProvider({
   );
 
   const disconnect = useCallback(async () => {
+    const pushRevoked = token
+      ? await revokePushDeviceForSession(token)
+      : true;
     try {
       await stopAvailabilityService();
       await clearStoredConsultantSession(SecureStore);
@@ -283,7 +323,12 @@ export function ConsultantSessionProvider({
     setMessage(null);
     setState('signed-out');
     queryClient.clear();
-  }, [queryClient]);
+    return { pushRevoked };
+  }, [queryClient, token]);
+
+  const retryPushSetup = useCallback(() => {
+    setPushSetupAttempt((attempt) => attempt + 1);
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -299,6 +344,9 @@ export function ConsultantSessionProvider({
       disconnect,
       refresh: restoreSession,
       setActiveCall,
+      pushSetupState,
+      pushSetupMessage,
+      retryPushSetup,
     }),
     [
       token,
@@ -312,6 +360,9 @@ export function ConsultantSessionProvider({
       signIn,
       disconnect,
       restoreSession,
+      pushSetupState,
+      pushSetupMessage,
+      retryPushSetup,
     ],
   );
 

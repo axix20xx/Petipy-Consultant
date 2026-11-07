@@ -17,13 +17,14 @@ async function ensureForegroundNotificationPermission() {
   if (Number(Platform.Version) < 33) return true;
 
   const permission = PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS;
+  if (await PermissionsAndroid.check(permission)) return true;
   const result = await PermissionsAndroid.request(permission);
   return result === PermissionsAndroid.RESULTS.GRANTED;
 }
 
 export async function requestAvailabilityPermissions() {
   const granted = await ensureForegroundNotificationPermission();
-  if (granted) await prepareIncomingCallAlerts();
+  await prepareIncomingCallAlerts();
   return granted;
 }
 
@@ -154,10 +155,6 @@ export async function startAvailabilityService(
   if (Platform.OS !== 'android' || BackgroundService.isRunning()) return;
   if (!Number.isFinite(Date.parse(tokenExpiresAt)) || Date.parse(tokenExpiresAt) <= Date.now()) {
     throw new Error('نشست مشاور منقضی شده است؛ دوباره وارد شوید.');
-  }
-  const permissionGranted = await ensureForegroundNotificationPermission();
-  if (!permissionGranted) {
-    throw new Error('برای اجرای سرویس تماس، مجوز اعلان Android لازم است.');
   }
   await prepareIncomingCallAlerts();
 

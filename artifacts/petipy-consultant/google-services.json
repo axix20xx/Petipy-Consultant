@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "520113005369",
+    "project_id": "petipyc",
+    "storage_bucket": "petipyc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:520113005369:android:4ee3db0f04ce749cacbee8",
+        "android_client_info": {
+          "package_name": "com.petipy.consultant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_f4ytVuEUgkw8KIZFLs5amt69fz_vets"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

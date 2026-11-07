@@ -11,6 +11,7 @@ import {
   INCOMING_CALL_CHANNEL_ID,
   INCOMING_CALL_FULL_SCREEN_ACTION,
   INCOMING_CALL_PRESS_ACTION,
+  shouldOpenIncomingCallFromNotificationEvent,
 } from '@/lib/incoming-call-alert-config';
 
 const NOTIFICATION_PREFIX = 'petipy-incoming-call-';
@@ -110,13 +111,26 @@ export function onIncomingCallNotificationOpen(
   };
 
   const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
+    const notification = detail.notification;
+    const eventKind =
+      type === EventType.PRESS
+        ? 'press'
+        : type === EventType.ACTION_PRESS
+          ? 'action_press'
+          : 'other';
     if (
-      type === EventType.PRESS &&
-      detail.notification?.data?.type === 'incoming-call'
+      notification &&
+      shouldOpenIncomingCallFromNotificationEvent(
+        eventKind,
+        notification.data?.type,
+        notification.android?.fullScreenAction?.id,
+      ) &&
+      typeof notification.data?.callId === 'string' &&
+      notification.data.callId
     ) {
-      const id = detail.notification.id;
+      const id = notification.id;
       if (id) void notifee.cancelNotification(id).catch(() => {});
-      openIncomingCall(detail.notification.data);
+      openIncomingCall(notification.data);
     }
   });
 

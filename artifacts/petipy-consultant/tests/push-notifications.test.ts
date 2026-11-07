@@ -9,6 +9,7 @@ import {
   INCOMING_CALL_CHANNEL_ID,
   INCOMING_CALL_FULL_SCREEN_ACTION,
   INCOMING_CALL_PRESS_ACTION,
+  shouldOpenIncomingCallFromNotificationEvent,
 } from '../lib/incoming-call-alert-config';
 
 const now = Date.parse('2026-11-07T12:00:00.000Z');
@@ -22,6 +23,39 @@ const activeRequest = {
 
 test('uses a new high-priority incoming-call channel for Android', () => {
   assert.equal(INCOMING_CALL_CHANNEL_ID, 'incoming-calls-v2');
+});
+
+test('routes incoming calls from notification and full-screen action events', () => {
+  assert.equal(
+    shouldOpenIncomingCallFromNotificationEvent(
+      'press',
+      'incoming-call',
+    ),
+    true,
+  );
+  assert.equal(
+    shouldOpenIncomingCallFromNotificationEvent(
+      'action_press',
+      'incoming-call',
+    ),
+    true,
+  );
+  assert.equal(
+    shouldOpenIncomingCallFromNotificationEvent(
+      'other',
+      'incoming-call',
+      INCOMING_CALL_FULL_SCREEN_ACTION.id,
+    ),
+    true,
+  );
+  assert.equal(
+    shouldOpenIncomingCallFromNotificationEvent(
+      'action_press',
+      'not-an-incoming-call',
+      INCOMING_CALL_FULL_SCREEN_ACTION.id,
+    ),
+    false,
+  );
 });
 
 test('only accepts a bounded non-empty callId signal', () => {

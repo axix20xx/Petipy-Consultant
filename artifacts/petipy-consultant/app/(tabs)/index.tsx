@@ -11,6 +11,10 @@ import {
   startAvailabilityService,
   stopAvailabilityService,
 } from '@/lib/background-monitor';
+import {
+  cancelIncomingCallNotification,
+  stopIncomingCallRingtone,
+} from '@/lib/incoming-call-alerts';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -205,6 +209,12 @@ export default function ConsultantHome() {
     setAcceptingId(callId);
     try {
       const session = await acceptIncomingCall(token, callId);
+      stopIncomingCallRingtone();
+      try {
+        await cancelIncomingCallNotification(callId);
+      } catch {
+        // A stale alert should not block a successful call acceptance.
+      }
       setActiveCall(session);
       router.push(`/call/${encodeURIComponent(session.callId)}`);
     } catch (error) {

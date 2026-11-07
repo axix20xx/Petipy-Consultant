@@ -1,6 +1,14 @@
 import BackgroundService from 'react-native-background-actions';
 import { PermissionsAndroid, Platform } from 'react-native';
 import { getIncomingCalls, PetipyApiError } from '@/lib/petipy-api';
+import {
+  cancelIncomingCallNotification,
+  clearIncomingCallNotifications,
+  notifyIncomingCall,
+  prepareIncomingCallAlerts,
+  startIncomingCallRingtone,
+  stopIncomingCallRingtone,
+} from '@/lib/incoming-call-alerts';
 
 const POLL_INTERVAL_MS = 10_000;
 
@@ -14,7 +22,9 @@ async function ensureForegroundNotificationPermission() {
 }
 
 export async function requestAvailabilityPermissions() {
-  return ensureForegroundNotificationPermission();
+  const granted = await ensureForegroundNotificationPermission();
+  if (granted) await prepareIncomingCallAlerts();
+  return granted;
 }
 
 async function sleep(milliseconds: number) {
@@ -29,49 +39,111 @@ async function monitorIncomingCalls(params?: MonitorParams) {
   const expiry = Date.parse(tokenExpiresAt);
   if (!Number.isFinite(expiry)) return;
   let connectionNoticeShown = false;
+  let ringtoneStarted = false;
+  const notifiedCallIds = new Set<string>();
 
-  while (BackgroundService.isRunning()) {
-    if (Date.now() >= expiry) {
-      await BackgroundService.updateNotification({
-        taskTitle: 'نشست Petipy منقضی شد',
-        taskDesc: 'برنامه را باز کنید و دوباره وارد حساب مشاور شوید.',
-      });
-      return;
-    }
-    try {
-      const calls = await getIncomingCalls(sessionToken);
-      connectionNoticeShown = false;
-      const hasCalls = calls.length > 0;
-      await BackgroundService.updateNotification({
-        taskTitle: hasCalls
-          ? `تماس ورودی مشاوره · ${calls.length}`
-          : 'پتی پای؛ آماده‌ی تماس',
-        taskDesc: hasCalls
-          ? calls.length === 1
-            ? 'یک درخواست تماس دارید؛ برای پاسخ، برنامه را باز کنید.'
-            : `${calls.length} درخواست تماس دارید؛ برای پاسخ، برنامه را باز کنید.`
-          : 'در انتظار درخواست مشاوره',
-      });
-    } catch (error) {
-      if (
-        error instanceof PetipyApiError &&
-        (error.status === 401 || error.status === 403)
-      ) {
+  try {
+    while (BackgroundService.isRunning()) {
+      if (Date.now() >= expiry) {
         await BackgroundService.updateNotification({
-          taskTitle: 'نشست مشاور معتبر نیست',
+          taskTitle: 'نشست Petipy منقضی شد',
           taskDesc: 'برنامه را باز کنید و دوباره وارد حساب مشاور شوید.',
         });
         return;
       }
-      if (!connectionNoticeShown) {
-        connectionNoticeShown = true;
-        await BackgroundService.updateNotification({
-          taskTitle: 'پتی پای؛ اتصال برقرار نیست',
-          taskDesc: 'برای دریافت تماس، اینترنت و نشست حساب را بررسی کنید.',
+
+      try {
+        const calls = await getIncomingCalls(sessionToken);
+        const pendingCalls = calls.filter((call) => {
+          if (call.status && call.status !== 'requested') return false;
+          if (!call.expiresAt) return true;
+          const callExpiry = Date.parse(call.expiresAt);
+          return !Number.isFinite(callExpiry) || callExpiry > Date.now();
         });
+        const pendingIds = new Set(pendingCalls.map((call) => call.id));
+        connectionNoticeShown = false;
+
+        for (const callId of notifiedCallIds) {
+          if (!pendingIds.has(callId)) {
+            try {
+              await cancelIncomingCallNotification(callId);
+            } catch {
+              // A stale notification should not stop the request poller.
+            }
+            notifiedCallIds.delete(callId);
+          }
+        }
+
+        for (const call of pendingCalls) {
+          if (notifiedCallIds.has(call.id)) continue;
+          try {
+            await notifyIncomingCall(call.id);
+            notifiedCallIds.add(call.id);
+          } catch {
+            await BackgroundService.updateNotification({
+              taskTitle: 'تماس ورودی مشاوره',
+              taskDesc: 'اعلان تماس نمایش داده نشد؛ برنامه را باز کنید.',
+            });
+          }
+        }
+
+        if (pendingCalls.length > 0 && !ringtoneStarted) {
+          try {
+            startIncomingCallRingtone();
+            ringtoneStarted = true;
+          } catch {
+            await BackgroundService.updateNotification({
+              taskTitle: 'تماس ورودی مشاوره',
+              taskDesc: 'صدای زنگ فعال نشد؛ برنامه را برای پاسخ باز کنید.',
+            });
+          }
+        } else if (pendingCalls.length === 0 && ringtoneStarted) {
+          stopIncomingCallRingtone();
+          ringtoneStarted = false;
+        }
+
+        await BackgroundService.updateNotification({
+          taskTitle: pendingCalls.length
+            ? `تماس ورودی مشاوره · ${pendingCalls.length}`
+            : 'پتی پای؛ آماده‌ی تماس',
+          taskDesc: pendingCalls.length
+            ? pendingCalls.length === 1
+              ? 'یک درخواست تماس دارید؛ برای پاسخ، برنامه را باز کنید.'
+              : `${pendingCalls.length} درخواست تماس دارید؛ برای پاسخ، برنامه را باز کنید.`
+            : 'در انتظار درخواست مشاوره',
+        });
+      } catch (error) {
+        if (
+          error instanceof PetipyApiError &&
+          (error.status === 401 || error.status === 403)
+        ) {
+          await BackgroundService.updateNotification({
+            taskTitle: 'نشست مشاور معتبر نیست',
+            taskDesc: 'برنامه را باز کنید و دوباره وارد حساب مشاور شوید.',
+          });
+          return;
+        }
+        if (!connectionNoticeShown) {
+          connectionNoticeShown = true;
+          await BackgroundService.updateNotification({
+            taskTitle: 'پتی پای؛ اتصال برقرار نیست',
+            taskDesc: 'برای دریافت تماس، اینترنت و نشست حساب را بررسی کنید.',
+          });
+        }
       }
+      await sleep(POLL_INTERVAL_MS);
     }
-    await sleep(POLL_INTERVAL_MS);
+  } finally {
+    if (ringtoneStarted) stopIncomingCallRingtone();
+    await Promise.all(
+      [...notifiedCallIds].map(async (callId) => {
+        try {
+          await cancelIncomingCallNotification(callId);
+        } catch {
+          // Cleanup failures must not prevent the availability service stopping.
+        }
+      }),
+    );
   }
 }
 
@@ -87,6 +159,7 @@ export async function startAvailabilityService(
   if (!permissionGranted) {
     throw new Error('برای اجرای سرویس تماس، مجوز اعلان Android لازم است.');
   }
+  await prepareIncomingCallAlerts();
 
   await BackgroundService.start(monitorIncomingCalls, {
     taskName: 'PetipyConsultantAvailability',
@@ -103,5 +176,11 @@ export async function startAvailabilityService(
 export async function stopAvailabilityService() {
   if (Platform.OS === 'android' && BackgroundService.isRunning()) {
     await BackgroundService.stop();
+  }
+  stopIncomingCallRingtone();
+  try {
+    await clearIncomingCallNotifications();
+  } catch {
+    // Notification cleanup must not block switching availability offline.
   }
 }

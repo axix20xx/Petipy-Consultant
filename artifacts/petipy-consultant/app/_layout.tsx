@@ -15,8 +15,9 @@ import {
   Inter_700Bold,
   useFonts,
 } from '@expo-google-fonts/inter';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { onIncomingCallNotificationOpen } from '@/lib/incoming-call-alerts';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -25,6 +26,12 @@ I18nManager.allowRTL(true);
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
+  const router = useRouter();
+
+  useEffect(() => {
+    return onIncomingCallNotificationOpen(() => router.replace('/(tabs)'));
+  }, [router]);
+
   return (
     <Stack screenOptions={{ headerShown: false, headerBackTitle: 'بازگشت' }}>
       <Stack.Screen name="index" />

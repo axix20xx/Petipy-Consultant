@@ -56,3 +56,17 @@ mtime_ms = 1794061699623
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/8e6e0e63-efde-4c13-9829-3e93a08e505f/e891fe55-69b4-4ae0-bcff-1e6f1412c500"
 storage_version_token = "1794061709959395"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "w9IUQRLcqk_XnzYCWBhES"
+uri = "file://generated-artifacts/petipy-consultant-dev-ringing-arm64-v8a.apk"
+type = "unspecified"
+title = "Petipy Consultant — Background Ringing APK"
+description = "Sideloadable ARM64 Android APK with development OTP sign-in, high-priority incoming-call alerts, and looping Android ringtone. Debug-signed; no FCM."
+logical_id = "665e8bff-e08c-4e14-a6e6-9c5840b90082"
+content_hash = "sha256:79ac0a488dbd1d3b09d6f661439762097e6899a1cb4ab3982ea814bf0d834c6e"
+size = 60797758
+mtime_ms = 1794063031164
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/665e8bff-e08c-4e14-a6e6-9c5840b90082/017b568d-ee6b-4364-8ee6-30000a6f348c"
+storage_version_token = "1794063066347371"
+content_type = "application/octet-stream"

@@ -1,3 +1,5 @@
+export const INCOMING_CALL_CHANNEL_ID = 'incoming-calls-v2';
+
 export const INCOMING_CALL_FULL_SCREEN_ACTION = {
   id: 'incoming-call',
   launchActivity: 'default',

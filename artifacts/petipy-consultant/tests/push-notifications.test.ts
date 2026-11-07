@@ -6,6 +6,7 @@ import {
   resolveIncomingPushRoute,
 } from '../lib/incoming-push-routing';
 import {
+  INCOMING_CALL_CHANNEL_ID,
   INCOMING_CALL_FULL_SCREEN_ACTION,
   INCOMING_CALL_PRESS_ACTION,
 } from '../lib/incoming-call-alert-config';
@@ -18,6 +19,10 @@ const activeRequest = {
   status: 'requested',
   expiresAt: '2026-11-07T12:01:00.000Z',
 };
+
+test('uses a new high-priority incoming-call channel for Android', () => {
+  assert.equal(INCOMING_CALL_CHANNEL_ID, 'incoming-calls-v2');
+});
 
 test('only accepts a bounded non-empty callId signal', () => {
   assert.equal(parseIncomingCallId({ callId: ' call-123 ' }), 'call-123');

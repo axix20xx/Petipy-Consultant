@@ -8,11 +8,11 @@ import notifee, {
 import InCallManager from 'react-native-incall-manager';
 import { Platform } from 'react-native';
 import {
+  INCOMING_CALL_CHANNEL_ID,
   INCOMING_CALL_FULL_SCREEN_ACTION,
   INCOMING_CALL_PRESS_ACTION,
 } from '@/lib/incoming-call-alert-config';
 
-export const INCOMING_CALL_CHANNEL_ID = 'incoming-calls';
 const NOTIFICATION_PREFIX = 'petipy-incoming-call-';
 
 function notificationId(callId: string) {

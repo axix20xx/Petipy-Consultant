@@ -1,0 +1,1 @@
+- [Petipy consultant auth and rejection](petipy-consultant-auth-rejection.md) — development OTP cannot authenticate VOICE_CONSULTANT, and no consultant reject endpoint exists yet.

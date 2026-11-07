@@ -5,3 +5,4 @@
 .local
 /generated-artifacts/
 /.gradle-cache/
+/.gradle/

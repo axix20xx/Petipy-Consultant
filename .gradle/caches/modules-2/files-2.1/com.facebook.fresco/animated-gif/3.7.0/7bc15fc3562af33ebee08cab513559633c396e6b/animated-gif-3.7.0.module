@@ -1,0 +1,158 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.facebook.fresco",
+    "module": "animated-gif",
+    "version": "3.7.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.7"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "animated-gif-3.7.0.aar",
+          "url": "animated-gif-3.7.0.aar",
+          "size": 413671,
+          "sha512": "5542147ad36420e227be8151366f3b98a5f286f70e1861d1dc0876df1b1c12e27718d8927fc03808a77ce93a3fe1c97bccf1159f331cffd14ead5b6daa6071f8",
+          "sha256": "20730d4dfdceb51c60d4d7ee2f46540c6e061d5b0694f4dc9b6ce14ccc693492",
+          "sha1": "5d96995828ebd63501436bb0c6ab8ce6cf4695cd",
+          "md5": "108047770ca0f5e46bf70f75ed5391a2"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.parse.bolts",
+          "module": "bolts-tasks",
+          "version": {
+            "requires": "1.4.0"
+          }
+        },
+        {
+          "group": "com.facebook.soloader",
+          "module": "nativeloader",
+          "version": {
+            "requires": "0.11.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "fbcore",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "animated-base",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "animated-gif-lite",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "middleware",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "animated-gif-3.7.0.aar",
+          "url": "animated-gif-3.7.0.aar",
+          "size": 413671,
+          "sha512": "5542147ad36420e227be8151366f3b98a5f286f70e1861d1dc0876df1b1c12e27718d8927fc03808a77ce93a3fe1c97bccf1159f331cffd14ead5b6daa6071f8",
+          "sha256": "20730d4dfdceb51c60d4d7ee2f46540c6e061d5b0694f4dc9b6ce14ccc693492",
+          "sha1": "5d96995828ebd63501436bb0c6ab8ce6cf4695cd",
+          "md5": "108047770ca0f5e46bf70f75ed5391a2"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "animated-gif-3.7.0-sources.jar",
+          "url": "animated-gif-3.7.0-sources.jar",
+          "size": 5932,
+          "sha512": "9d630b9d795002ef9bccdf1b39ae26ddbba13d53106c63ce6d284c78df29649b40378491cb0d0e3d4bab3fa5eeb2d81be3e0d7abbaf775692ce18b7834880a1a",
+          "sha256": "d273768b42aadc8438d553d1aa2cbb513eab5d1be6e620bbc83b35d873c419c4",
+          "sha1": "924bc721b7a57e580797f63ccd381146dd943cd6",
+          "md5": "e8ae8556a97ba633768c5b0b9da132bc"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseJavaDocPublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "animated-gif-3.7.0-javadoc.jar",
+          "url": "animated-gif-3.7.0-javadoc.jar",
+          "size": 261,
+          "sha512": "1487e5a20c9e4d74f298e07c42e96a61be11b7a768c3fbc199ee138cd68e1fc2267d1cfe3f11f288acc05df755315344d052cc5f6f751f126ab4fe1caa5125ea",
+          "sha256": "c6deada2fac53b8ea6523dbda77597b128006674616f140f04df23264c6d1aa3",
+          "sha1": "2ad14aed781c4a73ed4dbb421966d408a0a06686",
+          "md5": "f43436d6bec321290f6af228ad602604"
+        }
+      ]
+    }
+  ]
+}

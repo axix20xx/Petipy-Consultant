@@ -7,6 +7,10 @@ import notifee, {
 } from '@notifee/react-native';
 import InCallManager from 'react-native-incall-manager';
 import { Platform } from 'react-native';
+import {
+  INCOMING_CALL_FULL_SCREEN_ACTION,
+  INCOMING_CALL_PRESS_ACTION,
+} from '@/lib/incoming-call-alert-config';
 
 export const INCOMING_CALL_CHANNEL_ID = 'incoming-calls';
 const NOTIFICATION_PREFIX = 'petipy-incoming-call-';
@@ -44,8 +48,8 @@ export async function notifyIncomingCall(callId: string) {
       color: '#6b3fe1',
       lightUpScreen: true,
       autoCancel: true,
-      pressAction: { id: 'default' },
-      fullScreenAction: { id: 'incoming-call' },
+      pressAction: INCOMING_CALL_PRESS_ACTION,
+      fullScreenAction: INCOMING_CALL_FULL_SCREEN_ACTION,
     },
   });
 }

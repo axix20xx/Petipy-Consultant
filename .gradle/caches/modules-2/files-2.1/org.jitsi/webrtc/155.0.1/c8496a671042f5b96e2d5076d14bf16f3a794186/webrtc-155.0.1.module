@@ -1,0 +1,98 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.jitsi",
+    "module": "webrtc",
+    "version": "155.0.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.3"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "webrtc-155.0.1.aar",
+          "url": "webrtc-155.0.1.aar",
+          "size": 23408577,
+          "sha512": "3742b78ecec119fcf17e83e7c2bda4fbd2639d2d4273453467ce80ef8125d0801075fd2858ab2fd0617846ff48a841b66c22f0a7678d89f528f2d207e335bfd9",
+          "sha256": "b686b7674fd7285ddda369e155ca9663b9787f2b2f470b76691980782e13cd26",
+          "sha1": "b895a19a249cf6401f4dd0aa403eb1df797be118",
+          "md5": "8cf5804c081dd2c8a3cf566013506880"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "webrtc-155.0.1.aar",
+          "url": "webrtc-155.0.1.aar",
+          "size": 23408577,
+          "sha512": "3742b78ecec119fcf17e83e7c2bda4fbd2639d2d4273453467ce80ef8125d0801075fd2858ab2fd0617846ff48a841b66c22f0a7678d89f528f2d207e335bfd9",
+          "sha256": "b686b7674fd7285ddda369e155ca9663b9787f2b2f470b76691980782e13cd26",
+          "sha1": "b895a19a249cf6401f4dd0aa403eb1df797be118",
+          "md5": "8cf5804c081dd2c8a3cf566013506880"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "webrtc-155.0.1-sources.jar",
+          "url": "webrtc-155.0.1-sources.jar",
+          "size": 862,
+          "sha512": "cf3a1a4b38108fc9330b1c93c1772335ad57e8ed71a7b0442d65fc1cd6b7975d1e97fee688374836a7a8ac0494d042d1251015481af4d17856c2194186a3987d",
+          "sha256": "98dee7e85f56b50be839f19650f54fe34843653fcf873c9ad048d51570b4e4b3",
+          "sha1": "50abfb640684175588d5c22be78dff92d9ae4b35",
+          "md5": "15620a6b80867d61d8c283a5b92024aa"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseJavaDocPublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "webrtc-155.0.1-javadoc.jar",
+          "url": "webrtc-155.0.1-javadoc.jar",
+          "size": 259091,
+          "sha512": "8b718e9fac51a9bb23a4914c7461ed9075a08f1c0f20e8ad42f1d92165bb83d91da47e44a989f0948bbb1caafd4de878c6c65d768a812393f90f206619c30baa",
+          "sha256": "eb7e690d7b78052069e6bb6e291e4d9ac343ecc38ca0282acf6e658020a179c1",
+          "sha1": "f524f89a2d4af16e871fd2aa6574cef9131ab622",
+          "md5": "d5e1e2c6fb8bf66d5f9d2c31fa9ecf5c"
+        }
+      ]
+    }
+  ]
+}

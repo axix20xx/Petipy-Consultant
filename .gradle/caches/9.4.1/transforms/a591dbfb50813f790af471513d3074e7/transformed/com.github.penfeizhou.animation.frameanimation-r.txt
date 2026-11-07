@@ -1,0 +1,2 @@
+com.github.penfeizhou.animation.frameanimation
+string app_name

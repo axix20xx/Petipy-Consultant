@@ -7,6 +7,7 @@ import {
   CONSULTANT_SESSION_KEY,
   MAX_MOBILE_SESSION_MS,
   readStoredConsultantSession,
+  resolvePetipyMobileAuthMode,
   signInDevelopmentConsultant,
   isDevelopmentPhoneAuthEnabled,
   type SessionStorage,
@@ -44,6 +45,18 @@ test('enables the demo login only for an explicit development auth mode', () => 
   assert.equal(isDevelopmentPhoneAuthEnabled('development'), true);
   assert.equal(isDevelopmentPhoneAuthEnabled('live'), false);
   assert.equal(isDevelopmentPhoneAuthEnabled(undefined), false);
+});
+
+test('uses the bundled Expo mode when a release build has no environment value', () => {
+  assert.equal(resolvePetipyMobileAuthMode(undefined, 'development'), 'development');
+  assert.equal(resolvePetipyMobileAuthMode(undefined, 'live'), 'live');
+});
+
+test('lets an explicit environment mode override the bundled mode', () => {
+  assert.equal(
+    resolvePetipyMobileAuthMode('live', 'development'),
+    'live',
+  );
 });
 
 test('accepts only the consultant mobile response and stores after API verification', async () => {

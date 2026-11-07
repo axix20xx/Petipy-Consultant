@@ -1,0 +1,9 @@
+com.squareup.zstd.AndroidZstdKt
+com.squareup.zstd.JniZstdCompressor
+com.squareup.zstd.JniZstdDecompressor
+com.squareup.zstd.JniZstdKt
+com.squareup.zstd.Zstd
+com.squareup.zstd.ZstdCompressor
+com.squareup.zstd.ZstdDecompressor
+com.squareup.zstd.Zstd__ZstdKt
+com.squareup.zstd.Zstd__Zstd_jniKt

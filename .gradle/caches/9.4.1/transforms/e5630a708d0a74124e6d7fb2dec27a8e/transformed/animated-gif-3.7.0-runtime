@@ -1,0 +1,6 @@
+com.facebook.animated.gif.AnimatedImageGifValidator
+com.facebook.animated.gif.AnimatedImageGifValidatorKt
+com.facebook.animated.gif.GifFrame
+com.facebook.animated.gif.GifImage
+com.facebook.animated.gif.GifImageDecoder
+com.facebook.animated.gif.GifImageDecoder$Companion

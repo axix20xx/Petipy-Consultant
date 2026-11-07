@@ -1,0 +1,3 @@
+com.squareup.zstd.okio.OkioZstd
+com.squareup.zstd.okio.ZstdCompressSink
+com.squareup.zstd.okio.ZstdDecompressSource

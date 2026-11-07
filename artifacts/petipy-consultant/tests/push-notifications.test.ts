@@ -5,6 +5,10 @@ import {
   parseIncomingCallId,
   resolveIncomingPushRoute,
 } from '../lib/incoming-push-routing';
+import {
+  INCOMING_CALL_FULL_SCREEN_ACTION,
+  INCOMING_CALL_PRESS_ACTION,
+} from '../lib/incoming-call-alert-config';
 
 const now = Date.parse('2026-11-07T12:00:00.000Z');
 
@@ -68,4 +72,15 @@ test('URL-encodes call IDs before routing', () => {
     now,
   );
   assert.equal(route?.path, '/incoming-call/call%2Fwith%20space');
+});
+
+test('incoming-call notification explicitly launches the default Android activity', () => {
+  assert.deepEqual(INCOMING_CALL_FULL_SCREEN_ACTION, {
+    id: 'incoming-call',
+    launchActivity: 'default',
+  });
+  assert.deepEqual(INCOMING_CALL_PRESS_ACTION, {
+    id: 'default',
+    launchActivity: 'default',
+  });
 });

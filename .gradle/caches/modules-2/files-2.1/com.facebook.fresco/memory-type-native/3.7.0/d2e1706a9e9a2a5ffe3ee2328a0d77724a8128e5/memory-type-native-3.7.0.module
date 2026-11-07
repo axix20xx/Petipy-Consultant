@@ -1,0 +1,128 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.facebook.fresco",
+    "module": "memory-type-native",
+    "version": "3.7.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.7"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "memory-type-native-3.7.0.aar",
+          "url": "memory-type-native-3.7.0.aar",
+          "size": 4292,
+          "sha512": "e697ed4764a44c9228e873e00d249c9a24e3c559ae5808fe4a8af8f4942f4df69127f58f10ef590334a3b1b2a1ae6f0d68025bc0fc748a5ee4ffad1c6bfde3cd",
+          "sha256": "43c3d45c5081ad81c4d21c78bf34ea95931e0900b1d91f7e651e60711eff9eef",
+          "sha1": "f92bb228203f852ba99ea6a60a7e5e8fc76050e8",
+          "md5": "89067976d1393e035dfb18b22080e2ce"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.facebook.fresco",
+          "module": "fbcore",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline-native",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.soloader",
+          "module": "nativeloader",
+          "version": {
+            "requires": "0.11.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "memory-type-native-3.7.0.aar",
+          "url": "memory-type-native-3.7.0.aar",
+          "size": 4292,
+          "sha512": "e697ed4764a44c9228e873e00d249c9a24e3c559ae5808fe4a8af8f4942f4df69127f58f10ef590334a3b1b2a1ae6f0d68025bc0fc748a5ee4ffad1c6bfde3cd",
+          "sha256": "43c3d45c5081ad81c4d21c78bf34ea95931e0900b1d91f7e651e60711eff9eef",
+          "sha1": "f92bb228203f852ba99ea6a60a7e5e8fc76050e8",
+          "md5": "89067976d1393e035dfb18b22080e2ce"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "memory-type-native-3.7.0-sources.jar",
+          "url": "memory-type-native-3.7.0-sources.jar",
+          "size": 3651,
+          "sha512": "25f724fe18df10a6944e2dee27a2395640f4146a9090201e791decd9a781fa826504998ce888b49b968f2a9071bc9a10acd90fa8d4e51b7be11853688a016123",
+          "sha256": "f18f58b0f8cca1b817d2551efd5599e396baf7e05c6a5499fb4a3a9fc92d7dc2",
+          "sha1": "757d34046e95a988ce7d4a0fc2f1eba7a34fd941",
+          "md5": "9cf4143c7161e65c01b87c8ba287cbde"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseJavaDocPublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "memory-type-native-3.7.0-javadoc.jar",
+          "url": "memory-type-native-3.7.0-javadoc.jar",
+          "size": 261,
+          "sha512": "1487e5a20c9e4d74f298e07c42e96a61be11b7a768c3fbc199ee138cd68e1fc2267d1cfe3f11f288acc05df755315344d052cc5f6f751f126ab4fe1caa5125ea",
+          "sha256": "c6deada2fac53b8ea6523dbda77597b128006674616f140f04df23264c6d1aa3",
+          "sha1": "2ad14aed781c4a73ed4dbb421966d408a0a06686",
+          "md5": "f43436d6bec321290f6af228ad602604"
+        }
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import {
   ConsultantAuthError,
   isDevelopmentPhoneAuthEnabled,
   readStoredConsultantSession,
+  resolvePetipyMobileAuthMode,
   signInDevelopmentConsultant,
   type ConsultantMobileSession,
 } from '@/lib/consultant-auth';
@@ -18,6 +19,7 @@ import {
   type PushSetupState,
 } from '@/lib/push-notifications';
 import { stopAvailabilityService } from '@/lib/background-monitor';
+import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import { useQueryClient } from '@tanstack/react-query';
 import React, {
@@ -96,9 +98,13 @@ export function ConsultantSessionProvider({
   const [pushSetupMessage, setPushSetupMessage] = useState<string | null>(null);
   const [pushSetupAttempt, setPushSetupAttempt] = useState(0);
 
+  const configuredAuthMode = resolvePetipyMobileAuthMode(
+    process.env.EXPO_PUBLIC_PETIPY_AUTH_MODE,
+    Constants.expoConfig?.extra?.petipyAuthMode,
+  );
   const devAuthAvailable =
     Platform.OS !== 'web' &&
-    isDevelopmentPhoneAuthEnabled() &&
+    isDevelopmentPhoneAuthEnabled(configuredAuthMode) &&
     !devAuthUnavailable;
 
   const expireSession = useCallback(async () => {

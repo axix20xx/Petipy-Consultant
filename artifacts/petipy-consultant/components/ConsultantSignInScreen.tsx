@@ -250,9 +250,7 @@ export default function ConsultantSignInScreen() {
         ) : null}
         {!devAuthAvailable && state !== 'auth-unavailable' ? (
           <Text style={[styles.footer, { color: colors.mutedForeground }]}>
-            فرم آزمایشی فقط در بیلد توسعه با
-            {' EXPO_PUBLIC_PETIPY_AUTH_MODE=development '}
-            و وقتی حالت توسعه‌ی Petipy فعال است نمایش داده می‌شود.
+            فرم آزمایشی فقط وقتی حالت توسعه‌ی احراز هویت Petipy فعال باشد نمایش داده می‌شود.
           </Text>
         ) : null}
       </KeyboardAwareScrollViewCompat>

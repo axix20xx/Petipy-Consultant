@@ -1,0 +1,256 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.facebook.fresco",
+    "module": "animated-base",
+    "version": "3.7.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.7"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "com.facebook.fresco",
+          "module": "fbcore",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline-base",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline-native",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "memory-type-ashmem",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "memory-type-native",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "memory-type-java",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "animated-drawable",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "animated-base-3.7.0.aar",
+          "url": "animated-base-3.7.0.aar",
+          "size": 66902,
+          "sha512": "65eaeae06687668bb3a98c3224338847226ed3ea633aaa49b875c59cec31cabca39d9c4b7f8051c2482099141519648efe10bd9b86a90bdc8280c0fd92c88360",
+          "sha256": "1f6ef781a85131b49b9c6869a63aba654adae335d5b22e7bd4fe39d9c7ff17f7",
+          "sha1": "22ec006bce074eed5eb238b89c5efd26fe6e6a51",
+          "md5": "2b48e0acffc45f7ce91fb413c613c51d"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.parse.bolts",
+          "module": "bolts-tasks",
+          "version": {
+            "requires": "1.4.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "vito-core",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "vito-options",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "middleware",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "fbcore",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline-base",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline-native",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "memory-type-ashmem",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "memory-type-native",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "memory-type-java",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "animated-drawable",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "animated-base-3.7.0.aar",
+          "url": "animated-base-3.7.0.aar",
+          "size": 66902,
+          "sha512": "65eaeae06687668bb3a98c3224338847226ed3ea633aaa49b875c59cec31cabca39d9c4b7f8051c2482099141519648efe10bd9b86a90bdc8280c0fd92c88360",
+          "sha256": "1f6ef781a85131b49b9c6869a63aba654adae335d5b22e7bd4fe39d9c7ff17f7",
+          "sha1": "22ec006bce074eed5eb238b89c5efd26fe6e6a51",
+          "md5": "2b48e0acffc45f7ce91fb413c613c51d"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "animated-base-3.7.0-sources.jar",
+          "url": "animated-base-3.7.0-sources.jar",
+          "size": 39301,
+          "sha512": "2fa724a149996acf700345be919edb102976426b0def6c9a898e436ef3c94952c0faa24d69febfa4558239765188b8edb7ba20277fc67fff65f3c68b82b93606",
+          "sha256": "efaae54e681658505f7624dfe939cd4698b65214a2bfb6f1ae5a665ff96d19b3",
+          "sha1": "3c7adb5faba56766fde33d0811d8187bec67b439",
+          "md5": "21e6308e3e2b8716a6610a9a364a0259"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseJavaDocPublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "animated-base-3.7.0-javadoc.jar",
+          "url": "animated-base-3.7.0-javadoc.jar",
+          "size": 261,
+          "sha512": "1487e5a20c9e4d74f298e07c42e96a61be11b7a768c3fbc199ee138cd68e1fc2267d1cfe3f11f288acc05df755315344d052cc5f6f751f126ab4fe1caa5125ea",
+          "sha256": "c6deada2fac53b8ea6523dbda77597b128006674616f140f04df23264c6d1aa3",
+          "sha1": "2ad14aed781c4a73ed4dbb421966d408a0a06686",
+          "md5": "f43436d6bec321290f6af228ad602604"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+com.facebook.animated.giflite.GifDecoder
+com.facebook.animated.giflite.decoder.GifMetadataDecoder
+com.facebook.animated.giflite.draw.MovieAnimatedImage
+com.facebook.animated.giflite.draw.MovieDrawer
+com.facebook.animated.giflite.draw.MovieFrame
+com.facebook.animated.giflite.draw.MovieScaleHolder
+com.facebook.animated.giflite.drawable.GifAnimationBackend
+com.facebook.animated.giflite.drawable.GifAnimationBackend$Companion

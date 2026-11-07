@@ -1,0 +1,2 @@
+com.github.penfeizhou.animation.glide
+string app_name

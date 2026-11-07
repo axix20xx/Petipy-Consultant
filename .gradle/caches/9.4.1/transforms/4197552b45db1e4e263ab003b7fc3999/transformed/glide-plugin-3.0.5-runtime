@@ -1,0 +1,13 @@
+com.bumptech.glide.annotation.compiler.GlideIndexer_GlideModule_com_github_penfeizhou_animation_glide_GlideAnimationModule
+com.github.penfeizhou.animation.glide.AnimationDecoderOption
+com.github.penfeizhou.animation.glide.ByteBufferAnimationDecoder
+com.github.penfeizhou.animation.glide.ByteBufferAnimationDecoder$1
+com.github.penfeizhou.animation.glide.ByteBufferAnimationDecoder$FrameSeqDecoderResource
+com.github.penfeizhou.animation.glide.FrameBitmapTranscoder
+com.github.penfeizhou.animation.glide.FrameDrawableTranscoder
+com.github.penfeizhou.animation.glide.FrameDrawableTranscoder$1
+com.github.penfeizhou.animation.glide.FrameDrawableTranscoder$2
+com.github.penfeizhou.animation.glide.FrameDrawableTranscoder$3
+com.github.penfeizhou.animation.glide.FrameDrawableTranscoder$4
+com.github.penfeizhou.animation.glide.GlideAnimationModule
+com.github.penfeizhou.animation.glide.StreamAnimationDecoder

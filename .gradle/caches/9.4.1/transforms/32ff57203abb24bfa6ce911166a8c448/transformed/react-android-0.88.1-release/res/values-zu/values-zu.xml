@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string gender="unknown" name="alert_description">Isexwayiso</string>
+    <string gender="unknown" name="image_description">Isithombe</string>
+    <string gender="unknown" name="imagebutton_description">Inkinobho, Isithombe</string>
+    <string gender="unknown" name="menu_description">Imenyu</string>
+    <string gender="unknown" name="menuitem_description">Into Yemenyu</string>
+    <string gender="unknown" name="rn_tab_description">Ithebhu</string>
+    <string gender="unknown" name="scrollbar_description">Ibha Lokuskrola</string>
+    <string gender="unknown" name="state_collapsed_description">ihlukanisiwe</string>
+    <string gender="unknown" name="state_expanded_description">kwandisiwe</string>
+    <string gender="unknown" name="state_off_description">kuvaliwe</string>
+    <string gender="unknown" name="state_unselected_description">okungakhethwanga</string>
+    <string gender="unknown" name="timer_description">Isibali-sikhathi</string>
+</resources>

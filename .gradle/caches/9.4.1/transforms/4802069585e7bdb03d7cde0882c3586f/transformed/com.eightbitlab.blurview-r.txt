@@ -1,0 +1,4 @@
+com.eightbitlab.blurview
+attr blurOverlayColor
+drawable blue_noise
+styleable BlurView blurOverlayColor

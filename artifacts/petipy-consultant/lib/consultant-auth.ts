@@ -53,6 +53,14 @@ export class ConsultantAuthError extends Error {
   }
 }
 
+export function resolvePetipyMobileAuthMode(
+  environmentMode: string | undefined,
+  bundledMode: unknown,
+) {
+  if (environmentMode) return environmentMode;
+  return typeof bundledMode === 'string' ? bundledMode : undefined;
+}
+
 export function isDevelopmentPhoneAuthEnabled(
   authMode = process.env.EXPO_PUBLIC_PETIPY_AUTH_MODE,
 ) {

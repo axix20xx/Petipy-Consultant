@@ -1,0 +1,2 @@
+com.github.penfeizhou.animation.avif
+string app_name

@@ -1,0 +1,172 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.facebook.fresco",
+    "module": "nativeimagefilters",
+    "version": "3.7.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.7"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "nativeimagefilters-3.7.0.aar",
+          "url": "nativeimagefilters-3.7.0.aar",
+          "size": 367413,
+          "sha512": "1d506617597cf98ba01b331705fd6eb20d402015d948831c8092ad4acaec4a6cc106640ac981abcd3a8885b321716ce99cb0b64bff62cfd27d67759e96379f9e",
+          "sha256": "7e999f857e532f4520a82a1410e4f23f14a7edb2e2ac38d01cb5c31fed5cf446",
+          "sha1": "846cc93807b0a3361e91afd3a6f05c39bd6283d9",
+          "md5": "aebac511434e1fb661aee4bc303a519a"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline-native",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "memory-type-ashmem",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "memory-type-native",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "memory-type-java",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.soloader",
+          "module": "nativeloader",
+          "version": {
+            "requires": "0.11.0"
+          }
+        },
+        {
+          "group": "com.parse.bolts",
+          "module": "bolts-tasks",
+          "version": {
+            "requires": "1.4.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "fbcore",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "nativeimagefilters-3.7.0.aar",
+          "url": "nativeimagefilters-3.7.0.aar",
+          "size": 367413,
+          "sha512": "1d506617597cf98ba01b331705fd6eb20d402015d948831c8092ad4acaec4a6cc106640ac981abcd3a8885b321716ce99cb0b64bff62cfd27d67759e96379f9e",
+          "sha256": "7e999f857e532f4520a82a1410e4f23f14a7edb2e2ac38d01cb5c31fed5cf446",
+          "sha1": "846cc93807b0a3361e91afd3a6f05c39bd6283d9",
+          "md5": "aebac511434e1fb661aee4bc303a519a"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "nativeimagefilters-3.7.0-sources.jar",
+          "url": "nativeimagefilters-3.7.0-sources.jar",
+          "size": 6553,
+          "sha512": "b276b7be9f2bc2c8c709fd3ccf86c5c687a5f98a1c88f297580356dc27654d104f1758e4846008b16a9a32fc793d8b9fb1503537f373c2df02b3ff20fc1cecb8",
+          "sha256": "6c16d47743d3adc36340ce2a0a4bb5776346c4178d7d66184ff9d29678c6ac4d",
+          "sha1": "4a43631bad950dceeefd58a359452d85252a9879",
+          "md5": "545d31c6c909da7a977d09799b9cc16a"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseJavaDocPublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "nativeimagefilters-3.7.0-javadoc.jar",
+          "url": "nativeimagefilters-3.7.0-javadoc.jar",
+          "size": 261,
+          "sha512": "1487e5a20c9e4d74f298e07c42e96a61be11b7a768c3fbc199ee138cd68e1fc2267d1cfe3f11f288acc05df755315344d052cc5f6f751f126ab4fe1caa5125ea",
+          "sha256": "c6deada2fac53b8ea6523dbda77597b128006674616f140f04df23264c6d1aa3",
+          "sha1": "2ad14aed781c4a73ed4dbb421966d408a0a06686",
+          "md5": "f43436d6bec321290f6af228ad602604"
+        }
+      ]
+    }
+  ]
+}

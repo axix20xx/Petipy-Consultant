@@ -98,3 +98,17 @@ mtime_ms = 1794068783222
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/b8321b1c-fa89-4aee-a01e-cb14767b09e1/42ae8f69-d422-4713-b648-20f393ac21fe"
 storage_version_token = "1794068893022074"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "lHXpUTTF34AIOHi__wnVi"
+uri = "file://artifacts/petipy-consultant/android/app/build/outputs/apk/release/app-release.apk"
+type = "unspecified"
+title = "Petipy Consultant APK — development OTP enabled"
+description = "Updated ARM64 APK. Development OTP mode is embedded in the Expo app config so the sign-in form is available in the installed build. R8 minification remains disabled for startup diagnosis."
+logical_id = "09abe92b-974c-44fa-a6ab-395cfc4615ee"
+content_hash = "sha256:9b1a82555b6f78988af3369e28b8f8ab86b9663e52810a6d4aa204be4840bd80"
+size = 62329656
+mtime_ms = 1794076881078
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/09abe92b-974c-44fa-a6ab-395cfc4615ee/45e1fe97-007a-46cd-b221-f7ef58b52ddd"
+storage_version_token = "1794076996334984"
+content_type = "application/octet-stream"

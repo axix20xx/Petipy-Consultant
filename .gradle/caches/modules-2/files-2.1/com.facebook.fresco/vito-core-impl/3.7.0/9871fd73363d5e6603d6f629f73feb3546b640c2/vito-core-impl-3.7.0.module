@@ -1,0 +1,207 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.facebook.fresco",
+    "module": "vito-core-impl",
+    "version": "3.7.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.7"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "vito-core-impl-3.7.0.aar",
+          "url": "vito-core-impl-3.7.0.aar",
+          "size": 73122,
+          "sha512": "3b8ba25c21fd310613e8826fd2946d58abae5efd6a5e3bb3addc0dd30e3a9074a6f40f7c1c7cf82fc4089b58944b26652c65cac2456ad0e679064e2b7aa54f39",
+          "sha256": "05fc4cb1f70e82da8387f5f08a2f52326b844e54c8f868077a6b621c2beb11e6",
+          "sha1": "4de042cae7203a44a7f650d31c733c73fbcb0a30",
+          "md5": "73bcb7d9438c9ae48087e47d74ff2dc8"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.facebook.fresco",
+          "module": "drawee",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "fresco",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "fbcore",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "imagepipeline-base",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "middleware",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "ui-common",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "urimod",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "vito-core",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "vito-core-common-impl",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "vito-options",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "vito-source",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "com.facebook.fresco",
+          "module": "vito-renderer",
+          "version": {
+            "requires": "3.7.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "vito-core-impl-3.7.0.aar",
+          "url": "vito-core-impl-3.7.0.aar",
+          "size": 73122,
+          "sha512": "3b8ba25c21fd310613e8826fd2946d58abae5efd6a5e3bb3addc0dd30e3a9074a6f40f7c1c7cf82fc4089b58944b26652c65cac2456ad0e679064e2b7aa54f39",
+          "sha256": "05fc4cb1f70e82da8387f5f08a2f52326b844e54c8f868077a6b621c2beb11e6",
+          "sha1": "4de042cae7203a44a7f650d31c733c73fbcb0a30",
+          "md5": "73bcb7d9438c9ae48087e47d74ff2dc8"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "vito-core-impl-3.7.0-sources.jar",
+          "url": "vito-core-impl-3.7.0-sources.jar",
+          "size": 24820,
+          "sha512": "9a2edcce532c9a508981e88242cdac67349b9685807f506956f216c244b7cade5ba4e7ccc4f26a629a838b02fd10b81f1a14e5372b39c3730547773710e2e32b",
+          "sha256": "d8ee5b313c197c3c8ebad02830208959c111389d23a995c65efc9b79d3936d4d",
+          "sha1": "cdf30a9a50b6d9f7f419e336df0dbc4d70a49c62",
+          "md5": "b8ed19853a7dad49e31346d37c82f606"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseJavaDocPublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "vito-core-impl-3.7.0-javadoc.jar",
+          "url": "vito-core-impl-3.7.0-javadoc.jar",
+          "size": 261,
+          "sha512": "1487e5a20c9e4d74f298e07c42e96a61be11b7a768c3fbc199ee138cd68e1fc2267d1cfe3f11f288acc05df755315344d052cc5f6f751f126ab4fe1caa5125ea",
+          "sha256": "c6deada2fac53b8ea6523dbda77597b128006674616f140f04df23264c6d1aa3",
+          "sha1": "2ad14aed781c4a73ed4dbb421966d408a0a06686",
+          "md5": "f43436d6bec321290f6af228ad602604"
+        }
+      ]
+    }
+  ]
+}

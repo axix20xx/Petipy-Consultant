@@ -7,4 +7,6 @@ Petipy Consultant background calling must not use Google FCM. The current Petipy
 
 **Why:** The user wants call alerts while the consultant app is in the background but explicitly excludes FCM; the API has no incoming-call push contract.
 
-**How to apply:** Keep delivery on authenticated Petipy-supported or self-hosted paths, do not invent push endpoints, and explain polling delay, force-stop, and battery limits plainly.
+For the incoming call screen, use an Android full-screen notification intent with `USE_FULL_SCREEN_INTENT`. Android 14+ users can disable that special access, and Android may show only a heads-up alert while they are actively using the device.
+
+**How to apply:** Keep delivery on authenticated Petipy-supported or self-hosted paths, do not invent push endpoints, and explain polling delay, force-stop, battery, and full-screen notification permission limits plainly.

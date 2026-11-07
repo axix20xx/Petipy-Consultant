@@ -19,6 +19,7 @@ module.exports = function withPetipyForegroundService(config) {
     for (const permission of [
       'android.permission.FOREGROUND_SERVICE',
       'android.permission.FOREGROUND_SERVICE_MICROPHONE',
+      'android.permission.USE_FULL_SCREEN_INTENT',
       'android.permission.POST_NOTIFICATIONS',
       'android.permission.RECORD_AUDIO',
       'android.permission.WAKE_LOCK',
@@ -46,6 +47,15 @@ module.exports = function withPetipyForegroundService(config) {
         },
       });
     }
+
+    const mainActivity = (app.activity ?? []).find((entry) =>
+      entry.$?.['android:name']?.endsWith('.MainActivity'),
+    );
+    if (!mainActivity) {
+      throw new Error('Petipy Android main activity is missing.');
+    }
+    mainActivity.$['android:showWhenLocked'] = 'true';
+    mainActivity.$['android:turnScreenOn'] = 'true';
 
     return mod;
   });

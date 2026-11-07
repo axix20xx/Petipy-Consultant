@@ -7,6 +7,7 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -158,6 +159,33 @@ export default function SettingsScreen() {
             detail="وقتی آنلاین هستید، سرویس foreground با اعلان دائمی درخواست‌ها را بررسی می‌کند."
             color={colors.primary}
           />
+          <InfoRow
+            icon="phone-portrait-outline"
+            title="نمایش صفحه‌ی تماس"
+            detail="برای تمام‌صفحه‌شدن در Android 14+، دسترسی Full-screen notifications را در Special app access فعال کنید. هنگام استفاده از گوشی ممکن است Android فقط بنر تماس نشان دهد."
+            color={colors.primary}
+          />
+          {Platform.OS === 'android' ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                void Linking.openSettings().catch(() =>
+                  Alert.alert('تنظیمات باز نشد', 'تنظیمات Petipy را از اطلاعات برنامه باز کنید.'),
+                );
+              }}
+              style={styles.infoRow}
+              testID="open-android-app-settings"
+            >
+              <View style={[styles.rowIcon, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="settings-outline" size={19} color={colors.primary} />
+              </View>
+              <View style={styles.rowCopy}>
+                <Text style={[styles.rowTitle, { color: colors.primary }]}>
+                  باز کردن تنظیمات برنامه
+                </Text>
+              </View>
+            </Pressable>
+          ) : null}
           <InfoRow
             icon="battery-half-outline"
             title="محدودیت باتری را بردارید"

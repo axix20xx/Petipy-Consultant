@@ -29,7 +29,9 @@ function RootLayoutNav() {
   const router = useRouter();
 
   useEffect(() => {
-    return onIncomingCallNotificationOpen(() => router.replace('/(tabs)'));
+    return onIncomingCallNotificationOpen((callId) =>
+      router.replace(`/incoming-call/${encodeURIComponent(callId)}`),
+    );
   }, [router]);
 
   return (
@@ -37,6 +39,10 @@ function RootLayoutNav() {
       <Stack.Screen name="index" />
       <Stack.Screen name="sign-in" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen
+        name="incoming-call/[id]"
+        options={{ presentation: 'fullScreenModal', gestureEnabled: false }}
+      />
       <Stack.Screen
         name="call/[id]"
         options={{ presentation: 'fullScreenModal', gestureEnabled: false }}

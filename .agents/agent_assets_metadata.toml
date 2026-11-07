@@ -70,3 +70,17 @@ mtime_ms = 1794063031164
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/665e8bff-e08c-4e14-a6e6-9c5840b90082/017b568d-ee6b-4364-8ee6-30000a6f348c"
 storage_version_token = "1794063066347371"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "XijXIo21rZ8RDSHqnzjTJ"
+uri = "file://generated-artifacts/petipy-consultant-dev-fullscreen-call-arm64-v8a.apk"
+type = "unspecified"
+title = "Petipy Consultant — Full-Screen Call APK"
+description = "ARM64 sideload build with full-screen incoming-call intent and a dedicated Persian accept-call screen. Development OTP enabled; debug-signed; no FCM."
+logical_id = "e74dfa96-208a-42f2-9ce4-65d33a74d5c6"
+content_hash = "sha256:34f1018afe20dab876143f97717d4c422e616bc1b815b519d5462dda23ba6991"
+size = 60805878
+mtime_ms = 1794064211630
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/e74dfa96-208a-42f2-9ce4-65d33a74d5c6/ff4f66a1-3018-4780-834d-d2308aaf06ca"
+storage_version_token = "1794064228740066"
+content_type = "application/octet-stream"

@@ -3,6 +3,7 @@ import notifee, {
   AndroidImportance,
   AndroidVisibility,
   EventType,
+  type Notification,
 } from '@notifee/react-native';
 import InCallManager from 'react-native-incall-manager';
 import { Platform } from 'react-native';
@@ -41,8 +42,10 @@ export async function notifyIncomingCall(callId: string) {
       visibility: AndroidVisibility.PUBLIC,
       smallIcon: 'ic_launcher',
       color: '#6b3fe1',
+      lightUpScreen: true,
       autoCancel: true,
       pressAction: { id: 'default' },
+      fullScreenAction: { id: 'incoming-call' },
     },
   });
 }
@@ -86,8 +89,21 @@ export function stopIncomingCallRingtone() {
   }
 }
 
-export function onIncomingCallNotificationOpen(onOpen: () => void) {
+export function onIncomingCallNotificationOpen(
+  onOpen: (callId: string) => void,
+) {
   if (Platform.OS !== 'android') return () => {};
+
+  const openIncomingCall = (data?: Notification['data']) => {
+    if (
+      data?.type !== 'incoming-call' ||
+      typeof data.callId !== 'string' ||
+      !data.callId
+    ) {
+      return;
+    }
+    onOpen(data.callId);
+  };
 
   const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
     if (
@@ -95,15 +111,15 @@ export function onIncomingCallNotificationOpen(onOpen: () => void) {
       detail.notification?.data?.type === 'incoming-call'
     ) {
       const id = detail.notification.id;
-      if (id) void notifee.cancelNotification(id);
-      onOpen();
+      if (id) void notifee.cancelNotification(id).catch(() => {});
+      openIncomingCall(detail.notification.data);
     }
   });
 
   void notifee
     .getInitialNotification()
     .then((initial) => {
-      if (initial?.notification.data?.type === 'incoming-call') onOpen();
+      openIncomingCall(initial?.notification.data);
     })
     .catch(() => {});
 

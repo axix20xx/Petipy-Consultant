@@ -11,4 +11,8 @@ For the incoming call screen, use an Android full-screen notification intent wit
 
 **Why:** Android documents this unlocked-versus-locked behavior for full-screen intents; a minimized app on an unlocked phone is expected to show heads-up, not launch an activity.
 
-**How to apply:** Register/refresh/revoke the installation's FCM token through Petipy's existing routes. Require data-only high-priority call signals, verify them via the API queue, and explain physical-device testing, polling fallback, force-stop, battery, and full-screen permission limits plainly. Test full-screen behavior with the device locked or screen-off.
+Android notification-channel importance is fixed once a channel is created. Reusing an old channel ID does not repair a channel that was created with low importance or later changed by the user; use a new versioned ID when the channel configuration must be reset.
+
+**Why:** Multiple installed APK iterations can leave the device's original channel configuration in force even when the app code now requests high importance.
+
+**How to apply:** Register/refresh/revoke the installation's FCM token through Petipy's existing routes. Require data-only high-priority call signals, verify them via the API queue, and explain physical-device testing, polling fallback, force-stop, battery, and full-screen permission limits plainly. Test full-screen behavior with the device locked or screen-off. When fixing stale channel importance, create a new channel ID and ensure the notification uses it.

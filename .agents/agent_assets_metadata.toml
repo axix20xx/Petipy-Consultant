@@ -14,3 +14,17 @@ mtime_ms = 1794055927173
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/f30e4798-f317-429c-bc7f-54f2f5b0b932/30d5eb78-56d3-40c4-9530-5a87343a779f"
 storage_version_token = "1794055948672949"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "I6bV9oldvZRX3obqIXgBt"
+uri = "file://generated-artifacts/petipy-consultant-auth-arm64-v8a.apk"
+type = "unspecified"
+title = "Petipy Consultant Android APK"
+description = "Arm64 release APK for sideload testing. Debug-signed; built in live-auth mode, so mobile sign-in remains unavailable until Petipy provides a live token-exchange flow."
+logical_id = "3f8e8c26-07f0-401b-99cc-90365a4a8edf"
+content_hash = "sha256:b868487fb690339c5a54e76413de9a92b4c16edec3c425dbaa72cb235e503fd5"
+size = 60291609
+mtime_ms = 1794058942933
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/3f8e8c26-07f0-401b-99cc-90365a4a8edf/dac48710-86fb-456e-891f-7a5abb1c3832"
+storage_version_token = "1794058970155450"
+content_type = "application/octet-stream"

@@ -1,3 +1,3 @@
-- [Petipy consultant auth and rejection](petipy-consultant-auth-rejection.md) — development OTP cannot authenticate VOICE_CONSULTANT, and no consultant reject endpoint exists yet.
+- [Petipy consultant auth and rejection](petipy-consultant-auth-rejection.md) — dev auth may issue consultant tokens only when enabled; live auth stays disabled and no reject endpoint exists.
 - [Petipy Android builds](petipy-android-build.md) — Expo 58 needs API 37, Build Tools 37, and NDK 27; use workspace Gradle storage and one worker in constrained builds.
 - [Petipy call media contracts](petipy-consultant-media.md) — use real API contracts; receive customer video only, and never mock chat/files or invent endpoints.

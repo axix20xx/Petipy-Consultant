@@ -1,11 +1,19 @@
 import { useColors } from '@/hooks/useColors';
+import { SessionLoadingScreen } from '@/components/ConsultantSignInScreen';
+import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { Platform, StyleSheet } from 'react-native';
 
 export default function TabLayout() {
   const colors = useColors();
+  const { state, activeCall } = useConsultantSession();
   const isWeb = Platform.OS === 'web';
+
+  if (state === 'loading') return <SessionLoadingScreen />;
+  if (state !== 'connected' && !activeCall) {
+    return <Redirect href="/sign-in" />;
+  }
 
   return (
     <Tabs

@@ -4,7 +4,7 @@ import { VoiceCallClient } from '@/lib/voice-call';
 import { useConsultantSession } from '@/providers/consultant-session';
 import RemoteVideo from '@/components/RemoteVideo';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import type { MediaStream } from 'react-native-webrtc';
 import {
@@ -203,6 +203,8 @@ export default function ConsultantCallScreen() {
     clientRef.current?.setSpeaker(next);
     setSpeaker(next);
   }
+
+  if (!token && !activeCall) return <Redirect href="/sign-in" />;
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>

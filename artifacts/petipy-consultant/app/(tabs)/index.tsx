@@ -44,6 +44,7 @@ export default function ConsultantHome() {
   const queryClient = useQueryClient();
   const {
     token,
+    tokenExpiresAt,
     profile,
     state: sessionState,
     message: sessionMessage,
@@ -80,7 +81,13 @@ export default function ConsultantHome() {
     ) ?? 0;
 
   useEffect(() => {
-    if (!isConnected || !isAvailable || !token || Platform.OS !== 'android') {
+    if (
+      !isConnected ||
+      !isAvailable ||
+      !token ||
+      !tokenExpiresAt ||
+      Platform.OS !== 'android'
+    ) {
       return;
     }
     let cancelled = false;
@@ -93,7 +100,7 @@ export default function ConsultantHome() {
             'برای دریافت تماس در پس‌زمینه، مجوز میکروفون و اعلان لازم است.',
           );
         }
-        await startAvailabilityService(token);
+        await startAvailabilityService(token, tokenExpiresAt);
       } catch (error) {
         await stopAvailabilityService();
         try {
@@ -115,7 +122,7 @@ export default function ConsultantHome() {
     return () => {
       cancelled = true;
     };
-  }, [isConnected, isAvailable, token, refresh]);
+  }, [isConnected, isAvailable, token, tokenExpiresAt, refresh]);
 
   async function requestMicrophone() {
     if (Platform.OS !== 'android') return true;
@@ -132,7 +139,7 @@ export default function ConsultantHome() {
   }
 
   async function updateAvailability(next: boolean) {
-    if (!token || availabilityBusy) return;
+    if (!token || !tokenExpiresAt || availabilityBusy) return;
     setAvailabilityBusy(true);
     try {
       if (next) {
@@ -157,7 +164,7 @@ export default function ConsultantHome() {
       await setConsultantAvailability(token, next ? 'online' : 'offline');
       if (next) {
         try {
-          await startAvailabilityService(token);
+          await startAvailabilityService(token, tokenExpiresAt);
         } catch (error) {
           await setConsultantAvailability(token, 'offline');
           const message =

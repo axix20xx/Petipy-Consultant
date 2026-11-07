@@ -5,7 +5,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { ConsultantSessionProvider } from '@/providers/consultant-session';
+import {
+  ConsultantSessionProvider,
+} from '@/providers/consultant-session';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -25,6 +27,8 @@ const queryClient = new QueryClient();
 function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false, headerBackTitle: 'بازگشت' }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="sign-in" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen
         name="call/[id]"

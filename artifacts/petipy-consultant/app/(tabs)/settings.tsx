@@ -65,9 +65,16 @@ export default function SettingsScreen() {
         'وضعیت سرور تأیید نشد',
         'سرویس تماس روی دستگاه متوقف می‌شود؛ وضعیت آنلاین حساب ممکن است تا به‌روزرسانی بعدی باقی بماند.',
       );
-    } finally {
-      await stopAvailabilityService();
+    }
+    try {
       await disconnect();
+    } catch {
+      Alert.alert(
+        'خروج امن انجام نشد',
+        'نشست امن پاک نشد یا سرویس تماس متوقف نشد. دوباره تلاش کنید.',
+      );
+    } finally {
+      await stopAvailabilityService().catch(() => undefined);
       setSigningOut(false);
     }
   }

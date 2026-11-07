@@ -52,6 +52,8 @@ type SessionContextValue = {
 
 const LIVE_AUTH_MESSAGE =
   'ورود موبایلی زنده هنوز به Petipy متصل نیست. ورود آزمایشی فقط با فعال‌بودن حالت توسعه‌ی احراز هویت شماره‌موبایل در دسترس است.';
+const WEB_AUTH_MESSAGE =
+  'ورود آزمایشی با کد فقط در برنامه‌ی بومی Expo روی Android در دسترس است؛ پیش‌نمایش وب نشست امن موبایل را پشتیبانی نمی‌کند.';
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
@@ -150,7 +152,7 @@ export function ConsultantSessionProvider({
   const restoreSession = useCallback(async () => {
     if (Platform.OS === 'web') {
       setState('auth-unavailable');
-      setMessage(LIVE_AUTH_MESSAGE);
+      setMessage(WEB_AUTH_MESSAGE);
       return;
     }
     setState('loading');

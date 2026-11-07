@@ -28,3 +28,17 @@ mtime_ms = 1794058942933
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/3f8e8c26-07f0-401b-99cc-90365a4a8edf/dac48710-86fb-456e-891f-7a5abb1c3832"
 storage_version_token = "1794058970155450"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "ooFIbJTcYWdT5eePT3iaW"
+uri = "file://generated-artifacts/petipy-consultant-dev-auth-arm64-v8a.apk"
+type = "unspecified"
+title = "Petipy Consultant — Development OTP APK"
+description = "Arm64 sideload build with the development OTP sign-in enabled. Debug-signed for testing only; the Petipy API must also have development phone auth enabled."
+logical_id = "e3d189b4-aba6-4762-a8b9-c6fc92efa6ee"
+content_hash = "sha256:f1ca971555ef00cd815690fa3217654636f9a37a6832c9adc5b10feac71efbe0"
+size = 60291609
+mtime_ms = 1794060720694
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/e3d189b4-aba6-4762-a8b9-c6fc92efa6ee/2faa7959-9801-4da6-a55e-9f121659a4c4"
+storage_version_token = "1794060738133974"
+content_type = "application/octet-stream"

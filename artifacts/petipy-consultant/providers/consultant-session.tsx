@@ -31,7 +31,6 @@ type SessionContextValue = {
   activeCall: CallSession | null;
   state: SessionState;
   message: string | null;
-  connect: (token: string) => Promise<void>;
   disconnect: () => Promise<void>;
   refresh: () => Promise<void>;
   setActiveCall: (call: CallSession | null) => void;
@@ -83,7 +82,7 @@ export function ConsultantSessionProvider({
       if (Platform.OS === 'web') {
         if (active) {
           setState('signed-out');
-          setMessage('برای ورود امن، از نسخه‌ی Android استفاده کنید.');
+          setMessage('ورود رسمی Petipy هنوز به این برنامه متصل نشده است.');
         }
         return;
       }
@@ -106,23 +105,6 @@ export function ConsultantSessionProvider({
       active = false;
     };
   }, [verify]);
-
-  const connect = useCallback(
-    async (candidate: string) => {
-      if (Platform.OS === 'web') {
-        setState('error');
-        setMessage('ورود امن فقط در نسخه‌ی Android پشتیبانی می‌شود.');
-        return;
-      }
-      const valid = await verify(candidate.trim());
-      if (valid) {
-        await SecureStore.setItemAsync(SESSION_KEY, candidate.trim(), {
-          keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-        });
-      }
-    },
-    [verify],
-  );
 
   const disconnect = useCallback(async () => {
     if (Platform.OS !== 'web') await SecureStore.deleteItemAsync(SESSION_KEY);
@@ -148,12 +130,11 @@ export function ConsultantSessionProvider({
       activeCall,
       state,
       message,
-      connect,
       disconnect,
       refresh,
       setActiveCall,
     }),
-    [token, profile, activeCall, state, message, connect, disconnect, refresh],
+    [token, profile, activeCall, state, message, disconnect, refresh],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

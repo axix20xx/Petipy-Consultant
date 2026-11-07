@@ -12,11 +12,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as WebBrowser from 'expo-web-browser';
 
 function InfoRow({
   icon,
@@ -50,28 +48,10 @@ export default function SettingsScreen() {
     profile,
     state,
     message,
-    connect,
     disconnect,
   } = useConsultantSession();
-  const [tokenDraft, setTokenDraft] = useState('');
-  const [connecting, setConnecting] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const isConnected = state === 'connected' && Boolean(token);
-
-  async function connectAccount() {
-    if (!tokenDraft.trim() || connecting) return;
-    if (Platform.OS === 'web') {
-      Alert.alert('نسخه‌ی Android لازم است', 'توکن فقط در SecureStore دستگاه ذخیره می‌شود.');
-      return;
-    }
-    setConnecting(true);
-    try {
-      await connect(tokenDraft.trim());
-      setTokenDraft('');
-    } finally {
-      setConnecting(false);
-    }
-  }
 
   async function signOut() {
     if (signingOut) return;
@@ -139,78 +119,22 @@ export default function SettingsScreen() {
             </>
           ) : (
             <>
-              <Text style={[styles.body, { color: colors.mutedForeground }]}>
-                ورود با نشست تازه‌ی Petipy انجام می‌شود. نشست برنامه‌ی مشتری از اینجا خوانده یا کپی نمی‌شود.
+              <Text style={[styles.body, { color: colors.foreground }]}>
+                ورود Android با ارائه‌دهنده‌ی رسمی Petipy هنوز به این برنامه متصل نشده است.
               </Text>
               <View style={[styles.authNotice, { backgroundColor: colors.accent }]}>
                 <Ionicons name="information-circle-outline" size={17} color={colors.warning} />
                 <Text style={[styles.authNoticeText, { color: colors.accentForeground }]}>
-                  ورود وب فعلی Petipy کوکی وب می‌سازد. تا ارائه‌ی API تبادل نشست برای Android، ورود خودکار کامل نیست؛ فقط توکن تازه‌ی رسمی را وارد کنید، نه توکن برنامه‌ی مشتری.
+                  ورود وب فقط کوکی مرورگر می‌سازد. مسیر OTP توسعه‌ای برای VOICE_CONSULTANT پشتیبانی ندارد؛ تا آماده‌شدن ورود رسمی Android، از OTP توسعه‌ای یا کپی‌کردن توکن استفاده نمی‌شود.
                 </Text>
               </View>
-              <Pressable
-                testID="open-petipy-sign-in"
-                accessibilityRole="link"
-                onPress={() => void WebBrowser.openBrowserAsync('https://petipy.com/sign-in')}
-                style={[styles.secondaryButton, { backgroundColor: colors.secondary }]}
-              >
-                <Ionicons name="open-outline" size={18} color={colors.primary} />
-                <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>
-                  ورود در Petipy
-                </Text>
-              </Pressable>
-              <Text style={[styles.fieldLabel, { color: colors.foreground }]}>
-                توکن API تازه
-              </Text>
-              <TextInput
-                testID="fresh-session-token"
-                value={tokenDraft}
-                onChangeText={setTokenDraft}
-                placeholder="توکن تازه‌ی صادرشده برای حساب مشاور"
-                placeholderTextColor={colors.mutedForeground}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="oneTimeCode"
-                style={[
-                  styles.tokenInput,
-                  {
-                    color: colors.foreground,
-                    backgroundColor: colors.background,
-                    borderColor: colors.border,
-                  },
-                ]}
-                accessibilityLabel="توکن تازه‌ی نشست Petipy"
-              />
               {message ? (
                 <Text accessibilityRole="alert" style={[styles.error, { color: colors.destructive }]}>
                   {message}
                 </Text>
               ) : null}
-              <Pressable
-                testID="connect-petipy"
-                accessibilityRole="button"
-                onPress={() => void connectAccount()}
-                disabled={!tokenDraft.trim() || connecting}
-                style={[
-                  styles.primaryButton,
-                  {
-                    backgroundColor: colors.primary,
-                    opacity: !tokenDraft.trim() || connecting ? 0.55 : 1,
-                  },
-                ]}
-              >
-                {connecting ? (
-                  <ActivityIndicator color={colors.primaryForeground} />
-                ) : (
-                  <Ionicons name="lock-closed-outline" size={18} color={colors.primaryForeground} />
-                )}
-                <Text style={[styles.primaryButtonText, { color: colors.primaryForeground }]}>
-                  تأیید حساب مشاور
-                </Text>
-              </Pressable>
               <Text style={[styles.footnote, { color: colors.mutedForeground }]}>
-                توکن فقط پس از تأیید API در SecureStore دستگاه ذخیره می‌شود؛ هیچ توکنی در URL یا گزارش‌ها قرار نمی‌گیرد.
+                نشست اپ‌های دیگر قابل‌خواندن نیست و به این برنامه منتقل نمی‌شود. ورود فقط پس از فراهم‌شدن مسیر رسمی Android فعال خواهد شد.
               </Text>
             </>
           )}
@@ -278,11 +202,7 @@ const styles = StyleSheet.create({
   body: { textAlign: 'right', fontSize: 12, lineHeight: 21, writingDirection: 'rtl' },
   authNotice: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 8, borderRadius: 13, padding: 11 },
   authNoticeText: { flex: 1, fontSize: 10, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
-  fieldLabel: { textAlign: 'right', fontSize: 12, fontWeight: '700', writingDirection: 'rtl', marginTop: 4 },
-  tokenInput: { minHeight: 47, borderWidth: 1, borderRadius: 14, paddingHorizontal: 12, fontSize: 12, textAlign: 'left' },
   error: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
-  primaryButton: { minHeight: 46, borderRadius: 15, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  primaryButtonText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
   secondaryButton: { minHeight: 42, borderRadius: 14, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 14, alignSelf: 'flex-end' },
   secondaryButtonText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
   statusBadge: { alignSelf: 'flex-end', flexDirection: 'row-reverse', alignItems: 'center', gap: 7, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20 },

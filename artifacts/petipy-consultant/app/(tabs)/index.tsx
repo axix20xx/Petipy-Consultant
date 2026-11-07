@@ -297,7 +297,7 @@ export default function ConsultantHome() {
                   ? 'سرویس تماس در پس‌زمینه فعال می‌ماند'
                   : isConnected
                     ? 'برای دریافت تماس، وضعیت خود را فعال کنید'
-                    : 'پس از ورود امن، وضعیت در دسترس بودن فعال می‌شود'}
+                    : 'پس از اتصال ورود رسمی Petipy فعال می‌شود'}
               </Text>
             </View>
           </View>
@@ -380,7 +380,7 @@ export default function ConsultantHome() {
               ورود مشاور لازم است
             </Text>
             <Text style={[styles.emptyDescription, { color: colors.mutedForeground }]}>
-              پس از ورود با حساب فعال VOICE_CONSULTANT، درخواست‌های واقعی نمایش داده می‌شوند.
+              ورود رسمی Android هنوز متصل نیست؛ صف پس از تأیید حساب VOICE_CONSULTANT نمایش داده می‌شود.
             </Text>
           </View>
         ) : queue.isLoading ? (
@@ -464,7 +464,7 @@ export default function ConsultantHome() {
                     </Text>
                   </Pressable>
                   <View
-                    accessibilityLabel="رد تماس هنوز از API پشتیبانی نشده"
+                    accessibilityLabel="رد تماس در دسترس نیست؛ درخواست تا زمان انقضا در صف می‌ماند"
                     style={[
                       styles.rejectButton,
                       { backgroundColor: colors.muted },
@@ -486,7 +486,7 @@ export default function ConsultantHome() {
                   </View>
                 </View>
                 <Text style={[styles.missingAction, { color: colors.mutedForeground }]}>
-                  مسیر رد تماس در API ارائه نشده است.
+                  رد در API موجود نیست؛ درخواست تا زمان انقضا در صف می‌ماند.
                 </Text>
               </View>
             ))}

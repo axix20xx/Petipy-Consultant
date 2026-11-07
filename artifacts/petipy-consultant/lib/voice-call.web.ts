@@ -1,0 +1,12 @@
+import type { CallSession } from '@/lib/petipy-api';
+import type { VoiceCallCallbacks } from '@/lib/voice-call';
+
+export class VoiceCallClient {
+  async start(_session: CallSession, callbacks: VoiceCallCallbacks) {
+    callbacks.onError('تماس صوتی فقط در برنامه‌ی Android پشتیبانی می‌شود.');
+  }
+
+  setMuted(_muted: boolean) {}
+  setSpeaker(_enabled: boolean) {}
+  close(_sendHangup = false) {}
+}

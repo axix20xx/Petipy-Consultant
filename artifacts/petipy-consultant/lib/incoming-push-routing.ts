@@ -7,10 +7,23 @@ export type IncomingPushRoute = {
 
 export function parseIncomingCallId(data: unknown): string | null {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
-  const callId = (data as Record<string, unknown>).callId;
-  if (typeof callId !== 'string') return null;
-  const normalized = callId.trim();
-  return normalized.length > 0 && normalized.length <= 200 ? normalized : null;
+  const payload = data as Record<string, unknown>;
+  const nestedData =
+    payload.data !== null &&
+    typeof payload.data === 'object' &&
+    !Array.isArray(payload.data)
+      ? (payload.data as Record<string, unknown>)
+      : {};
+
+  for (const source of [payload, nestedData]) {
+    for (const key of ['callId', 'call_id', 'requestId', 'request_id']) {
+      const value = source[key];
+      if (typeof value !== 'string') continue;
+      const normalized = value.trim();
+      if (normalized.length > 0 && normalized.length <= 200) return normalized;
+    }
+  }
+  return null;
 }
 
 export function findActiveIncomingCall(

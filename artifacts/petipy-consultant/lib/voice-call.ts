@@ -11,6 +11,7 @@ import { Platform } from 'react-native';
 export type VoiceCallCallbacks = {
   onStatus: (message: string) => void;
   onConnected: () => void;
+  onDisconnected: () => void;
   onEnded: () => void;
   onError: (message: string) => void;
   onRemoteVideo: (stream: MediaStream | null) => void;
@@ -117,6 +118,7 @@ export class VoiceCallClient {
         );
       } else if (this.peer?.connectionState === 'disconnected') {
         callbacks.onStatus('ارتباط لحظه‌ای قطع شد؛ در حال بازیابی…');
+        callbacks.onDisconnected();
       }
     };
 
@@ -208,7 +210,11 @@ export class VoiceCallClient {
       return;
     }
     if (message.type === 'connected') {
-      this.callbacks?.onConnected();
+      // Signaling confirms the other participant's state, not local media.
+      // The UI only marks the call connected after WebRTC reports it.
+      if (this.peer.connectionState !== 'connected') {
+        this.callbacks?.onStatus('مشتری به تماس پیوست؛ در حال برقراری صدا…');
+      }
       return;
     }
     if (message.type === 'hangup') {

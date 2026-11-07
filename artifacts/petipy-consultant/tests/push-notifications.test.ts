@@ -60,6 +60,12 @@ test('routes incoming calls from notification and full-screen action events', ()
 
 test('only accepts a bounded non-empty callId signal', () => {
   assert.equal(parseIncomingCallId({ callId: ' call-123 ' }), 'call-123');
+  assert.equal(parseIncomingCallId({ call_id: 'call-123' }), 'call-123');
+  assert.equal(parseIncomingCallId({ requestId: 'call-123' }), 'call-123');
+  assert.equal(
+    parseIncomingCallId({ data: { request_id: 'call-123' } }),
+    'call-123',
+  );
   assert.equal(parseIncomingCallId({ callId: '' }), null);
   assert.equal(parseIncomingCallId({ callId: 42 }), null);
   assert.equal(parseIncomingCallId({ callId: 'x'.repeat(201) }), null);

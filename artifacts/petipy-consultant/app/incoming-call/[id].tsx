@@ -7,6 +7,7 @@ import {
   cancelIncomingCallNotification,
   stopIncomingCallRingtone,
 } from '@/lib/incoming-call-alerts';
+import { setAvailabilityCallState } from '@/lib/background-monitor';
 import { findActiveIncomingCall } from '@/lib/incoming-push-routing';
 import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,7 +43,7 @@ export default function IncomingCallScreen() {
     queryKey: ['petipy', 'incoming-requests'],
     queryFn: () => getIncomingCalls(token as string),
     enabled: sessionState === 'connected' && Boolean(token && callId),
-    refetchInterval: 5_000,
+    refetchInterval: 3_000,
     refetchIntervalInBackground: true,
   });
   const call =
@@ -89,6 +90,7 @@ export default function IncomingCallScreen() {
       }
 
       const session = await acceptIncomingCall(token, callId);
+      setAvailabilityCallState(session.callId, 'connecting');
       stopIncomingCallRingtone();
       try {
         await cancelIncomingCallNotification(callId);

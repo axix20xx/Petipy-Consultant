@@ -10,7 +10,55 @@ import {
   stopIncomingCallRingtone,
 } from '@/lib/incoming-call-alerts';
 
-const POLL_INTERVAL_MS = 10_000;
+const POLL_INTERVAL_MS = 5_000;
+type ActiveCallState = 'connecting' | 'connected' | 'reconnecting';
+type ActiveCallNotice = { callId: string; state: ActiveCallState } | null;
+let activeCallNotice: ActiveCallNotice = null;
+
+function getAvailabilityNotification(pendingCount: number) {
+  if (activeCallNotice?.state === 'connected') {
+    return {
+      taskTitle: 'تماس مشاوره متصل است',
+      taskDesc: 'تماس صوتی در حال انجام است؛ برای کنترل تماس برنامه را باز کنید.',
+    };
+  }
+  if (activeCallNotice?.state === 'reconnecting') {
+    return {
+      taskTitle: 'بازیابی تماس مشاوره',
+      taskDesc: 'ارتباط تماس قطع شد؛ در حال تلاش برای اتصال دوباره هستیم.',
+    };
+  }
+  if (activeCallNotice?.state === 'connecting') {
+    return {
+      taskTitle: 'تماس پاسخ داده شد',
+      taskDesc: 'در حال برقراری ارتباط صوتی امن با مشتری…',
+    };
+  }
+  if (pendingCount > 0) {
+    return {
+      taskTitle: `تماس ورودی مشاوره · ${pendingCount}`,
+      taskDesc:
+        pendingCount === 1
+          ? 'یک درخواست تماس دارید؛ برای پاسخ، برنامه را باز کنید.'
+          : `${pendingCount} درخواست تماس دارید؛ برای پاسخ، برنامه را باز کنید.`,
+    };
+  }
+  return {
+    taskTitle: 'پتی پای؛ آماده‌ی تماس',
+    taskDesc: 'در انتظار درخواست مشاوره',
+  };
+}
+
+export function setAvailabilityCallState(
+  callId: string | null,
+  state: ActiveCallState | null,
+) {
+  activeCallNotice = callId && state ? { callId, state } : null;
+  if (Platform.OS === 'android' && BackgroundService.isRunning()) {
+    const notice = getAvailabilityNotification(0);
+    void BackgroundService.updateNotification(notice).catch(() => {});
+  }
+}
 
 async function ensureForegroundNotificationPermission() {
   if (Platform.OS !== 'android') return false;
@@ -103,16 +151,9 @@ async function monitorIncomingCalls(params?: MonitorParams) {
           ringtoneStarted = false;
         }
 
-        await BackgroundService.updateNotification({
-          taskTitle: pendingCalls.length
-            ? `تماس ورودی مشاوره · ${pendingCalls.length}`
-            : 'پتی پای؛ آماده‌ی تماس',
-          taskDesc: pendingCalls.length
-            ? pendingCalls.length === 1
-              ? 'یک درخواست تماس دارید؛ برای پاسخ، برنامه را باز کنید.'
-              : `${pendingCalls.length} درخواست تماس دارید؛ برای پاسخ، برنامه را باز کنید.`
-            : 'در انتظار درخواست مشاوره',
-        });
+        await BackgroundService.updateNotification(
+          getAvailabilityNotification(pendingCalls.length),
+        );
       } catch (error) {
         if (
           error instanceof PetipyApiError &&
@@ -136,6 +177,7 @@ async function monitorIncomingCalls(params?: MonitorParams) {
     }
   } finally {
     if (ringtoneStarted) stopIncomingCallRingtone();
+    activeCallNotice = null;
     await Promise.all(
       [...notifiedCallIds].map(async (callId) => {
         try {
@@ -175,6 +217,7 @@ export async function stopAvailabilityService() {
     await BackgroundService.stop();
   }
   stopIncomingCallRingtone();
+  activeCallNotice = null;
   try {
     await clearIncomingCallNotifications();
   } catch {

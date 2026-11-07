@@ -8,6 +8,7 @@ import {
 } from '@/lib/petipy-api';
 import {
   requestAvailabilityPermissions,
+  setAvailabilityCallState,
   startAvailabilityService,
   stopAvailabilityService,
 } from '@/lib/background-monitor';
@@ -64,7 +65,7 @@ export default function ConsultantHome() {
     queryKey: ['petipy', 'incoming-requests'],
     queryFn: () => getIncomingCalls(token as string),
     enabled: isConnected,
-    refetchInterval: isConnected ? 10_000 : false,
+    refetchInterval: isConnected ? 5_000 : false,
     refetchIntervalInBackground: true,
   });
   const history = useQuery({
@@ -214,12 +215,16 @@ export default function ConsultantHome() {
     setAcceptingId(callId);
     try {
       const session = await acceptIncomingCall(token, callId);
+      setAvailabilityCallState(session.callId, 'connecting');
       stopIncomingCallRingtone();
       try {
         await cancelIncomingCallNotification(callId);
       } catch {
         // A stale alert should not block a successful call acceptance.
       }
+      await queryClient.invalidateQueries({
+        queryKey: ['petipy', 'incoming-requests'],
+      });
       setActiveCall(session);
       router.push(`/call/${encodeURIComponent(session.callId)}`);
     } catch (error) {
@@ -381,7 +386,7 @@ export default function ConsultantHome() {
             صف تماس‌های ورودی
           </Text>
           <Text style={[styles.sectionTrailing, { color: colors.mutedForeground }]}>
-            تازه‌سازی هر ۱۰ ثانیه
+            تازه‌سازی هر ۵ ثانیه
           </Text>
         </View>
 
@@ -536,7 +541,7 @@ export default function ConsultantHome() {
             color={colors.mutedForeground}
           />
           <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-            مجوز حساب مشاور صوتی توسط API Petipy بررسی می‌شود.
+            مجوز حساب مشاور صوتی توسط API Petipy بررسی می‌شود. توقف اجباری Android سرویس و اعلان‌ها را تا بازکردن دوباره‌ی برنامه متوقف می‌کند.
           </Text>
         </View>
       </ScrollView>

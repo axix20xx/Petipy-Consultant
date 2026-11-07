@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { I18nManager, Platform } from 'react-native';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AppState, I18nManager, Platform } from 'react-native';
+import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -34,6 +34,14 @@ function RootLayoutNav() {
   const { token, state } = useConsultantSession();
   const [pendingNotificationCallId, setPendingNotificationCallId] =
     useState<string | null>(null);
+
+  useEffect(() => {
+    focusManager.setFocused(AppState.currentState === 'active');
+    const subscription = AppState.addEventListener('change', (state) => {
+      focusManager.setFocused(state === 'active');
+    });
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     return onIncomingCallNotificationOpen(setPendingNotificationCallId);

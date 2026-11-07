@@ -1,6 +1,7 @@
 import { useColors } from '@/hooks/useColors';
 import { finishCall, joinCall } from '@/lib/petipy-api';
 import { VoiceCallClient } from '@/lib/voice-call';
+import { setAvailabilityCallState } from '@/lib/background-monitor';
 import { useConsultantSession } from '@/providers/consultant-session';
 import RemoteVideo from '@/components/RemoteVideo';
 import { Ionicons } from '@expo/vector-icons';
@@ -35,6 +36,8 @@ export default function ConsultantCallScreen() {
   const matchingCall = activeCall?.callId === callId ? activeCall : null;
   const clientRef = useRef<VoiceCallClient | null>(null);
   const connectedAtRef = useRef<number | null>(null);
+  const accumulatedSecondsRef = useRef(0);
+  const timerCallIdRef = useRef<string | null>(null);
   const [status, setStatus] = useState('در حال آماده‌سازی تماس…');
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
@@ -67,7 +70,13 @@ export default function ConsultantCallScreen() {
     setConnected(false);
     setElapsed(0);
     setRemoteStream(null);
-    connectedAtRef.current = null;
+    if (timerCallIdRef.current !== callId) {
+      timerCallIdRef.current = callId ?? null;
+      connectedAtRef.current = null;
+      accumulatedSecondsRef.current = 0;
+      setElapsed(0);
+    }
+    setAvailabilityCallState(callId ?? null, 'connecting');
 
     void client
       .start(matchingCall, {
@@ -76,20 +85,39 @@ export default function ConsultantCallScreen() {
         },
         onConnected: () => {
           if (!isMounted) return;
-          connectedAtRef.current = Date.now();
+          connectedAtRef.current ??= Date.now();
           setConnected(true);
           setError(null);
           setStatus('تماس برقرار است');
+          setAvailabilityCallState(callId ?? null, 'connected');
+        },
+        onDisconnected: () => {
+          if (!isMounted) return;
+          if (connectedAtRef.current) {
+            accumulatedSecondsRef.current += Math.floor(
+              (Date.now() - connectedAtRef.current) / 1000,
+            );
+            connectedAtRef.current = null;
+            setElapsed(accumulatedSecondsRef.current);
+          }
+          setConnected(false);
+          setError('ارتباط تماس قطع شد؛ برای ادامه، دوباره وصل شوید.');
+          setAvailabilityCallState(callId ?? null, 'reconnecting');
         },
         onEnded: () => {
           if (isMounted) {
             setStatus('مشتری تماس را پایان داد.');
             setConnected(false);
+            setAvailabilityCallState(null, null);
             void endCall(false);
           }
         },
         onError: (message) => {
-          if (isMounted) setError(message);
+          if (isMounted) {
+            setConnected(false);
+            setError(message);
+            setAvailabilityCallState(callId ?? null, 'reconnecting');
+          }
         },
         onRemoteVideo: (stream) => {
           if (isMounted) setRemoteStream(stream);
@@ -105,6 +133,7 @@ export default function ConsultantCallScreen() {
               ? startError.message
               : 'شروع تماس ممکن نشد.',
           );
+          setAvailabilityCallState(callId ?? null, 'reconnecting');
         }
       });
 
@@ -112,6 +141,7 @@ export default function ConsultantCallScreen() {
       isMounted = false;
       client.close();
       setRemoteStream(null);
+      setAvailabilityCallState(null, null);
       if (clientRef.current === client) clientRef.current = null;
     };
     // Restart the peer when a rejoin returns a fresh call-session token.
@@ -123,7 +153,10 @@ export default function ConsultantCallScreen() {
     const interval = setInterval(() => {
       const connectedAt = connectedAtRef.current;
       if (connectedAt) {
-        setElapsed(Math.floor((Date.now() - connectedAt) / 1000));
+        setElapsed(
+          accumulatedSecondsRef.current +
+            Math.floor((Date.now() - connectedAt) / 1000),
+        );
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -132,6 +165,7 @@ export default function ConsultantCallScreen() {
   async function endCall(sendSignal: boolean) {
     if (ending) return;
     setEnding(true);
+    setAvailabilityCallState(null, null);
     clientRef.current?.close(sendSignal);
     clientRef.current = null;
     try {
@@ -150,6 +184,7 @@ export default function ConsultantCallScreen() {
     if (!token || !callId || joining) return;
     setJoining(true);
     setError(null);
+    setAvailabilityCallState(callId, 'reconnecting');
     try {
       const session = await joinCall(token, callId);
       setActiveCall(session);

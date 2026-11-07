@@ -1,10 +1,19 @@
 import { useColors } from '@/hooks/useColors';
 import { setConsultantAvailability } from '@/lib/petipy-api';
 import { stopAvailabilityService } from '@/lib/background-monitor';
+import {
+  canUseFullScreenIntent,
+  openFullScreenIntentSettings,
+} from '@/lib/full-screen-access';
+import {
+  getIncomingCallChannelStatus,
+  openIncomingCallChannelSettings,
+} from '@/lib/incoming-call-alerts';
 import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
+  AppState,
   ActivityIndicator,
   Alert,
   Linking,
@@ -55,7 +64,28 @@ export default function SettingsScreen() {
     retryPushSetup,
   } = useConsultantSession();
   const [signingOut, setSigningOut] = useState(false);
+  const [fullScreenAccess, setFullScreenAccess] = useState<boolean | null>(null);
+  const [callChannelStatus, setCallChannelStatus] = useState<
+    'high' | 'low' | 'blocked' | 'missing' | 'unavailable'
+  >('unavailable');
   const isConnected = state === 'connected' && Boolean(token);
+
+  const refreshCallAlertStatus = useCallback(async () => {
+    const [access, channelStatus] = await Promise.all([
+      canUseFullScreenIntent(),
+      getIncomingCallChannelStatus(),
+    ]);
+    setFullScreenAccess(access);
+    setCallChannelStatus(channelStatus);
+  }, []);
+
+  useEffect(() => {
+    void refreshCallAlertStatus();
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') void refreshCallAlertStatus();
+    });
+    return () => subscription.remove();
+  }, [refreshCallAlertStatus]);
 
   async function signOut() {
     if (signingOut) return;
@@ -170,10 +200,84 @@ export default function SettingsScreen() {
           />
           <InfoRow
             icon="phone-portrait-outline"
-            title="نمایش صفحه‌ی تماس"
-            detail="برای تمام‌صفحه‌شدن در Android 14+، دسترسی Full-screen notifications را در Special app access فعال کنید. هنگام استفاده از گوشی ممکن است Android فقط بنر تماس نشان دهد."
-            color={colors.primary}
+            title="دسترسی تمام‌صفحه Android"
+            detail={
+              fullScreenAccess === true
+                ? 'Android دسترسی تمام‌صفحه را برای Petipy مجاز می‌داند. هنگام بازبودن گوشی ممکن است فقط بنر تماس نمایش داده شود.'
+                : fullScreenAccess === false
+                  ? 'Android دسترسی تمام‌صفحه را مسدود کرده است؛ به همین دلیل فقط اعلان دیده می‌شود.'
+                  : 'وضعیت دسترسی تمام‌صفحه از Android قابل‌خواندن نیست.'
+            }
+            color={fullScreenAccess === false ? colors.warning : colors.primary}
           />
+          <InfoRow
+            icon="notifications-outline"
+            title="کانال اعلان تماس"
+            detail={
+              callChannelStatus === 'high'
+                ? 'فعال و با اولویت بالا'
+                : callChannelStatus === 'low'
+                  ? 'اولویت کانال پایین است؛ اعلان ممکن است تمام‌صفحه نشود.'
+                  : callChannelStatus === 'blocked'
+                    ? 'این کانال در Android مسدود شده است.'
+                    : callChannelStatus === 'missing'
+                      ? 'کانال تماس هنوز ساخته نشده است؛ برنامه را دوباره باز کنید.'
+                      : 'وضعیت کانال در دسترس نیست.'
+            }
+            color={callChannelStatus === 'high' ? colors.success : colors.warning}
+          />
+          {Platform.OS === 'android' && fullScreenAccess !== true ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                void openFullScreenIntentSettings().then((opened) => {
+                  if (!opened) return Linking.openSettings();
+                }).catch(() => Linking.openSettings()).catch(() =>
+                  Alert.alert(
+                    'تنظیمات باز نشد',
+                    'دسترسی تمام‌صفحه را از Special app access در تنظیمات Android باز کنید.',
+                  ),
+                );
+              }}
+              style={styles.infoRow}
+              testID="open-full-screen-access-settings"
+            >
+              <View style={[styles.rowIcon, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="open-outline" size={19} color={colors.primary} />
+              </View>
+              <View style={styles.rowCopy}>
+                <Text style={[styles.rowTitle, { color: colors.primary }]}>
+                  بررسی یا بازکردن دسترسی تمام‌صفحه
+                </Text>
+              </View>
+            </Pressable>
+          ) : null}
+          {Platform.OS === 'android' && callChannelStatus !== 'high' ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() =>
+                void openIncomingCallChannelSettings().catch(() =>
+                  Linking.openSettings().catch(() =>
+                    Alert.alert(
+                      'تنظیمات اعلان باز نشد',
+                      'تنظیمات اعلان‌های Petipy را از اطلاعات برنامه باز کنید.',
+                    ),
+                  ),
+                )
+              }
+              style={styles.infoRow}
+              testID="open-incoming-call-channel-settings"
+            >
+              <View style={[styles.rowIcon, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="notifications-outline" size={19} color={colors.primary} />
+              </View>
+              <View style={styles.rowCopy}>
+                <Text style={[styles.rowTitle, { color: colors.primary }]}>
+                  بازکردن تنظیمات کانال تماس
+                </Text>
+              </View>
+            </Pressable>
+          ) : null}
           <InfoRow
             icon="notifications-outline"
             title="وضعیت اعلان FCM"

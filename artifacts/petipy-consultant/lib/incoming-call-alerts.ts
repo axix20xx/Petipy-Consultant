@@ -33,6 +33,25 @@ export async function prepareIncomingCallAlerts() {
   });
 }
 
+export async function getIncomingCallChannelStatus():
+  Promise<'high' | 'low' | 'blocked' | 'missing' | 'unavailable'> {
+  if (Platform.OS !== 'android') return 'unavailable';
+  try {
+    const channel = await notifee.getChannel(INCOMING_CALL_CHANNEL_ID);
+    if (!channel) return 'missing';
+    if (channel.blocked) return 'blocked';
+    const importance = channel.importance ?? AndroidImportance.DEFAULT;
+    return importance >= AndroidImportance.HIGH ? 'high' : 'low';
+  } catch {
+    return 'unavailable';
+  }
+}
+
+export async function openIncomingCallChannelSettings() {
+  if (Platform.OS !== 'android') return;
+  await notifee.openNotificationSettings(INCOMING_CALL_CHANNEL_ID);
+}
+
 export async function notifyIncomingCall(callId: string) {
   if (Platform.OS !== 'android') return;
   await notifee.displayNotification({

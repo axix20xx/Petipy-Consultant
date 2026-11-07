@@ -161,19 +161,16 @@ export default function ConsultantHome() {
         }
       }
 
-      await setConsultantAvailability(token, next ? 'online' : 'offline');
       if (next) {
         try {
           await startAvailabilityService(token, tokenExpiresAt);
+          await setConsultantAvailability(token, 'online');
         } catch (error) {
-          await setConsultantAvailability(token, 'offline');
-          const message =
-            error instanceof Error
-              ? error.message
-              : 'سرویس پس‌زمینه شروع نشد.';
-          Alert.alert('تماس پس‌زمینه فعال نشد', message);
+          await stopAvailabilityService().catch(() => undefined);
+          throw error;
         }
       } else {
+        await setConsultantAvailability(token, 'offline');
         await stopAvailabilityService();
       }
       await queryClient.invalidateQueries({

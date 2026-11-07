@@ -42,3 +42,17 @@ mtime_ms = 1794060720694
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/e3d189b4-aba6-4762-a8b9-c6fc92efa6ee/2faa7959-9801-4da6-a55e-9f121659a4c4"
 storage_version_token = "1794060738133974"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "uwl17RwtESg6hE2FQbLs9"
+uri = "file://generated-artifacts/petipy-consultant-dev-auth-service-fix-arm64-v8a.apk"
+type = "unspecified"
+title = "Petipy Consultant — Active Mode Crash Fix"
+description = "Updated arm64 development-OTP APK. The background service now uses the microphone foreground-service type only; debug-signed for sideload testing."
+logical_id = "8e6e0e63-efde-4c13-9829-3e93a08e505f"
+content_hash = "sha256:90d7a20f3f182fa4f9f54ae3c878de2a1caf6390cc98909c0e957302b26e5675"
+size = 60291649
+mtime_ms = 1794061699623
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/8e6e0e63-efde-4c13-9829-3e93a08e505f/e891fe55-69b4-4ae0-bcff-1e6f1412c500"
+storage_version_token = "1794061709959395"
+content_type = "application/octet-stream"

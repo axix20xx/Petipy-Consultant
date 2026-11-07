@@ -95,7 +95,7 @@ export async function startAvailabilityService(
     taskIcon: { name: 'ic_launcher', type: 'mipmap' },
     color: '#6b3fe1',
     linkingURI: 'petipy-consultant:///',
-    foregroundServiceType: ['connectedDevice', 'microphone'],
+    foregroundServiceType: ['microphone'],
     parameters: { sessionToken, tokenExpiresAt },
   });
 }

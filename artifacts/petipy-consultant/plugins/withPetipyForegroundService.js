@@ -18,7 +18,6 @@ module.exports = function withPetipyForegroundService(config) {
     );
     for (const permission of [
       'android.permission.FOREGROUND_SERVICE',
-      'android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE',
       'android.permission.FOREGROUND_SERVICE_MICROPHONE',
       'android.permission.POST_NOTIFICATIONS',
       'android.permission.RECORD_AUDIO',
@@ -36,14 +35,14 @@ module.exports = function withPetipyForegroundService(config) {
     );
     if (service) {
       service.$['android:foregroundServiceType'] =
-        'connectedDevice|microphone';
+        'microphone';
       service.$['android:exported'] = 'false';
     } else {
       app.service.push({
         $: {
           'android:name': SERVICE_NAME,
           'android:exported': 'false',
-          'android:foregroundServiceType': 'connectedDevice|microphone',
+          'android:foregroundServiceType': 'microphone',
         },
       });
     }

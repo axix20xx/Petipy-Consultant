@@ -1,2 +1,0 @@
-com.github.penfeizhou.animation.awebp
-string app_name

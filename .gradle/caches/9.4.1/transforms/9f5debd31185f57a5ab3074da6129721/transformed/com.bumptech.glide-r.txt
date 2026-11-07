@@ -1,2 +1,0 @@
-com.bumptech.glide
-id glide_custom_view_target_tag

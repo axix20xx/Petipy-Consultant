@@ -1,5 +1,0 @@
-com.facebook.imagepipeline.nativecode.Bitmaps
-com.facebook.imagepipeline.nativecode.DalvikPurgeableDecoder
-com.facebook.imagepipeline.nativecode.DalvikPurgeableDecoder$Companion
-com.facebook.imagepipeline.nativecode.DalvikPurgeableDecoder$OreoUtils
-com.facebook.imagepipeline.nativecode.ImagePipelineNativeLoader

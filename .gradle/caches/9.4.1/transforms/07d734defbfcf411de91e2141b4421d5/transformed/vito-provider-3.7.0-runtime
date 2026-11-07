@@ -1,7 +1,0 @@
-com.facebook.fresco.vito.provider.FrescoVitoProvider
-com.facebook.fresco.vito.provider.components.FrescoVitoComponents
-com.facebook.fresco.vito.provider.impl.DefaultFrescoVitoProvider
-com.facebook.fresco.vito.provider.impl.DefaultFrescoVitoProvider$Companion
-com.facebook.fresco.vito.provider.impl.NoOpCallerContextVerifier
-com.facebook.fresco.vito.provider.impl.kotlin.KFrescoVitoProvider
-com.facebook.fresco.vito.provider.setup.FrescoVitoSetup

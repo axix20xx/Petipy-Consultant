@@ -1,4 +1,0 @@
-com.caverock.androidsvg
-attr css
-attr svg
-styleable SVGImageView css svg

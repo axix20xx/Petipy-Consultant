@@ -7,6 +7,8 @@ Petipy Consultant uses FCM for incoming-call signals through the approved device
 
 **Why:** The user changed the product requirement and provided the existing Petipy device API contract for FCM; the mobile client must not invent backend routes or own server credentials.
 
-For the incoming call screen, use an Android full-screen notification intent with `USE_FULL_SCREEN_INTENT`. Android 14+ users can disable that special access, and Android may show only a heads-up alert while they are actively using the device. Android force-stop halts background delivery until the user opens the app again; battery controls may also stop background work.
+For the incoming call screen, use an Android full-screen notification intent with `USE_FULL_SCREEN_INTENT`. On Android 14+, even when access is granted, an unlocked display gets a persistent heads-up notification; full-screen launches are for a locked or screen-off display. Apps cannot silently grant special access. Android force-stop halts background delivery until the user opens the app again; battery controls may also stop background work.
 
-**How to apply:** Register/refresh/revoke the installation's FCM token through Petipy's existing routes. Require data-only high-priority call signals, verify them via the API queue, and explain physical-device testing, polling fallback, force-stop, battery, and full-screen permission limits plainly.
+**Why:** Android documents this unlocked-versus-locked behavior for full-screen intents; a minimized app on an unlocked phone is expected to show heads-up, not launch an activity.
+
+**How to apply:** Register/refresh/revoke the installation's FCM token through Petipy's existing routes. Require data-only high-priority call signals, verify them via the API queue, and explain physical-device testing, polling fallback, force-stop, battery, and full-screen permission limits plainly. Test full-screen behavior with the device locked or screen-off.

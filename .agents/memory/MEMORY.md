@@ -1,4 +1,4 @@
 - [Petipy consultant auth and rejection](petipy-consultant-auth-rejection.md) — release APKs need bundled Expo auth-mode config for dev OTP; live auth and call rejection remain unavailable.
 - [Petipy Android builds](petipy-android-build.md) — Expo 58 needs API 37, Build Tools 37, and NDK 27; use workspace Gradle storage and one worker in constrained builds.
-- [Petipy background call alerts](petipy-consultant-background-alerts.md) — use the approved FCM device API as a signal, validate calls through REST, and retain polling fallback.
+- [Petipy background call alerts](petipy-consultant-background-alerts.md) — validate FCM signals via REST; Android 14+ shows full-screen only when locked or screen-off.
 - [Petipy call media contracts](petipy-consultant-media.md) — use real API contracts; receive customer video only, and never mock chat/files or invent endpoints.

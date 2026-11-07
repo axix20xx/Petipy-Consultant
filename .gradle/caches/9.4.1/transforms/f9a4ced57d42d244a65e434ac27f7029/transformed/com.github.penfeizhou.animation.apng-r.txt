@@ -1,2 +1,0 @@
-com.github.penfeizhou.animation.apng
-string app_name

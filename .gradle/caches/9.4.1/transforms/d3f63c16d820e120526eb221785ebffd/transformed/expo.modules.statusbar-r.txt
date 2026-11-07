@@ -1,2 +1,0 @@
-expo.modules.statusbar
-attr expoStatusBarHidden

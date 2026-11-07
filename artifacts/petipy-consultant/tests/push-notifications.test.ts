@@ -22,7 +22,7 @@ const activeRequest = {
 };
 
 test('uses a new high-priority incoming-call channel for Android', () => {
-  assert.equal(INCOMING_CALL_CHANNEL_ID, 'incoming-calls-v2');
+  assert.equal(INCOMING_CALL_CHANNEL_ID, 'incoming-calls-v3');
 });
 
 test('routes incoming calls from notification and full-screen action events', () => {

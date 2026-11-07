@@ -66,7 +66,13 @@ export default function SettingsScreen() {
   const [signingOut, setSigningOut] = useState(false);
   const [fullScreenAccess, setFullScreenAccess] = useState<boolean | null>(null);
   const [callChannelStatus, setCallChannelStatus] = useState<
-    'high' | 'low' | 'blocked' | 'missing' | 'unavailable'
+    | 'high'
+    | 'high-silent'
+    | 'low'
+    | 'low-silent'
+    | 'blocked'
+    | 'missing'
+    | 'unavailable'
   >('unavailable');
   const isConnected = state === 'connected' && Boolean(token);
 
@@ -215,14 +221,18 @@ export default function SettingsScreen() {
             title="کانال اعلان تماس"
             detail={
               callChannelStatus === 'high'
-                ? 'فعال و با اولویت بالا'
+                ? 'صدای اعلان فعال است و اولویت کانال بالاست.'
+                : callChannelStatus === 'high-silent'
+                  ? 'اولویت بالاست، اما Android صدای اعلان این کانال را خاموش کرده است.'
                 : callChannelStatus === 'low'
-                  ? 'اولویت کانال پایین است؛ اعلان ممکن است تمام‌صفحه نشود.'
-                  : callChannelStatus === 'blocked'
-                    ? 'این کانال در Android مسدود شده است.'
-                    : callChannelStatus === 'missing'
-                      ? 'کانال تماس هنوز ساخته نشده است؛ برنامه را دوباره باز کنید.'
-                      : 'وضعیت کانال در دسترس نیست.'
+                    ? 'صدا فعال است، اما اولویت کانال پایین است.'
+                    : callChannelStatus === 'low-silent'
+                      ? 'صدای اعلان خاموش است و اولویت کانال نیز پایین است.'
+                      : callChannelStatus === 'blocked'
+                        ? 'این کانال در Android مسدود شده است.'
+                        : callChannelStatus === 'missing'
+                          ? 'کانال تماس هنوز ساخته نشده است؛ برنامه را دوباره باز کنید.'
+                          : 'وضعیت کانال در دسترس نیست.'
             }
             color={callChannelStatus === 'high' ? colors.success : colors.warning}
           />

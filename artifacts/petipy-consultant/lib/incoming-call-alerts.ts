@@ -34,14 +34,25 @@ export async function prepareIncomingCallAlerts() {
 }
 
 export async function getIncomingCallChannelStatus():
-  Promise<'high' | 'low' | 'blocked' | 'missing' | 'unavailable'> {
+  Promise<
+    | 'high'
+    | 'high-silent'
+    | 'low'
+    | 'low-silent'
+    | 'blocked'
+    | 'missing'
+    | 'unavailable'
+  > {
   if (Platform.OS !== 'android') return 'unavailable';
   try {
     const channel = await notifee.getChannel(INCOMING_CALL_CHANNEL_ID);
     if (!channel) return 'missing';
     if (channel.blocked) return 'blocked';
     const importance = channel.importance ?? AndroidImportance.DEFAULT;
-    return importance >= AndroidImportance.HIGH ? 'high' : 'low';
+    const highPriority = importance >= AndroidImportance.HIGH;
+    const soundEnabled = Boolean(channel.soundURI);
+    if (highPriority) return soundEnabled ? 'high' : 'high-silent';
+    return soundEnabled ? 'low' : 'low-silent';
   } catch {
     return 'unavailable';
   }
@@ -64,6 +75,7 @@ export async function notifyIncomingCall(callId: string) {
       category: AndroidCategory.CALL,
       importance: AndroidImportance.HIGH,
       visibility: AndroidVisibility.PUBLIC,
+      sound: 'default',
       smallIcon: 'ic_launcher',
       color: '#6b3fe1',
       lightUpScreen: true,

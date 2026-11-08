@@ -11,9 +11,11 @@ import {
 } from '@/lib/incoming-call-alerts';
 import {
   endSystemCall,
+  markSystemCallActive,
   registerSystemCalling,
   reportSystemIncomingCall,
 } from '@/lib/system-calling';
+import { isUnexpiredRequestedCall } from '@/lib/incoming-push-routing';
 
 const POLL_INTERVAL_MS = 5_000;
 type ActiveCallState = 'connecting' | 'connected' | 'reconnecting';
@@ -93,7 +95,6 @@ async function monitorIncomingCalls(params?: MonitorParams) {
   const expiry = Date.parse(tokenExpiresAt);
   if (!Number.isFinite(expiry)) return;
   let connectionNoticeShown = false;
-  let ringtoneStarted = false;
   const notifiedCallIds = new Set<string>();
   const systemCallIds = new Set<string>();
 
@@ -109,12 +110,10 @@ async function monitorIncomingCalls(params?: MonitorParams) {
 
       try {
         const calls = await getIncomingCalls(sessionToken);
-        const pendingCalls = calls.filter((call) => {
-          if (call.status && call.status !== 'requested') return false;
-          if (!call.expiresAt) return true;
-          const callExpiry = Date.parse(call.expiresAt);
-          return !Number.isFinite(callExpiry) || callExpiry > Date.now();
-        });
+        const callsById = new Map(calls.map((call) => [call.id, call]));
+        const pendingCalls = calls.filter((call) =>
+          isUnexpiredRequestedCall(call),
+        );
         const pendingIds = new Set(pendingCalls.map((call) => call.id));
         connectionNoticeShown = false;
 
@@ -126,7 +125,21 @@ async function monitorIncomingCalls(params?: MonitorParams) {
               // A stale notification should not stop the request poller.
             }
             if (systemCallIds.delete(callId)) {
-              await endSystemCall(callId, 'missed');
+              const currentCall = callsById.get(callId);
+              const callWasAccepted =
+                currentCall?.status === 'connecting' ||
+                currentCall?.status === 'active';
+              const isActiveInThisApp = activeCallNotice?.callId === callId;
+              if (callWasAccepted && isActiveInThisApp) {
+                await markSystemCallActive(callId);
+              } else {
+                await endSystemCall(
+                  callId,
+                  currentCall?.status === 'completed' || isActiveInThisApp
+                    ? 'remote'
+                    : 'missed',
+                );
+              }
             }
             notifiedCallIds.delete(callId);
           }
@@ -155,22 +168,21 @@ async function monitorIncomingCalls(params?: MonitorParams) {
               .filter((value): value is string => Boolean(value))
               .sort((left, right) => Date.parse(left) - Date.parse(right))[0];
             startIncomingCallRingtone(expiry);
-            ringtoneStarted = true;
           } catch {
             await BackgroundService.updateNotification({
               taskTitle: 'تماس ورودی مشاوره',
               taskDesc: 'صدای زنگ فعال نشد؛ برنامه را برای پاسخ باز کنید.',
             });
           }
-        } else if (pendingCalls.length === 0 && ringtoneStarted) {
+        } else {
           stopIncomingCallRingtone();
-          ringtoneStarted = false;
         }
 
         await BackgroundService.updateNotification(
           getAvailabilityNotification(pendingCalls.length),
         );
       } catch (error) {
+        stopIncomingCallRingtone();
         if (
           error instanceof PetipyApiError &&
           (error.status === 401 || error.status === 403)
@@ -192,11 +204,14 @@ async function monitorIncomingCalls(params?: MonitorParams) {
       await sleep(POLL_INTERVAL_MS);
     }
   } finally {
-    if (ringtoneStarted) stopIncomingCallRingtone();
+    stopIncomingCallRingtone();
     await Promise.all(
-      [...systemCallIds].map((callId) => endSystemCall(callId, 'missed')),
+      [...systemCallIds].map((callId) =>
+        activeCallNotice?.callId === callId
+          ? markSystemCallActive(callId)
+          : endSystemCall(callId, 'missed'),
+      ),
     );
-    activeCallNotice = null;
     await Promise.all(
       [...notifiedCallIds].map(async (callId) => {
         try {

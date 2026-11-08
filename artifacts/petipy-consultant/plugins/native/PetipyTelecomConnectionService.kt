@@ -137,6 +137,11 @@ internal object PetipyTelecomCallState {
 
   fun startRingtone(context: Context, expiresAtMillis: Long?): Boolean {
     synchronized(ringtoneLock) {
+      val timeoutMillis = callTimeout(expiresAtMillis)
+      if (timeoutMillis <= 0L) {
+        stopRingtone()
+        return false
+      }
       val active = ringtone
       if (active == null || !active.isPlaying) {
         val sound =
@@ -162,7 +167,7 @@ internal object PetipyTelecomCallState {
           stopRingtone()
         }
       ringtoneTimeout = timeout
-      handler.postDelayed(timeout, callTimeout(expiresAtMillis).coerceAtLeast(1_000L))
+      handler.postDelayed(timeout, timeoutMillis)
       return true
     }
   }

@@ -26,18 +26,24 @@ export function parseIncomingCallId(data: unknown): string | null {
   return null;
 }
 
+export function isUnexpiredRequestedCall(
+  call: IncomingCall,
+  now = Date.now(),
+): boolean {
+  if (call.status !== 'requested' || typeof call.expiresAt !== 'string') {
+    return false;
+  }
+  const expiresAt = Date.parse(call.expiresAt);
+  return Number.isFinite(expiresAt) && expiresAt > now;
+}
+
 export function findActiveIncomingCall(
   requests: IncomingCall[],
   callId: string,
   now = Date.now(),
 ): IncomingCall | null {
   const call = requests.find((request) => request.id === callId);
-  if (!call || (call.status && call.status !== 'requested')) return null;
-  if (call.expiresAt) {
-    const expiresAt = Date.parse(call.expiresAt);
-    if (Number.isFinite(expiresAt) && expiresAt <= now) return null;
-  }
-  return call;
+  return call && isUnexpiredRequestedCall(call, now) ? call : null;
 }
 
 export function resolveIncomingPushRoute(

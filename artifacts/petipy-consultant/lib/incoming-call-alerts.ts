@@ -11,12 +11,17 @@ import {
   INCOMING_CALL_CHANNEL_ID,
   INCOMING_CALL_FULL_SCREEN_ACTION,
   INCOMING_CALL_PRESS_ACTION,
+  getIncomingRingtoneDeadline,
   isIncomingCallRejectAction,
   isIncomingCallAnswerAction,
   shouldOpenIncomingCallFromNotificationEvent,
 } from '@/lib/incoming-call-alert-config';
 
 const NOTIFICATION_PREFIX = 'petipy-incoming-call-';
+let ringtoneGeneration = 0;
+let ringtoneDeadline: number | null = null;
+let ringtoneStopTimer: ReturnType<typeof setTimeout> | null = null;
+let fallbackRingtoneStarted = false;
 
 type PetipyCallNotificationModule = {
   prepareIncomingCallChannel(): Promise<boolean>;
@@ -123,36 +128,75 @@ export async function clearIncomingCallNotifications() {
 
 export function startIncomingCallRingtone(expiresAt?: string) {
   if (Platform.OS !== 'android') return;
-  const expiry = expiresAt ? Date.parse(expiresAt) : null;
-  const startNative = nativeCallNotifications?.startNativeIncomingRingtone;
-  if (startNative) {
-    void startNative(expiry).then((started) => {
-      if (!started) {
-        InCallManager.startRingtone(
-          '_DEFAULT_',
-          [0, 700, 450, 700],
-          'default',
-          0,
-        );
-      }
-    }).catch(() => {
+  const now = Date.now();
+  const expiry = expiresAt === undefined ? null : Date.parse(expiresAt);
+  const deadline = getIncomingRingtoneDeadline(now, expiry, ringtoneDeadline);
+  if (deadline === null) {
+    stopIncomingCallRingtone();
+    return;
+  }
+  ringtoneDeadline = deadline;
+  if (ringtoneStopTimer) clearTimeout(ringtoneStopTimer);
+  const generation = ringtoneGeneration;
+  ringtoneStopTimer = setTimeout(
+    () => stopIncomingCallRingtone(),
+    Math.max(0, deadline - now),
+  );
+
+  const startFallbackRingtone = () => {
+    if (
+      generation !== ringtoneGeneration ||
+      ringtoneDeadline !== deadline ||
+      Date.now() >= deadline ||
+      fallbackRingtoneStarted
+    ) {
+      return;
+    }
+    try {
       InCallManager.startRingtone(
         '_DEFAULT_',
         [0, 700, 450, 700],
         'default',
         0,
       );
-    });
+      fallbackRingtoneStarted = true;
+    } catch {
+      // Audio failure must not interrupt call notification cleanup.
+    }
+  };
+
+  const startNative = nativeCallNotifications?.startNativeIncomingRingtone;
+  if (startNative) {
+    void startNative(deadline).then((started) => {
+      if (
+        generation !== ringtoneGeneration ||
+        ringtoneDeadline !== deadline ||
+        Date.now() >= deadline
+      ) {
+        return;
+      }
+      if (!started) {
+        startFallbackRingtone();
+      } else if (fallbackRingtoneStarted) {
+        InCallManager.stopRingtone();
+        fallbackRingtoneStarted = false;
+      }
+    }).catch(startFallbackRingtone);
     return;
   }
-  InCallManager.startRingtone('_DEFAULT_', [0, 700, 450, 700], 'default', 0);
+  startFallbackRingtone();
 }
 
 export function stopIncomingCallRingtone() {
   if (Platform.OS !== 'android') return;
+  ringtoneGeneration += 1;
+  ringtoneDeadline = null;
+  if (ringtoneStopTimer) clearTimeout(ringtoneStopTimer);
+  ringtoneStopTimer = null;
   void nativeCallNotifications?.stopNativeIncomingRingtone?.().catch(() => {});
   try {
     InCallManager.stopRingtone();
+    fallbackRingtoneStarted = false;
   } catch {
     // Ring cleanup must not block logout or availability shutdown.
   }

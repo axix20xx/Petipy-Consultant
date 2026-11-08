@@ -189,6 +189,12 @@ class PetipyFullScreenAccessModule(
         promise.resolve(false)
         return
       }
+      val timeoutMillis = parseExpiryTimeout(expiresAtMillis)
+      if (timeoutMillis <= 0L) {
+        manager.cancel(notificationTag(callId), NOTIFICATION_ID)
+        promise.resolve(false)
+        return
+      }
       ensureCallChannel(manager)
 
       val openIntent = callActionIntent(callId, "open")
@@ -243,7 +249,6 @@ class PetipyFullScreenAccessModule(
           )
       }
 
-      val timeoutMillis = parseExpiryTimeout(expiresAtMillis)
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && timeoutMillis > 0) {
         builder.setTimeoutAfter(timeoutMillis)
       }

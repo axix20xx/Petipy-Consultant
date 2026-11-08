@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   findActiveIncomingCall,
+  isUnexpiredRequestedCall,
   parseIncomingCallId,
   resolveIncomingPushRoute,
 } from '../lib/incoming-push-routing';
@@ -11,6 +12,8 @@ import {
   INCOMING_CALL_FULL_SCREEN_ACTION,
   INCOMING_CALL_PRESS_ACTION,
   INCOMING_CALL_REJECT_ACTION,
+  MAX_INCOMING_RING_DURATION_MS,
+  getIncomingRingtoneDeadline,
   isIncomingCallAnswerAction,
   isIncomingCallRejectAction,
   shouldOpenIncomingCallFromNotificationEvent,
@@ -111,6 +114,50 @@ test('rejects expired or non-requested calls', () => {
       now,
     ),
     null,
+  );
+  assert.equal(
+    findActiveIncomingCall(
+      [{ ...activeRequest, status: 'connecting' }],
+      'call-123',
+      now,
+    ),
+    null,
+  );
+  assert.equal(
+    findActiveIncomingCall(
+      [{ ...activeRequest, expiresAt: undefined }],
+      'call-123',
+      now,
+    ),
+    null,
+  );
+  assert.equal(
+    isUnexpiredRequestedCall(
+      { ...activeRequest, status: 'active' },
+      now,
+    ),
+    false,
+  );
+});
+
+test('ring audio deadline never outlives the active request or ring lease', () => {
+  assert.equal(
+    getIncomingRingtoneDeadline(now, now + 15_000, null),
+    now + 15_000,
+  );
+  assert.equal(
+    getIncomingRingtoneDeadline(now, now + 300_000, null),
+    now + MAX_INCOMING_RING_DURATION_MS,
+  );
+  assert.equal(
+    getIncomingRingtoneDeadline(now, now + 30_000, now + 10_000),
+    now + 10_000,
+  );
+  assert.equal(getIncomingRingtoneDeadline(now, now, null), null);
+  assert.equal(getIncomingRingtoneDeadline(now, null, null), now + MAX_INCOMING_RING_DURATION_MS);
+  assert.equal(
+    getIncomingRingtoneDeadline(now + 20_000, now + 300_000, now + 10_000),
+    now + 20_000 + MAX_INCOMING_RING_DURATION_MS,
   );
 });
 

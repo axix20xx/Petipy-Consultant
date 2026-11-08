@@ -202,10 +202,11 @@ export async function handleBackgroundIncomingMessage(message: PushMessage) {
     }
 
     const requests = await getIncomingCalls(stored.session.accessToken);
-    if (!findActiveIncomingCall(requests, callId)) return;
+    const activeCall = findActiveIncomingCall(requests, callId);
+    if (!activeCall) return;
 
     await prepareIncomingCallAlerts();
-    await notifyIncomingCall(callId);
+    await notifyIncomingCall(callId, activeCall.expiresAt);
   } catch {
     // A push is only a signal. Ignore it if session or API validation fails.
   }

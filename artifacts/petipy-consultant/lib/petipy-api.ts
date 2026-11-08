@@ -313,6 +313,25 @@ export async function acceptIncomingCall(token: string, callId: string) {
   return normalizeCallSession(result, callId);
 }
 
+export async function rejectIncomingCall(
+  token: string,
+  callId: string,
+  reason: 'busy' = 'busy',
+) {
+  const result = asRecord(await request<unknown>(
+    `/voice/consultant/me/requests/${encodeURIComponent(callId)}/reject`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    },
+  ));
+  if (result.callId !== callId || result.status !== 'rejected') {
+    throw new PetipyApiError('پاسخ رد تماس از سرور معتبر نیست.', 502);
+  }
+  return { callId, status: 'rejected' as const };
+}
+
 export async function joinCall(token: string, callId: string) {
   const result = await request<unknown>(
     `/voice/consultant/me/requests/${encodeURIComponent(callId)}/join`,

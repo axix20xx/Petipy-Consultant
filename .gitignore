@@ -54,5 +54,6 @@ Thumbs.db
 .cache/
 .local/
 /generated-artifacts/
+/.android-sdk/
 /.gradle-cache/
 /.gradle/

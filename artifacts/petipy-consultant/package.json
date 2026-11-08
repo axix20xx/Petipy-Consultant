@@ -9,7 +9,8 @@
     "serve": "node server/serve.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:auth": "tsx --test tests/consultant-auth.test.ts",
-    "test:push": "tsx --test tests/push-notifications.test.ts"
+    "test:push": "tsx --test tests/push-notifications.test.ts",
+    "test:api": "tsx --test tests/petipy-api.test.ts"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

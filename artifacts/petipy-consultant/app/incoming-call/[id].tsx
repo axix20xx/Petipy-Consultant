@@ -2,6 +2,8 @@ import { useColors } from '@/hooks/useColors';
 import {
   acceptIncomingCall,
   getIncomingCalls,
+  PetipyApiError,
+  rejectIncomingCall,
 } from '@/lib/petipy-api';
 import {
   cancelIncomingCallNotification,
@@ -29,18 +31,21 @@ export default function IncomingCallScreen() {
   const colors = useColors();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { id, answer } = useLocalSearchParams<{
+  const { id, answer, action } = useLocalSearchParams<{
     id?: string | string[];
     answer?: string | string[];
+    action?: string | string[];
   }>();
   const callId = Array.isArray(id) ? id[0] : id;
   const answerParam = Array.isArray(answer) ? answer[0] : answer;
+  const actionParam = Array.isArray(action) ? action[0] : action;
   const {
     token,
     state: sessionState,
     setActiveCall,
   } = useConsultantSession();
   const [accepting, setAccepting] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const queue = useQuery({
@@ -100,19 +105,58 @@ export default function IncomingCallScreen() {
     }
   }, [accepting, call, callId, queryClient, router, setActiveCall, token]);
 
-  const autoAnswerHandled = useRef(false);
+  const rejectCall = useCallback(async () => {
+    if (!token || !callId || rejecting || accepting || !call) return;
+    setRejecting(true);
+    setActionError(null);
+    try {
+      await rejectIncomingCall(token, callId, 'busy');
+      stopIncomingCallRingtone();
+      setAvailabilityCallState(null, null);
+      try {
+        await cancelIncomingCallNotification(callId);
+      } catch {
+        // Stale notification cleanup must not block a successful rejection.
+      }
+      void queryClient.invalidateQueries({
+        queryKey: ['petipy', 'incoming-requests'],
+      });
+      router.replace('/(tabs)');
+    } catch (error) {
+      if (error instanceof PetipyApiError && error.status === 401) {
+        setActionError('نشست شما منقضی شده است؛ دوباره وارد حساب شوید.');
+      } else if (error instanceof PetipyApiError && error.status === 409) {
+        setActionError('این درخواست دیگر در انتظار پاسخ نیست یا منقضی شده است.');
+      } else if (error instanceof PetipyApiError && error.status === 403) {
+        setActionError('این درخواست به حساب مشاور شما تعلق ندارد.');
+      } else {
+        setActionError(
+          error instanceof Error
+            ? error.message
+            : 'رد تماس ممکن نشد؛ اتصال اینترنت را بررسی کنید.',
+        );
+      }
+    } finally {
+      setRejecting(false);
+    }
+  }, [accepting, call, callId, queryClient, rejecting, router, token]);
+
+  const autoActionHandled = useRef(false);
   useEffect(() => {
+    const shouldAnswer = actionParam === 'answer' || answerParam === '1';
+    const shouldReject = actionParam === 'reject';
     if (
-      answerParam !== '1' ||
+      (!shouldAnswer && !shouldReject) ||
       sessionState !== 'connected' ||
       !call ||
-      autoAnswerHandled.current
+      autoActionHandled.current
     ) {
       return;
     }
-    autoAnswerHandled.current = true;
-    void acceptCall();
-  }, [acceptCall, answerParam, call, sessionState]);
+    autoActionHandled.current = true;
+    if (shouldAnswer) void acceptCall();
+    else void rejectCall();
+  }, [acceptCall, actionParam, answerParam, call, rejectCall, sessionState]);
 
   if (sessionState === 'loading') {
     return (
@@ -229,21 +273,51 @@ export default function IncomingCallScreen() {
 
         <View style={styles.actions}>
           {call ? (
-            <Pressable
-              accessibilityLabel="پاسخ به تماس"
-              accessibilityRole="button"
-              disabled={accepting}
-              onPress={() => void acceptCall()}
-              style={[
-                styles.acceptButton,
-                { backgroundColor: colors.success },
-                accepting && styles.disabledButton,
-              ]}
-              testID="incoming-call-accept"
-            >
-              {accepting ? (
-                <ActivityIndicator color={colors.primaryForeground} />
-              ) : (
+            <View style={styles.callActions}>
+              <View style={styles.actionOption}>
+                <Pressable
+                  accessibilityLabel="رد تماس"
+                  accessibilityRole="button"
+                  disabled={accepting || rejecting}
+                  onPress={() => void rejectCall()}
+                  style={[
+                    styles.acceptButton,
+                    { backgroundColor: colors.destructive },
+                    (accepting || rejecting) && styles.disabledButton,
+                  ]}
+                  testID="incoming-call-reject"
+                >
+                  {rejecting ? (
+                    <ActivityIndicator color={colors.primaryForeground} />
+                  ) : (
+                    <Ionicons
+                      name="close"
+                      size={31}
+                      color={colors.primaryForeground}
+                      accessible={false}
+                    />
+                  )}
+                </Pressable>
+                <Text style={[styles.actionLabel, { color: colors.foreground }]}>
+                  {rejecting ? 'در حال رد…' : 'رد تماس'}
+                </Text>
+              </View>
+              <View style={styles.actionOption}>
+                <Pressable
+                  accessibilityLabel="پاسخ به تماس"
+                  accessibilityRole="button"
+                  disabled={accepting || rejecting}
+                  onPress={() => void acceptCall()}
+                  style={[
+                    styles.acceptButton,
+                    { backgroundColor: colors.success },
+                    (accepting || rejecting) && styles.disabledButton,
+                  ]}
+                  testID="incoming-call-accept"
+                >
+                  {accepting ? (
+                    <ActivityIndicator color={colors.primaryForeground} />
+                  ) : (
                 <Ionicons
                   name="call"
                   size={31}
@@ -251,11 +325,13 @@ export default function IncomingCallScreen() {
                   accessible={false}
                 />
               )}
-            </Pressable>
+                </Pressable>
+                <Text style={[styles.actionLabel, { color: colors.foreground }]}>
+                  {accepting ? 'متصل می‌شوید…' : 'پاسخ به تماس'}
+                </Text>
+              </View>
+            </View>
           ) : null}
-          <Text style={[styles.acceptLabel, { color: colors.foreground }]}>
-            {accepting ? 'מתחבר…' : call ? 'پاسخ به تماس' : 'درخواست در دسترس نیست'}
-          </Text>
           <Pressable
             accessibilityRole="button"
             onPress={() => router.replace('/(tabs)')}
@@ -272,9 +348,6 @@ export default function IncomingCallScreen() {
               بازگشت به صف تماس‌ها
             </Text>
           </Pressable>
-          <Text style={[styles.note, { color: colors.mutedForeground }]}>
-            رد تماس از API پشتیبانی نمی‌شود؛ اگر پاسخ ندهید، درخواست تا پایان مهلت در صف می‌ماند.
-          </Text>
         </View>
       </View>
     </SafeAreaView>
@@ -360,6 +433,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
     paddingBottom: 12,
+  },
+  callActions: {
+    flexDirection: 'row',
+    gap: 56,
+    justifyContent: 'center',
+  },
+  actionOption: {
+    alignItems: 'center',
+    gap: 10,
+  },
+  actionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   acceptButton: {
     alignItems: 'center',

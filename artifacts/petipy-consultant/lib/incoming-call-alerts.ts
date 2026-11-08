@@ -1,22 +1,34 @@
 import notifee, {
-  AndroidCategory,
   AndroidImportance,
-  AndroidVisibility,
   EventType,
   type Notification,
 } from '@notifee/react-native';
 import InCallManager from 'react-native-incall-manager';
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
 import {
   INCOMING_CALL_ANSWER_ACTION,
   INCOMING_CALL_CHANNEL_ID,
   INCOMING_CALL_FULL_SCREEN_ACTION,
   INCOMING_CALL_PRESS_ACTION,
+  isIncomingCallRejectAction,
   isIncomingCallAnswerAction,
   shouldOpenIncomingCallFromNotificationEvent,
 } from '@/lib/incoming-call-alert-config';
 
 const NOTIFICATION_PREFIX = 'petipy-incoming-call-';
+
+type PetipyCallNotificationModule = {
+  prepareIncomingCallChannel(): Promise<boolean>;
+  showIncomingCallNotification(
+    callId: string,
+    expiresAtMillis?: number | null,
+  ): Promise<boolean>;
+  cancelIncomingCallNotification(callId: string): Promise<boolean>;
+  cancelAllIncomingCallNotifications(): Promise<boolean>;
+};
+
+const nativeCallNotifications = NativeModules
+  .PetipyFullScreenAccess as PetipyCallNotificationModule | undefined;
 
 function notificationId(callId: string) {
   return `${NOTIFICATION_PREFIX}${callId}`;
@@ -24,15 +36,10 @@ function notificationId(callId: string) {
 
 export async function prepareIncomingCallAlerts() {
   if (Platform.OS !== 'android') return;
-  await notifee.createChannel({
-    id: INCOMING_CALL_CHANNEL_ID,
-    name: 'تماس‌های ورودی مشاوره',
-    description: 'اعلان و زنگ درخواست تماس مشاوره',
-    importance: AndroidImportance.HIGH,
-    sound: 'default',
-    vibration: false,
-    visibility: AndroidVisibility.PUBLIC,
-  });
+  if (!nativeCallNotifications?.prepareIncomingCallChannel) {
+    throw new Error('Native Android call notifications are unavailable.');
+  }
+  await nativeCallNotifications.prepareIncomingCallChannel();
 }
 
 export async function getIncomingCallChannelStatus():
@@ -65,38 +72,29 @@ export async function openIncomingCallChannelSettings() {
   await notifee.openNotificationSettings(INCOMING_CALL_CHANNEL_ID);
 }
 
-export async function notifyIncomingCall(callId: string) {
+export async function notifyIncomingCall(
+  callId: string,
+  expiresAt?: string,
+) {
   if (Platform.OS !== 'android') return;
-  await notifee.displayNotification({
-    id: notificationId(callId),
-    title: 'تماس ورودی Petipy',
-    body: 'درخواست مشاوره جدید دارید. برای پاسخ، دکمه‌ی «پاسخ» را بزنید.',
-    data: { type: 'incoming-call', callId },
-    android: {
-      channelId: INCOMING_CALL_CHANNEL_ID,
-      category: AndroidCategory.CALL,
-      importance: AndroidImportance.HIGH,
-      visibility: AndroidVisibility.PUBLIC,
-      sound: 'default',
-      smallIcon: 'ic_launcher',
-      color: '#6b3fe1',
-      lightUpScreen: true,
-      autoCancel: true,
-      actions: [
-        {
-          title: 'پاسخ',
-          pressAction: INCOMING_CALL_ANSWER_ACTION,
-        },
-      ],
-      pressAction: INCOMING_CALL_PRESS_ACTION,
-      fullScreenAction: INCOMING_CALL_FULL_SCREEN_ACTION,
-    },
-  });
+  if (!nativeCallNotifications?.showIncomingCallNotification) {
+    throw new Error('Native Android call notifications are unavailable.');
+  }
+  const shown = await nativeCallNotifications.showIncomingCallNotification(
+    callId,
+    expiresAt ? Date.parse(expiresAt) : null,
+  );
+  if (!shown) {
+    throw new Error('Android notification permission is disabled.');
+  }
 }
 
 export async function cancelIncomingCallNotification(callId: string) {
   if (Platform.OS !== 'android') return;
-  await notifee.cancelNotification(notificationId(callId));
+  await Promise.all([
+    notifee.cancelNotification(notificationId(callId)),
+    nativeCallNotifications?.cancelIncomingCallNotification(callId),
+  ]);
 }
 
 export async function clearIncomingCallNotifications() {
@@ -112,6 +110,7 @@ export async function clearIncomingCallNotifications() {
         : Promise.resolve(),
     ),
   );
+  await nativeCallNotifications?.cancelAllIncomingCallNotifications();
 }
 
 export function startIncomingCallRingtone() {
@@ -134,7 +133,7 @@ export function stopIncomingCallRingtone() {
 }
 
 export function onIncomingCallNotificationOpen(
-  onOpen: (callId: string, shouldAnswer: boolean) => void,
+  onOpen: (callId: string, action: 'answer' | 'reject' | 'open') => void,
 ) {
   if (Platform.OS !== 'android') return () => {};
 
@@ -149,7 +148,12 @@ export function onIncomingCallNotificationOpen(
     ) {
       return;
     }
-    onOpen(data.callId, isIncomingCallAnswerAction(actionId));
+    const action = isIncomingCallAnswerAction(actionId)
+      ? 'answer'
+      : isIncomingCallRejectAction(actionId)
+        ? 'reject'
+        : 'open';
+    onOpen(data.callId, action);
   };
 
   const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {

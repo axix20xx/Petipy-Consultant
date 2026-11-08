@@ -1,10 +1,67 @@
-const { withAndroidManifest } = require('expo/config-plugins');
+const { withAndroidManifest, withDangerousMod } = require('expo/config-plugins');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const SERVICE_NAME =
   'com.asterinet.react.bgactions.RNBackgroundActionsTask';
 
+function withPetipyNativeCallModule(config) {
+  return withDangerousMod(config, [
+    'android',
+    async (mod) => {
+      const projectRoot = mod.modRequest.projectRoot;
+      const javaDirectory = path.join(
+        projectRoot,
+        'android/app/src/main/java/com/petipy/consultant',
+      );
+      fs.mkdirSync(javaDirectory, { recursive: true });
+      fs.copyFileSync(
+        path.join(__dirname, 'native/PetipyFullScreenAccessModule.kt'),
+        path.join(javaDirectory, 'PetipyFullScreenAccessModule.kt'),
+      );
+
+      const applicationPath = path.join(javaDirectory, 'MainApplication.kt');
+      let application = fs.readFileSync(applicationPath, 'utf8');
+      const packageRegistration = 'add(PetipyFullScreenAccessPackage())';
+      if (!application.includes(packageRegistration)) {
+        const packageList = 'PackageList(this).packages.apply {';
+        if (!application.includes(packageList)) {
+          throw new Error('Could not register the Petipy native call module.');
+        }
+        application = application.replace(
+          packageList,
+          `${packageList}\n          ${packageRegistration}`,
+        );
+        fs.writeFileSync(applicationPath, application);
+      }
+
+      const activityPath = path.join(javaDirectory, 'MainActivity.kt');
+      let activity = fs.readFileSync(activityPath, 'utf8');
+      if (!activity.includes('override fun onNewIntent(')) {
+        const anchor = '  override fun invokeDefaultOnBackPressed() {';
+        if (!activity.includes(anchor)) {
+          throw new Error('Could not add Petipy call notification deep-link support.');
+        }
+        activity = activity.replace(
+          anchor,
+          [
+            '  override fun onNewIntent(intent: android.content.Intent) {',
+            '    super.onNewIntent(intent)',
+            '    setIntent(intent)',
+            '  }',
+            '',
+            anchor,
+          ].join('\n'),
+        );
+        fs.writeFileSync(activityPath, activity);
+      }
+      return mod;
+    },
+  ]);
+}
+
 module.exports = function withPetipyForegroundService(config) {
-  return withAndroidManifest(config, (mod) => {
+  const withManifest = withAndroidManifest(config, (mod) => {
     const manifest = mod.modResults.manifest;
     const app = manifest.application?.[0];
     if (!app) {
@@ -61,4 +118,5 @@ module.exports = function withPetipyForegroundService(config) {
 
     return mod;
   });
+  return withPetipyNativeCallModule(withManifest);
 };

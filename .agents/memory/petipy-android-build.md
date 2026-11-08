@@ -7,6 +7,6 @@ Expo SDK 58's Android template requires compile SDK 37, Build Tools 37.0.0, and 
 
 In the Google SDK repository used here, the platform package identifier is `platforms;android-37.0` (not `platforms;android-37`); Build Tools remains `build-tools;37.0.0`.
 
-**Why:** The available Nix SDK can lag behind Expo's generated Android project defaults, while the default root filesystem and parallel Gradle workers can run out of disk or memory during native builds. The public Expo subpath avoids an unnecessary direct dependency in this workspace.
+**Why:** The available Nix SDK can lag behind Expo's generated Android project defaults, while temporary SDK files under `/tmp` disappear after workspace sleep/restart. The default root filesystem and parallel Gradle workers can also run out of disk or memory during native builds. The public Expo subpath avoids an unnecessary direct dependency in this workspace.
 
-**How to apply:** Check the generated Gradle SDK, build-tools, NDK, and CMake requirements before building. Use the exact SDK Manager package identifiers from the repository listing, put the Gradle user home on workspace-backed storage, and limit Gradle to one worker in constrained environments.
+**How to apply:** Check the generated Gradle SDK, build-tools, NDK, and CMake requirements before building. Use the exact SDK Manager package identifiers from the repository listing, keep downloaded SDK overlays under an ignored workspace-backed directory rather than `/tmp`, put the Gradle user home on workspace-backed storage, and limit Gradle to one worker in constrained environments.

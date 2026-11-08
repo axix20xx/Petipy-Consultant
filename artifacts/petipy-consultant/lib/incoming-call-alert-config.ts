@@ -1,4 +1,4 @@
-export const INCOMING_CALL_CHANNEL_ID = 'incoming-calls-v3';
+export const INCOMING_CALL_CHANNEL_ID = 'incoming-calls';
 
 export const INCOMING_CALL_FULL_SCREEN_ACTION = {
   id: 'incoming-call',
@@ -10,6 +10,11 @@ export const INCOMING_CALL_ANSWER_ACTION = {
   launchActivity: 'default',
 } as const;
 
+export const INCOMING_CALL_REJECT_ACTION = {
+  id: 'reject',
+  launchActivity: 'default',
+} as const;
+
 export const INCOMING_CALL_PRESS_ACTION = {
   id: 'default',
   launchActivity: 'default',
@@ -17,6 +22,10 @@ export const INCOMING_CALL_PRESS_ACTION = {
 
 export function isIncomingCallAnswerAction(actionId?: unknown) {
   return actionId === INCOMING_CALL_ANSWER_ACTION.id;
+}
+
+export function isIncomingCallRejectAction(actionId?: unknown) {
+  return actionId === INCOMING_CALL_REJECT_ACTION.id;
 }
 
 export function shouldOpenIncomingCallFromNotificationEvent(

@@ -10,7 +10,9 @@ import {
   INCOMING_CALL_CHANNEL_ID,
   INCOMING_CALL_FULL_SCREEN_ACTION,
   INCOMING_CALL_PRESS_ACTION,
+  INCOMING_CALL_REJECT_ACTION,
   isIncomingCallAnswerAction,
+  isIncomingCallRejectAction,
   shouldOpenIncomingCallFromNotificationEvent,
 } from '../lib/incoming-call-alert-config';
 
@@ -24,7 +26,7 @@ const activeRequest = {
 };
 
 test('uses a new high-priority incoming-call channel for Android', () => {
-  assert.equal(INCOMING_CALL_CHANNEL_ID, 'incoming-calls-v3');
+  assert.equal(INCOMING_CALL_CHANNEL_ID, 'incoming-calls');
 });
 
 test('routes incoming calls from notification and full-screen action events', () => {
@@ -128,6 +130,12 @@ test('incoming-call notification explicitly launches the default Android activit
   });
   assert.equal(isIncomingCallAnswerAction('answer'), true);
   assert.equal(isIncomingCallAnswerAction('default'), false);
+  assert.deepEqual(INCOMING_CALL_REJECT_ACTION, {
+    id: 'reject',
+    launchActivity: 'default',
+  });
+  assert.equal(isIncomingCallRejectAction('reject'), true);
+  assert.equal(isIncomingCallRejectAction('default'), false);
   assert.deepEqual(INCOMING_CALL_FULL_SCREEN_ACTION, {
     id: 'incoming-call',
     launchActivity: 'default',

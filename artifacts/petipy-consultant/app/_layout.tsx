@@ -34,7 +34,7 @@ function RootLayoutNav() {
   const { token, state } = useConsultantSession();
   const [pendingNotificationCall, setPendingNotificationCall] = useState<{
     callId: string;
-    shouldAnswer: boolean;
+    action: 'answer' | 'reject' | 'open';
   } | null>(null);
 
   useEffect(() => {
@@ -46,8 +46,8 @@ function RootLayoutNav() {
   }, []);
 
   useEffect(() => {
-    return onIncomingCallNotificationOpen((callId, shouldAnswer) =>
-      setPendingNotificationCall({ callId, shouldAnswer }),
+    return onIncomingCallNotificationOpen((callId, action) =>
+      setPendingNotificationCall({ callId, action }),
     );
   }, []);
 
@@ -69,7 +69,7 @@ function RootLayoutNav() {
             pathname: '/incoming-call/[id]',
             params: {
               id: route.callId,
-              ...(pendingNotificationCall.shouldAnswer ? { answer: '1' } : {}),
+              action: pendingNotificationCall.action,
             },
           });
         }

@@ -126,7 +126,7 @@ async function monitorIncomingCalls(params?: MonitorParams) {
         for (const call of pendingCalls) {
           if (notifiedCallIds.has(call.id)) continue;
           try {
-            await notifyIncomingCall(call.id);
+            await notifyIncomingCall(call.id, call.expiresAt);
             notifiedCallIds.add(call.id);
           } catch {
             await BackgroundService.updateNotification({

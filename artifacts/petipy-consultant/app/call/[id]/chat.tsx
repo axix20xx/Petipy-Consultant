@@ -2,7 +2,6 @@ import { useColors } from '@/hooks/useColors';
 import {
   createVoiceChatUpload,
   getVoiceCallMessages,
-  getVoiceChatAttachmentUrl,
   sendVoiceCallMessage,
   VOICE_CHAT_ALLOWED_TYPES,
   VOICE_CHAT_MAX_ATTACHMENTS,
@@ -21,7 +20,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -206,21 +204,18 @@ export default function VoiceCallChatScreen() {
   }, [callId, draft, files, sending, token]);
 
   const openAttachment = useCallback(
-    async (message: VoiceChatMessage, attachment: VoiceChatAttachment) => {
-      if (!token || !callId) return;
-      try {
-        const { url } = await getVoiceChatAttachmentUrl(
-          token,
-          callId,
-          message.id,
-          attachment.id,
-        );
-        await Linking.openURL(url);
-      } catch {
-        setError('باز کردن پیوست ممکن نشد. دوباره تلاش کنید.');
-      }
+    (message: VoiceChatMessage, attachment: VoiceChatAttachment) => {
+      if (!callId) return;
+      router.push({
+        pathname: '/call/[id]/attachment',
+        params: {
+          id: callId,
+          messageId: message.id,
+          attachmentId: attachment.id,
+        },
+      });
     },
-    [callId, token],
+    [callId],
   );
 
   if (!token || !callId) return <Redirect href="/sign-in" />;

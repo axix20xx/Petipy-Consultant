@@ -7,7 +7,7 @@ import {
 export const CONSULTANT_SESSION_KEY = 'petipy.voice-consultant.session';
 export const CONSULTANT_ROLE = 'VOICE_CONSULTANT';
 export const CONSULTANT_DESTINATION = '/workspace/voice';
-export const MAX_MOBILE_SESSION_MS = 2 * 60 * 60 * 1_000;
+export const MAX_MOBILE_SESSION_MS = 30 * 24 * 60 * 60 * 1_000;
 
 export type ConsultantMobileSession = {
   accessToken: string;

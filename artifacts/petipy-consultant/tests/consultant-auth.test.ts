@@ -34,7 +34,7 @@ function signInResponse(overrides: Record<string, unknown> = {}) {
     role: CONSULTANT_ROLE,
     destination: CONSULTANT_DESTINATION,
     accessToken: 'unit-test-only-token',
-    tokenExpiresAt: '2026-11-07T14:00:00.000Z',
+    tokenExpiresAt: '2026-12-07T12:00:00.000Z',
     ...overrides,
   };
 }

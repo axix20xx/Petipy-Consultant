@@ -1,4 +1,4 @@
-- [Petipy consultant auth and rejection](petipy-consultant-auth-rejection.md) — restore valid SecureStore sessions; keep two-hour dev expiry and require backend support for live auth.
+- [Petipy consultant auth and rejection](petipy-consultant-auth-rejection.md) — SecureStore persists sessions; requested 30-day dev tokens require a server issuer change, separate from live auth.
 - [Petipy voice chat deployment](petipy-voice-chat-deployment.md) — supplied backend source has per-call chat routes; the workspace API is health-only, so live behavior needs verification.
 - [Petipy Android builds](petipy-android-build.md) — Expo 58 needs API 37, Build Tools 37, and NDK 27; keep SDK/Gradle caches in workspace storage and build with one worker.
 - [Petipy background call alerts](petipy-consultant-background-alerts.md) — self-managed Telecom plus CallStyle; full-screen remains OS-gated, and channel settings need versioned IDs to reset.

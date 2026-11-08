@@ -5,6 +5,12 @@ description: Product constraints for consultant mobile authentication and pendin
 
 For Android `VOICE_CONSULTANT` accounts, `POST /api/dev-auth/universal/sign-in` can issue a mobile token only when Petipy's development phone-auth mode is enabled and the identity account has consultant role metadata. Its token expires after two hours. This is not production/live sign-in; keep sign-in unavailable in live mode until Petipy provides a live mobile token exchange. Do not invent endpoints, transfer tokens through clipboard/deep links, or present demo auth as official live authentication. Store mobile credentials only in Expo SecureStore, and never log credentials.
 
+The owner chose remembered login across app restarts, not a longer OTP or bearer-token lifetime. Restore and revalidate the secure session while its server-issued token is valid; do not extend its expiry on the client.
+
+**Why:** The current development token expires after two hours, and the owner selected secure session persistence rather than changing OTP/token validity.
+
+**How to apply:** Keep the session in SecureStore and verify it against the consultant profile after app launch. Longer sessions require a server-supported refresh or token-lifetime contract.
+
 For standalone Android release APKs, the shell `EXPO_PUBLIC_PETIPY_AUTH_MODE` value may not be present in the bundled JS. Use the Expo app config `extra.petipyAuthMode` as a fallback in addition to the environment override, and verify `assets/app.config` inside the APK contains the intended mode. Keep the configuration explicitly set to development only for the requested test build.
 
 The owner supplied an approved rejection contract: `POST /api/voice/consultant/me/requests/{callId}/reject`, optional `{ "reason": "busy" }`, and `{ callId, status: "rejected" }` on success. It must check active consultant ownership and pending/unexpired status, persist a rejection event, and return 401/403/409 for the specified auth, ownership, and conflict cases. The attached source snapshot lacked the route; the local backend artifact is only a health-check placeholder, so the live route is not deployed merely because a patch exists.

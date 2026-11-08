@@ -158,6 +158,26 @@ test('rejects an expired token before verification or persistence', async () => 
   assert.equal(values.has(CONSULTANT_SESSION_KEY), false);
 });
 
+test('restores a valid remembered session from secure storage after app relaunch', async () => {
+  const { storage, values } = makeStorage(
+    JSON.stringify({
+      accessToken: 'unit-test-only-token',
+      authMode: 'development',
+      role: CONSULTANT_ROLE,
+      destination: CONSULTANT_DESTINATION,
+      tokenExpiresAt: '2026-11-07T14:00:00.000Z',
+    }),
+  );
+
+  const result = await readStoredConsultantSession(storage, fixedNow);
+
+  assert.equal(result.status, 'ready');
+  if (result.status === 'ready') {
+    assert.equal(result.session.accessToken, 'unit-test-only-token');
+  }
+  assert.equal(values.has(CONSULTANT_SESSION_KEY), true);
+});
+
 test('clears an expired stored session on restore', async () => {
   const expired = JSON.stringify({
     accessToken: 'expired-test-token',

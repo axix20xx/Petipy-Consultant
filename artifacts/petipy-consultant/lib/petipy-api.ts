@@ -49,6 +49,43 @@ export type CallSession = {
   iceServers: TurnIceServer[];
 };
 
+export type VoiceChatAttachment = {
+  id: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+};
+
+export type VoiceChatMessage = {
+  id: string;
+  callId: string;
+  senderRole: 'customer' | 'consultant';
+  isMine: boolean;
+  content: string;
+  attachments: VoiceChatAttachment[];
+  createdAt: string;
+};
+
+export type VoiceChatUploadTicket = {
+  attachmentId: string;
+  uploadUrl: string;
+};
+
+export type VoiceChatUploadInput = {
+  fileName: string;
+  contentType: string;
+  size: number;
+};
+
+export const VOICE_CHAT_ALLOWED_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+] as const;
+export const VOICE_CHAT_MAX_FILE_BYTES = 25 * 1024 * 1024;
+export const VOICE_CHAT_MAX_ATTACHMENTS = 5;
+
 export class PetipyApiError extends Error {
   status: number;
 
@@ -347,4 +384,165 @@ export async function finishCall(token: string, callId: string) {
     token,
     { method: 'POST' },
   );
+}
+
+function normalizeVoiceChatAttachment(value: unknown): VoiceChatAttachment {
+  const record = asRecord(value);
+  if (
+    typeof record.id !== 'string' ||
+    typeof record.fileName !== 'string' ||
+    typeof record.contentType !== 'string' ||
+    typeof record.size !== 'number' ||
+    !Number.isFinite(record.size)
+  ) {
+    throw new PetipyApiError('پیوست پیام از سرور معتبر نیست.', 502);
+  }
+  return {
+    id: record.id,
+    fileName: record.fileName,
+    contentType: record.contentType,
+    size: record.size,
+  };
+}
+
+function normalizeVoiceChatMessage(value: unknown): VoiceChatMessage {
+  const record = asRecord(value);
+  const createdAt =
+    typeof record.createdAt === 'string'
+      ? record.createdAt
+      : record.createdAt instanceof Date
+        ? record.createdAt.toISOString()
+        : '';
+  if (
+    typeof record.id !== 'string' ||
+    typeof record.callId !== 'string' ||
+    (record.senderRole !== 'customer' && record.senderRole !== 'consultant') ||
+    typeof record.isMine !== 'boolean' ||
+    typeof record.content !== 'string' ||
+    !Array.isArray(record.attachments) ||
+    !Number.isFinite(Date.parse(createdAt))
+  ) {
+    throw new PetipyApiError('پیام گفت‌وگوی تماس از سرور معتبر نیست.', 502);
+  }
+  return {
+    id: record.id,
+    callId: record.callId,
+    senderRole: record.senderRole,
+    isMine: record.isMine,
+    content: record.content,
+    attachments: record.attachments.map(normalizeVoiceChatAttachment),
+    createdAt: new Date(createdAt).toISOString(),
+  };
+}
+
+export async function getVoiceCallMessages(
+  token: string,
+  callId: string,
+): Promise<VoiceChatMessage[]> {
+  const result = await request<unknown>(
+    `/voice/calls/${encodeURIComponent(callId)}/messages`,
+    token,
+  );
+  if (!Array.isArray(result)) {
+    throw new PetipyApiError('فهرست پیام‌های تماس از سرور معتبر نیست.', 502);
+  }
+  return result.map(normalizeVoiceChatMessage);
+}
+
+export async function createVoiceChatUpload(
+  token: string,
+  callId: string,
+  input: VoiceChatUploadInput,
+): Promise<VoiceChatUploadTicket> {
+  if (
+    input.fileName.trim().length < 1 ||
+    input.fileName.length > 180 ||
+    !(VOICE_CHAT_ALLOWED_TYPES as readonly string[]).includes(input.contentType) ||
+    !Number.isInteger(input.size) ||
+    input.size < 1 ||
+    input.size > VOICE_CHAT_MAX_FILE_BYTES
+  ) {
+    throw new PetipyApiError('نوع یا اندازه‌ی فایل پشتیبانی نمی‌شود.', 400);
+  }
+  const result = asRecord(
+    await request<unknown>(
+      `/voice/calls/${encodeURIComponent(callId)}/messages/uploads`,
+      token,
+      {
+        method: 'POST',
+        body: JSON.stringify(input),
+      },
+    ),
+  );
+  if (
+    typeof result.attachmentId !== 'string' ||
+    typeof result.uploadUrl !== 'string'
+  ) {
+    throw new PetipyApiError('پاسخ بارگذاری فایل از سرور معتبر نیست.', 502);
+  }
+  let uploadUrl: URL;
+  try {
+    uploadUrl = new URL(result.uploadUrl, PETIPY_API_ORIGIN);
+  } catch {
+    throw new PetipyApiError('نشانی بارگذاری فایل معتبر نیست.', 502);
+  }
+  if (uploadUrl.protocol !== 'https:') {
+    throw new PetipyApiError('بارگذاری فایل امن در دسترس نیست.', 502);
+  }
+  return { attachmentId: result.attachmentId, uploadUrl: uploadUrl.toString() };
+}
+
+export async function sendVoiceCallMessage(
+  token: string,
+  callId: string,
+  content: string,
+  attachments: VoiceChatAttachment[],
+): Promise<VoiceChatMessage> {
+  if (
+    content.length > 4000 ||
+    attachments.length > VOICE_CHAT_MAX_ATTACHMENTS ||
+    (!content.trim() && attachments.length === 0)
+  ) {
+    throw new PetipyApiError('پیام باید متن یا حداکثر پنج پیوست داشته باشد.', 400);
+  }
+  const result = await request<unknown>(
+    `/voice/calls/${encodeURIComponent(callId)}/messages`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify({ content, attachments }),
+    },
+  );
+  return normalizeVoiceChatMessage(result);
+}
+
+export async function getVoiceChatAttachmentUrl(
+  token: string,
+  callId: string,
+  messageId: string,
+  attachmentId: string,
+): Promise<{ url: string; expiresAt: string }> {
+  const result = asRecord(
+    await request<unknown>(
+      `/voice/calls/${encodeURIComponent(callId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}`,
+      token,
+    ),
+  );
+  if (
+    typeof result.url !== 'string' ||
+    typeof result.expiresAt !== 'string' ||
+    !Number.isFinite(Date.parse(result.expiresAt))
+  ) {
+    throw new PetipyApiError('پیوست تماس از سرور معتبر نیست.', 502);
+  }
+  let url: URL;
+  try {
+    url = new URL(result.url, PETIPY_API_ORIGIN);
+  } catch {
+    throw new PetipyApiError('نشانی دریافت فایل معتبر نیست.', 502);
+  }
+  if (url.protocol !== 'https:') {
+    throw new PetipyApiError('دریافت فایل امن در دسترس نیست.', 502);
+  }
+  return { url: url.toString(), expiresAt: result.expiresAt };
 }

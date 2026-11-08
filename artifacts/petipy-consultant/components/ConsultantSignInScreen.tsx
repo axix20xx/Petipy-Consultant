@@ -52,45 +52,111 @@ export default function ConsultantSignInScreen() {
 
   const unavailableMessage =
     state === 'auth-unavailable' && message ? message : LIVE_AUTH_MESSAGE;
+  const canSubmit =
+    !authBusy && phone.trim().length >= 10 && code.length === 6;
 
   return (
     <SafeAreaView
       style={[styles.safe, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      <KeyboardAwareScrollViewCompat
-        contentContainerStyle={[
-          styles.scrollContent,
+      <View
+        pointerEvents="none"
+        style={[
+          styles.orb,
+          styles.orbTop,
+          { backgroundColor: colors.secondary },
         ]}
-        bottomOffset={28}
+      />
+      <View
+        pointerEvents="none"
+        style={[
+          styles.orb,
+          styles.orbBottom,
+          { backgroundColor: colors.accent },
+        ]}
+      />
+      <KeyboardAwareScrollViewCompat
+        contentContainerStyle={styles.scrollContent}
+        bottomOffset={24}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.hero}>
+          <View
+            style={[
+              styles.brandHalo,
+              { backgroundColor: colors.secondary },
+            ]}
+          >
+            <View
+              style={[
+                styles.brandMark,
+                { backgroundColor: colors.primary },
+              ]}
+            >
+              <Ionicons name="paw" size={29} color={colors.primaryForeground} />
+            </View>
+            <View
+              style={[
+                styles.sparkle,
+                { backgroundColor: colors.accent },
+              ]}
+            >
+              <Ionicons name="sparkles" size={15} color={colors.warning} />
+            </View>
+          </View>
+          <Text style={[styles.eyebrow, { color: colors.primary }]}>
+            PETIPY  ·  CONSULTANT
+          </Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>
+            سلام، خوش اومدی
+          </Text>
+          <Text style={[styles.heroCopy, { color: colors.mutedForeground }]}>
+            برای همراهی با دوست‌های پشمالو وارد شو
+          </Text>
+        </View>
+
         <View
           style={[
             styles.card,
-            { backgroundColor: colors.card, borderColor: colors.border },
+            { backgroundColor: colors.card, borderColor: colors.input },
           ]}
         >
-          <View style={[styles.brandMark, { backgroundColor: colors.secondary }]}>
-            <Ionicons name="paw" size={26} color={colors.primary} />
+          <View style={styles.cardHeading}>
+            <View style={styles.cardHeadingText}>
+              <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+                ورود مشاور
+              </Text>
+              <Text style={[styles.body, { color: colors.mutedForeground }]}>
+                فقط حساب فعال VOICE_CONSULTANT مجاز است
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.headingIcon,
+                { backgroundColor: colors.secondary },
+              ]}
+            >
+              <Ionicons
+                name="lock-closed"
+                size={18}
+                color={colors.primary}
+              />
+            </View>
           </View>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>
-            PETIPY CONSULTANT
-          </Text>
-          <Text style={[styles.title, { color: colors.foreground }]}>
-            ورود مشاور
-          </Text>
-          <Text style={[styles.body, { color: colors.mutedForeground }]}>
-            فقط حساب‌های فعال VOICE_CONSULTANT می‌توانند وارد این برنامه شوند.
-          </Text>
 
           {devAuthAvailable ? (
             <>
-              <View style={[styles.notice, { backgroundColor: colors.accent }]}>
+              <View
+                style={[
+                  styles.notice,
+                  { backgroundColor: colors.accent },
+                ]}
+              >
                 <Ionicons
-                  name="information-circle-outline"
-                  size={18}
+                  name="flask-outline"
+                  size={19}
                   color={colors.warning}
                 />
                 <Text
@@ -99,7 +165,7 @@ export default function ConsultantSignInScreen() {
                     { color: colors.accentForeground },
                   ]}
                 >
-                  ورود توسعه‌ای است و ورود زنده محسوب نمی‌شود. نشست پس از دو ساعت منقضی می‌شود.
+                  ورود آزمایشی است، نه ورود زنده. توکن توسعه‌ای پس از دو ساعت منقضی می‌شود.
                 </Text>
               </View>
 
@@ -107,98 +173,139 @@ export default function ConsultantSignInScreen() {
                 <Text style={[styles.label, { color: colors.foreground }]}>
                   شماره موبایل حساب مشاور
                 </Text>
-                <TextInput
-                  testID="consultant-phone-input"
-                  accessibilityLabel="شماره موبایل حساب مشاور"
-                  value={phone}
-                  onChangeText={(value) => setPhone(normalizeMobileDigits(value))}
-                  placeholder="09xxxxxxxxx"
-                  placeholderTextColor={colors.mutedForeground}
-                  keyboardType="phone-pad"
-                  autoComplete="tel"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  editable={!authBusy}
-                  maxLength={20}
-                  textAlign="left"
+                <View
                   style={[
-                    styles.input,
+                    styles.inputShell,
                     {
                       backgroundColor: colors.background,
                       borderColor: colors.input,
-                      color: colors.foreground,
                     },
                   ]}
-                />
+                >
+                  <Ionicons
+                    name="call-outline"
+                    size={19}
+                    color={colors.mutedForeground}
+                  />
+                  <TextInput
+                    testID="consultant-phone-input"
+                    accessibilityLabel="شماره موبایل حساب مشاور"
+                    value={phone}
+                    onChangeText={(value) =>
+                      setPhone(normalizeMobileDigits(value))
+                    }
+                    placeholder="09xxxxxxxxx"
+                    placeholderTextColor={colors.mutedForeground}
+                    keyboardType="phone-pad"
+                    autoComplete="tel"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    editable={!authBusy}
+                    maxLength={20}
+                    textAlign="left"
+                    style={[styles.input, { color: colors.foreground }]}
+                  />
+                </View>
                 <Text style={[styles.label, { color: colors.foreground }]}>
                   کد توسعه‌ای ۶ رقمی
                 </Text>
-                <TextInput
-                  testID="consultant-code-input"
-                  accessibilityLabel="کد توسعه‌ای شش رقمی"
-                  value={code}
-                  onChangeText={(value) =>
-                    setCode(
-                      normalizeMobileDigits(value)
-                        .replace(/\D/g, '')
-                        .slice(0, 6),
-                    )
-                  }
-                  placeholder="••••••"
-                  placeholderTextColor={colors.mutedForeground}
-                  keyboardType="number-pad"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  editable={!authBusy}
-                  maxLength={6}
-                  secureTextEntry
-                  textAlign="center"
+                <View
                   style={[
-                    styles.input,
-                    styles.codeInput,
+                    styles.inputShell,
                     {
                       backgroundColor: colors.background,
                       borderColor: colors.input,
-                      color: colors.foreground,
                     },
                   ]}
-                />
+                >
+                  <Ionicons
+                    name="keypad-outline"
+                    size={19}
+                    color={colors.mutedForeground}
+                  />
+                  <TextInput
+                    testID="consultant-code-input"
+                    accessibilityLabel="کد توسعه‌ای شش رقمی"
+                    value={code}
+                    onChangeText={(value) =>
+                      setCode(
+                        normalizeMobileDigits(value)
+                          .replace(/\D/g, '')
+                          .slice(0, 6),
+                      )
+                    }
+                    placeholder="••••••"
+                    placeholderTextColor={colors.mutedForeground}
+                    keyboardType="number-pad"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    editable={!authBusy}
+                    maxLength={6}
+                    secureTextEntry
+                    textAlign="center"
+                    style={[
+                      styles.input,
+                      styles.codeInput,
+                      { color: colors.foreground },
+                    ]}
+                  />
+                </View>
+                <View style={styles.rememberNote}>
+                  <Ionicons
+                    name="shield-checkmark-outline"
+                    size={17}
+                    color={colors.success}
+                  />
+                  <Text
+                    style={[
+                      styles.rememberText,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
+                    ورود امن روی این دستگاه حفظ می‌شود تا نشست منقضی شود.
+                  </Text>
+                </View>
                 <Pressable
                   testID="consultant-sign-in"
                   accessibilityRole="button"
-                  accessibilityState={{ disabled: authBusy }}
-                  disabled={authBusy}
+                  accessibilityState={{ disabled: !canSubmit }}
+                  disabled={!canSubmit}
                   onPress={() => void submit()}
                   style={[
                     styles.primaryButton,
                     { backgroundColor: colors.primary },
-                    authBusy && styles.disabledButton,
+                    !canSubmit && styles.disabledButton,
                   ]}
                 >
                   {authBusy ? (
                     <ActivityIndicator color={colors.primaryForeground} />
                   ) : (
                     <>
-                      <Ionicons
-                        name="log-in-outline"
-                        size={19}
-                        color={colors.primaryForeground}
-                      />
                       <Text
                         style={[
                           styles.primaryButtonText,
                           { color: colors.primaryForeground },
                         ]}
                       >
-                        ورود به حساب مشاور
+                        ورود امن به پنل
                       </Text>
+                      <Ionicons
+                        name="arrow-back"
+                        size={19}
+                        color={colors.primaryForeground}
+                      />
                     </>
                   )}
                 </Pressable>
               </View>
             </>
           ) : (
-            <View style={[styles.notice, { backgroundColor: colors.accent }]}>
+            <View
+              style={[
+                styles.notice,
+                { backgroundColor: colors.accent },
+              ]}
+            >
               <Ionicons
                 name="lock-closed-outline"
                 size={18}
@@ -237,8 +344,18 @@ export default function ConsultantSignInScreen() {
             </Pressable>
           ) : null}
         </View>
-        <Text style={[styles.footer, { color: colors.mutedForeground }]}>
-          رمز، کد ورود و توکن نشست در گزارش‌ها ثبت نمی‌شوند.
+        <View style={styles.footerRow}>
+          <Ionicons
+            name="heart"
+            size={13}
+            color={colors.primary}
+          />
+          <Text style={[styles.footer, { color: colors.mutedForeground }]}>
+            همراهِ مراقبت بهتر از حیوانات خانگی
+          </Text>
+        </View>
+        <Text style={[styles.privacy, { color: colors.mutedForeground }]}>
+          کد و توکن در گزارش‌ها ثبت نمی‌شوند و نشست در SecureStore نگهداری می‌شود.
         </Text>
         {!devAuthAvailable && state !== 'auth-unavailable' && message ? (
           <Text
@@ -259,89 +376,178 @@ export default function ConsultantSignInScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
+  safe: { flex: 1, overflow: 'hidden' },
+  orb: {
+    position: 'absolute',
+    borderRadius: 999,
+    opacity: 0.38,
+  },
+  orbTop: {
+    width: 240,
+    height: 240,
+    top: -122,
+    right: -92,
+  },
+  orbBottom: {
+    width: 188,
+    height: 188,
+    bottom: -91,
+    left: -94,
+  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
+    paddingVertical: 24,
+  },
+  hero: {
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 22,
+  },
+  brandHalo: {
+    width: 84,
+    height: 84,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 7,
   },
   card: {
     alignItems: 'stretch',
     borderWidth: 1.5,
-    borderRadius: 24,
-    padding: 22,
-    gap: 14,
+    borderRadius: 28,
+    padding: 20,
+    gap: 16,
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 6,
   },
   brandMark: {
-    alignSelf: 'center',
-    width: 54,
-    height: 54,
-    borderRadius: 18,
+    width: 60,
+    height: 60,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sparkle: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    width: 27,
+    height: 27,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   eyebrow: {
     fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 1.7,
+    letterSpacing: 1.4,
     textAlign: 'center',
   },
   title: {
-    fontSize: 27,
+    fontSize: 29,
     fontWeight: '700',
     textAlign: 'center',
     writingDirection: 'rtl',
   },
-  body: {
+  heroCopy: {
     fontSize: 13,
     lineHeight: 21,
     textAlign: 'center',
     writingDirection: 'rtl',
   },
+  cardHeading: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 12,
+  },
+  cardHeadingText: { flex: 1, gap: 4 },
+  cardTitle: {
+    fontSize: 19,
+    fontWeight: '700',
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  headingIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  body: {
+    fontSize: 11,
+    lineHeight: 18,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
   notice: {
     flexDirection: 'row-reverse',
-    alignItems: 'flex-start',
-    gap: 9,
-    borderRadius: 14,
-    padding: 12,
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 17,
+    padding: 13,
   },
   noticeText: {
     flex: 1,
-    fontSize: 11,
-    lineHeight: 19,
+    fontSize: 10,
+    lineHeight: 18,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
-  form: { gap: 9, marginTop: 2 },
+  form: { gap: 10, marginTop: 1 },
   label: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     textAlign: 'right',
     writingDirection: 'rtl',
-    marginTop: 3,
+    marginTop: 4,
+  },
+  inputShell: {
+    minHeight: 54,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 17,
+    paddingHorizontal: 14,
   },
   input: {
-    minHeight: 50,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    fontSize: 15,
+    flex: 1,
+    minHeight: 52,
+    fontSize: 14,
+    writingDirection: 'ltr',
   },
   codeInput: {
-    alignSelf: 'flex-end',
-    width: 170,
-    letterSpacing: 7,
+    letterSpacing: 10,
     fontWeight: '700',
+    writingDirection: 'ltr',
+  },
+  rememberNote: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 8,
+    paddingTop: 3,
+  },
+  rememberText: {
+    flex: 1,
+    fontSize: 10,
+    lineHeight: 17,
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
   primaryButton: {
-    minHeight: 50,
-    borderRadius: 15,
+    minHeight: 54,
+    borderRadius: 18,
     flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 9,
-    paddingHorizontal: 16,
-    marginTop: 6,
+    gap: 11,
+    paddingHorizontal: 18,
+    marginTop: 5,
   },
   disabledButton: { opacity: 0.7 },
   primaryButtonText: {
@@ -358,17 +564,30 @@ const styles = StyleSheet.create({
   retryButton: {
     minHeight: 42,
     borderWidth: 1,
-    borderRadius: 13,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
   retryText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
+  footerRow: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    marginTop: 18,
+  },
   footer: {
-    fontSize: 11,
-    lineHeight: 18,
+    fontSize: 10,
+    lineHeight: 16,
     textAlign: 'center',
     writingDirection: 'rtl',
-    marginTop: 14,
+  },
+  privacy: {
+    fontSize: 9,
+    lineHeight: 15,
+    textAlign: 'center',
+    writingDirection: 'rtl',
+    marginTop: 7,
   },
   loading: {
     flex: 1,

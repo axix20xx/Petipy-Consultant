@@ -1,4 +1,5 @@
-- [Petipy consultant auth and rejection](petipy-consultant-auth-rejection.md) — release APKs need bundled dev auth mode; live sign-in and rejection stay gated until backend operations are deployed.
+- [Petipy consultant auth and rejection](petipy-consultant-auth-rejection.md) — restore valid SecureStore sessions; keep two-hour dev expiry and require backend support for live auth.
+- [Petipy voice chat deployment](petipy-voice-chat-deployment.md) — supplied backend source has per-call chat routes; the workspace API is health-only, so live behavior needs verification.
 - [Petipy Android builds](petipy-android-build.md) — Expo 58 needs API 37, Build Tools 37, and NDK 27; keep SDK/Gradle caches in workspace storage and build with one worker.
 - [Petipy background call alerts](petipy-consultant-background-alerts.md) — self-managed Telecom plus CallStyle; full-screen remains OS-gated, and channel settings need versioned IDs to reset.
 - [Petipy call media contracts](petipy-consultant-media.md) — use real API contracts; receive customer video only; gate connected status on WebRTC state.

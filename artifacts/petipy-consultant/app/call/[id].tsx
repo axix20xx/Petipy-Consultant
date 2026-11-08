@@ -260,12 +260,36 @@ export default function ConsultantCallScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <View style={styles.topBar}>
-        <View style={[styles.brandMark, { backgroundColor: colors.secondary }]}>
-          <Ionicons name="paw" size={18} color={colors.primary} />
+        <View style={styles.topBrand}>
+          <View
+            style={[styles.brandMark, { backgroundColor: colors.secondary }]}
+          >
+            <Ionicons name="paw" size={18} color={colors.primary} />
+          </View>
+          <Text style={[styles.topLabel, { color: colors.mutedForeground }]}>
+            تماس خصوصی پتی‌پای
+          </Text>
         </View>
-        <Text style={[styles.topLabel, { color: colors.mutedForeground }]}>
-          تماس خصوصی پتی‌پای
-        </Text>
+        <Pressable
+          testID="call-chat"
+          accessibilityRole="button"
+          accessibilityLabel="گفت‌وگوی تماس"
+          disabled={!callId || !token}
+          onPress={() => {
+            if (!callId) return;
+            router.push({ pathname: '/call/[id]/chat', params: { id: callId } });
+          }}
+          style={[
+            styles.chatButton,
+            { backgroundColor: colors.secondary },
+            (!callId || !token) && styles.chatButtonDisabled,
+          ]}
+        >
+          <Ionicons name="chatbubble-ellipses" size={17} color={colors.primary} />
+          <Text style={[styles.chatButtonText, { color: colors.primary }]}>
+            گفت‌وگو
+          </Text>
+        </Pressable>
       </View>
 
       <View style={styles.center}>
@@ -448,9 +472,25 @@ export default function ConsultantCallScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, paddingHorizontal: 24, paddingTop: 10, paddingBottom: 18 },
-  topBar: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
+  topBar: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  topBrand: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   brandMark: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   topLabel: { fontSize: 12, writingDirection: 'rtl' },
+  chatButton: {
+    minHeight: 38,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+  },
+  chatButtonDisabled: { opacity: 0.45 },
+  chatButtonText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 13 },
   avatarOuter: { width: 120, height: 120, borderRadius: 44, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 5 },
   avatarInner: { width: 102, height: 102, borderRadius: 37, alignItems: 'center', justifyContent: 'center' },

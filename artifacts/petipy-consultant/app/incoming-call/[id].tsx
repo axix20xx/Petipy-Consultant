@@ -60,6 +60,40 @@ export default function IncomingCallScreen() {
     queue.data && callId
       ? findActiveIncomingCall(queue.data, callId)
       : null;
+  const lifecycleCall = queue.data?.find((request) => request.id === callId);
+  const isCallAccepted =
+    lifecycleCall?.status === 'connecting' || lifecycleCall?.status === 'active';
+  const cleanedIncomingAlertCallId = useRef<string | null>(null);
+  const endedTelecomCallId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (call) {
+      cleanedIncomingAlertCallId.current = null;
+      endedTelecomCallId.current = null;
+      return;
+    }
+    if (
+      !callId ||
+      sessionState !== 'connected' ||
+      queue.isPending
+    ) {
+      return;
+    }
+    if (queue.isError) {
+      stopIncomingCallRingtone();
+      return;
+    }
+
+    if (cleanedIncomingAlertCallId.current !== callId) {
+      cleanedIncomingAlertCallId.current = callId;
+      stopIncomingCallRingtone();
+      void cancelIncomingCallNotification(callId).catch(() => {});
+    }
+    if (!isCallAccepted && endedTelecomCallId.current !== callId) {
+      endedTelecomCallId.current = callId;
+      void endSystemCall(callId, 'missed');
+    }
+  }, [call, callId, isCallAccepted, queue.isError, queue.isPending, sessionState]);
 
   const acceptCall = useCallback(async () => {
     if (!token || !callId || accepting || !call) return;

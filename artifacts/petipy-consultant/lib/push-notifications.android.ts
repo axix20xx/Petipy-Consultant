@@ -16,14 +16,17 @@ import {
 } from '@/lib/petipy-api';
 import {
   findActiveIncomingCall,
+  isUnexpiredRequestedCall,
   parseIncomingCallId,
   resolveIncomingPushRoute,
 } from '@/lib/incoming-push-routing';
 import { readStoredConsultantSession } from '@/lib/consultant-auth';
 import {
+  cancelIncomingCallNotification,
   notifyIncomingCall,
   prepareIncomingCallAlerts,
   startIncomingCallRingtone,
+  stopIncomingCallRingtone,
 } from '@/lib/incoming-call-alerts';
 import { reportSystemIncomingCall } from '@/lib/system-calling';
 import { requestAvailabilityPermissions } from '@/lib/background-monitor';
@@ -200,12 +203,20 @@ export async function handleBackgroundIncomingMessage(message: PushMessage) {
       stored.status !== 'ready' ||
       Date.parse(stored.session.tokenExpiresAt) <= Date.now()
     ) {
+      stopIncomingCallRingtone();
+      await cancelIncomingCallNotification(callId).catch(() => {});
       return;
     }
 
     const requests = await getIncomingCalls(stored.session.accessToken);
     const activeCall = findActiveIncomingCall(requests, callId);
-    if (!activeCall) return;
+    if (!activeCall) {
+      if (!requests.some((request) => isUnexpiredRequestedCall(request))) {
+        stopIncomingCallRingtone();
+      }
+      await cancelIncomingCallNotification(callId).catch(() => {});
+      return;
+    }
 
     await prepareIncomingCallAlerts();
     await notifyIncomingCall(callId, activeCall.expiresAt);

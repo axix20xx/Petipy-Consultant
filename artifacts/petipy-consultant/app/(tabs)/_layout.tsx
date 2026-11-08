@@ -49,7 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="history"
         options={{
-          title: 'سوابق',
+          title: 'گزارش',
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? 'time' : 'time-outline'}

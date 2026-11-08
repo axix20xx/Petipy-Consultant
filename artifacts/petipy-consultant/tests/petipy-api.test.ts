@@ -2,12 +2,125 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   createVoiceChatUpload,
+  getCallHistory,
+  getConsultantCallAnalytics,
   getVoiceCallMessages,
   getVoiceChatAttachmentUrl,
   PetipyApiError,
   rejectIncomingCall,
   sendVoiceCallMessage,
 } from '../lib/petipy-api';
+
+test('requests consultant-scoped analytics through the authenticated API client', async () => {
+  const originalFetch = globalThis.fetch;
+  let requestUrl = '';
+  let requestInit: RequestInit | undefined;
+  globalThis.fetch = async (input, init) => {
+    requestUrl = String(input);
+    requestInit = init;
+    return new Response(
+      JSON.stringify({
+        days: 90,
+        totalCalls: 12,
+        completedCalls: 9,
+        missedCalls: 3,
+        totalSpokenSeconds: 5_400,
+        averageSpokenSeconds: 600,
+        answerRate: 75,
+        daily: [{ date: '2026-11-08', calls: 2, spokenSeconds: 1_200 }],
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
+  };
+
+  try {
+    const analytics = await getConsultantCallAnalytics(
+      'redacted-test-token',
+      90,
+    );
+    assert.equal(
+      requestUrl,
+      'https://petipy.com/api/voice/consultant/me/analytics?days=90',
+    );
+    assert.equal(
+      (requestInit?.headers as Record<string, string>).Authorization,
+      'Bearer redacted-test-token',
+    );
+    assert.equal(analytics.totalSpokenSeconds, 5_400);
+    assert.equal(analytics.missedCalls, 3);
+    assert.equal(analytics.answerRate, 75);
+    assert.deepEqual(analytics.daily[0], {
+      date: '2026-11-08',
+      calls: 2,
+      spokenSeconds: 1_200,
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('rejects malformed consultant analytics instead of showing invented totals', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        days: 30,
+        totalCalls: -1,
+        completedCalls: 0,
+        missedCalls: 0,
+        totalSpokenSeconds: 0,
+        averageSpokenSeconds: 0,
+        answerRate: 0,
+        daily: [],
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
+
+  try {
+    await assert.rejects(
+      getConsultantCallAnalytics('redacted-test-token', 30),
+      (error: unknown) => error instanceof PetipyApiError && error.status === 502,
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('loads only the authenticated participant call-history endpoint', async () => {
+  const originalFetch = globalThis.fetch;
+  let requestUrl = '';
+  let requestInit: RequestInit | undefined;
+  globalThis.fetch = async (input, init) => {
+    requestUrl = String(input);
+    requestInit = init;
+    return new Response(
+      JSON.stringify([{
+        callId: 'call-1234567890',
+        status: 'completed',
+        requestedAt: '2026-11-08T10:00:00.000Z',
+        acceptedAt: '2026-11-08T10:00:20.000Z',
+        endedAt: '2026-11-08T10:10:20.000Z',
+        durationSeconds: 600,
+        endReason: 'participant_finished',
+        consultantName: 'Consultant',
+      }]),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    );
+  };
+
+  try {
+    const history = await getCallHistory('redacted-test-token');
+    assert.equal(requestUrl, 'https://petipy.com/api/voice/calls/history');
+    assert.equal(
+      (requestInit?.headers as Record<string, string>).Authorization,
+      'Bearer redacted-test-token',
+    );
+    assert.equal(history[0]?.id, 'call-1234567890');
+    assert.equal(history[0]?.durationSeconds, 600);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
 
 test('sends an authenticated reject request with the documented reason', async () => {
   const originalFetch = globalThis.fetch;

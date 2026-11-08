@@ -34,6 +34,23 @@ export type CallHistoryEntry = {
   endReason?: string;
 };
 
+export type ConsultantAnalyticsDays = 7 | 30 | 90 | 365;
+
+export type ConsultantCallAnalytics = {
+  days: ConsultantAnalyticsDays;
+  totalCalls: number;
+  completedCalls: number;
+  missedCalls: number;
+  totalSpokenSeconds: number;
+  averageSpokenSeconds: number;
+  answerRate: number;
+  daily: Array<{
+    date: string;
+    calls: number;
+    spokenSeconds: number;
+  }>;
+};
+
 export type TurnIceServer = {
   urls: string[];
   username: string;
@@ -329,6 +346,69 @@ export async function getCallHistory(
   return findList(result, ['history', 'items', 'calls']).map(
     normalizeHistoryEntry,
   );
+}
+
+export async function getConsultantCallAnalytics(
+  token: string,
+  days: ConsultantAnalyticsDays,
+): Promise<ConsultantCallAnalytics> {
+  if (![7, 30, 90, 365].includes(days)) {
+    throw new PetipyApiError('بازه‌ی گزارش معتبر نیست.', 400);
+  }
+  const value = asRecord(
+    await request<unknown>(
+      `/voice/consultant/me/analytics?days=${days}`,
+      token,
+    ),
+  );
+  const isNonNegativeInteger = (candidate: unknown): candidate is number =>
+    typeof candidate === 'number' &&
+    Number.isSafeInteger(candidate) &&
+    candidate >= 0;
+  const daily = value.daily;
+  if (
+    value.days !== days ||
+    !isNonNegativeInteger(value.totalCalls) ||
+    !isNonNegativeInteger(value.completedCalls) ||
+    !isNonNegativeInteger(value.missedCalls) ||
+    !isNonNegativeInteger(value.totalSpokenSeconds) ||
+    !isNonNegativeInteger(value.averageSpokenSeconds) ||
+    typeof value.answerRate !== 'number' ||
+    !Number.isFinite(value.answerRate) ||
+    value.answerRate < 0 ||
+    value.answerRate > 100 ||
+    !Array.isArray(daily)
+  ) {
+    throw new PetipyApiError('آمار تماس از سرور معتبر نیست.', 502);
+  }
+
+  const normalizedDaily = daily.map((item): ConsultantCallAnalytics['daily'][number] => {
+    const row = asRecord(item);
+    if (
+      typeof row.date !== 'string' ||
+      !Number.isFinite(Date.parse(row.date)) ||
+      !isNonNegativeInteger(row.calls) ||
+      !isNonNegativeInteger(row.spokenSeconds)
+    ) {
+      throw new PetipyApiError('ردیف آمار تماس از سرور معتبر نیست.', 502);
+    }
+    return {
+      date: row.date,
+      calls: row.calls,
+      spokenSeconds: row.spokenSeconds,
+    };
+  });
+
+  return {
+    days,
+    totalCalls: value.totalCalls,
+    completedCalls: value.completedCalls,
+    missedCalls: value.missedCalls,
+    totalSpokenSeconds: value.totalSpokenSeconds,
+    averageSpokenSeconds: value.averageSpokenSeconds,
+    answerRate: value.answerRate,
+    daily: normalizedDaily,
+  };
 }
 
 export async function setConsultantAvailability(

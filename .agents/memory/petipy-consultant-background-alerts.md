@@ -11,6 +11,12 @@ For the incoming call screen, use an Android full-screen notification intent wit
 
 **Why:** Android documents this unlocked-versus-locked behavior for full-screen intents; a minimized app on an unlocked phone is expected to show heads-up, not launch an activity.
 
+Incoming-call ringing must stop when a request expires, is accepted, or otherwise leaves the authenticated API queue. The user reported that ringing continued after no answer or call completion.
+
+**Why:** Local FCM, poller, native Telecom, notification, and fallback-audio paths can outlive one another unless terminal request state clears all alert surfaces.
+
+**How to apply:** Revalidate requested status and expiry against the server queue, bound ringtone duration, and stop native and fallback sound plus call notifications/Telecom state on terminal transitions.
+
 For WhatsApp-style Android call integration, use a self-managed `PhoneAccount` and `ConnectionService` to report call state to Telecom, while keeping the incoming-call notification and full-screen UI app-owned with CallStyle. Sync Telecom answer/reject/disconnect callbacks with the API and WebRTC state. This integration does not override full-screen access, force-stop, or FCM delivery rules.
 
 **Why:** Android's self-managed Telecom mode coordinates calls and audio but leaves the calling app responsible for its incoming-call UI; it is not a way to bypass Android's background-launch policy.

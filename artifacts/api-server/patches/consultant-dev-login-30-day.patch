@@ -1,0 +1,111 @@
+--- a/artifacts/api-server/src/lib/devAuth.ts
++++ b/artifacts/api-server/src/lib/devAuth.ts
+@@ -19,6 +19,7 @@
+ const MARKETER_COOKIE_NAME = "pet_experience_dev_marketer_session";
+ const SESSION_SECONDS = 60 * 60 * 24 * 7;
+ const MOBILE_SESSION_SECONDS = 60 * 60 * 2;
++const CONSULTANT_MOBILE_SESSION_SECONDS = 60 * 60 * 24 * 30;
+ const MOBILE_SESSION_AUDIENCE = "pet-experience-mobile";
+ export type DevelopmentSelectedRole = "CUSTOMER";
+ 
+@@ -305,6 +306,7 @@
+ export function createDevelopmentMobileSession(
+   userId: string,
+   selectedRole?: DevelopmentSelectedRole,
++  sessionRole?: "VOICE_CONSULTANT",
+ ): {
+   accessToken: string;
+   expiresAt: number;
+@@ -318,8 +320,14 @@
+   if (!userId.startsWith("dev_") && !userId.startsWith("user_")) {
+     throw new Error("Development mobile sessions require a supported user ID.");
+   }
++  if (sessionRole === "VOICE_CONSULTANT" && !userId.startsWith("user_")) {
++    throw new Error("Consultant mobile sessions require an identity user ID.");
++  }
+ 
+-  const expiresAt = Date.now() + MOBILE_SESSION_SECONDS * 1000;
++  const lifetimeSeconds = sessionRole === "VOICE_CONSULTANT"
++    ? CONSULTANT_MOBILE_SESSION_SECONDS
++    : MOBILE_SESSION_SECONDS;
++  const expiresAt = Date.now() + lifetimeSeconds * 1000;
+   const payload = Buffer.from(
+     JSON.stringify({
+       userId,
+--- a/artifacts/api-server/src/routes/platform.ts
++++ b/artifacts/api-server/src/routes/platform.ts
+@@ -4592,7 +4592,11 @@
+ 
+       const mobileSession =
+         parsed.data.client === "mobile"
+-          ? createDevelopmentMobileSession(user.id)
++          ? createDevelopmentMobileSession(
++              user.id,
++              undefined,
++              role === "VOICE_CONSULTANT" ? role : undefined,
++            )
+           : undefined;
+       if (mobileSession) {
+         clearDevelopmentSession(res);
+--- a/artifacts/api-server/src/lib/devAuthSelectedRole.test.mjs
++++ b/artifacts/api-server/src/lib/devAuthSelectedRole.test.mjs
+@@ -34,10 +34,59 @@
+ const {
+   createDevelopmentMobileSession,
+   developmentUserId,
++  developmentManagerUserId,
+   developmentSelectedRole,
+   setDevelopmentSession,
+ } = module.exports;
+ 
++test("only consultant identity sessions receive a 30-day development lifetime", () => {
++  const original = {
++    nodeEnv: process.env.NODE_ENV,
++    secret: process.env.SESSION_SECRET,
++    fakeOtp: process.env.VPS_FAKE_PHONE_OTP_ENABLED,
++    now: Date.now,
++  };
++  process.env.NODE_ENV = "development";
++  process.env.SESSION_SECRET = "dev-auth-selected-role-test-secret-32";
++  try {
++    Date.now = () => 1_800_000_000_000;
++    const now = Date.now();
++    const customer = createDevelopmentMobileSession("user_customer");
++    const consultant = createDevelopmentMobileSession(
++      "user_consultant",
++      undefined,
++      "VOICE_CONSULTANT",
++    );
++    assert.equal(customer.expiresAt - now, 2 * 60 * 60 * 1000);
++    assert.equal(consultant.expiresAt - now, 30 * 24 * 60 * 60 * 1000);
++    const request = {
++      headers: {},
++      get: (name) => name === "authorization"
++        ? `Bearer ${consultant.accessToken}`
++        : undefined,
++    };
++    assert.equal(developmentManagerUserId(request), "user_consultant");
++    Date.now = () => consultant.expiresAt + 1;
++    assert.equal(developmentManagerUserId(request), null);
++    assert.throws(
++      () => createDevelopmentMobileSession(
++        "dev_customer",
++        undefined,
++        "VOICE_CONSULTANT",
++      ),
++      /identity user ID/,
++    );
++  } finally {
++    if (original.nodeEnv === undefined) delete process.env.NODE_ENV;
++    else process.env.NODE_ENV = original.nodeEnv;
++    if (original.secret === undefined) delete process.env.SESSION_SECRET;
++    else process.env.SESSION_SECRET = original.secret;
++    if (original.fakeOtp === undefined) delete process.env.VPS_FAKE_PHONE_OTP_ENABLED;
++    else process.env.VPS_FAKE_PHONE_OTP_ENABLED = original.fakeOtp;
++    Date.now = original.now;
++  }
++});
++
+ test("explicit customer choice survives signed web and mobile sessions", () => {
+   const original = {
+     nodeEnv: process.env.NODE_ENV,

@@ -103,6 +103,27 @@ test('accepts only the consultant mobile response and stores after API verificat
   assert.equal(stored.accessToken, 'unit-test-only-token');
 });
 
+test('does not extend an API-issued two-hour token to the 30-day client maximum', async () => {
+  const { storage } = makeStorage();
+  const serverExpiry = '2026-11-07T14:00:00.000Z';
+  const result = await signInDevelopmentConsultant(
+    { phone: '09120000000', code: '123456' },
+    {
+      devAuthEnabled: true,
+      storage,
+      now: () => fixedNow,
+      fetcher: async () =>
+        new Response(
+          JSON.stringify(signInResponse({ tokenExpiresAt: serverExpiry })),
+          { status: 200 },
+        ),
+      verifyConsultant: async () => ({ active: true }),
+    },
+  );
+
+  assert.equal(result.session.tokenExpiresAt, serverExpiry);
+});
+
 test('rejects other identity roles without persisting a token', async () => {
   const { storage, values } = makeStorage();
   await assert.rejects(

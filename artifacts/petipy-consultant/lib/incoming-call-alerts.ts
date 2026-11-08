@@ -5,6 +5,7 @@ import notifee, {
 } from '@notifee/react-native';
 import InCallManager from 'react-native-incall-manager';
 import { NativeModules, Platform } from 'react-native';
+import { endAllSystemCalls } from '@/lib/system-calling';
 import {
   INCOMING_CALL_ANSWER_ACTION,
   INCOMING_CALL_CHANNEL_ID,
@@ -25,6 +26,10 @@ type PetipyCallNotificationModule = {
   ): Promise<boolean>;
   cancelIncomingCallNotification(callId: string): Promise<boolean>;
   cancelAllIncomingCallNotifications(): Promise<boolean>;
+  startNativeIncomingRingtone?(
+    expiresAtMillis?: number | null,
+  ): Promise<boolean>;
+  stopNativeIncomingRingtone?(): Promise<boolean>;
 };
 
 const nativeCallNotifications = NativeModules
@@ -110,21 +115,42 @@ export async function clearIncomingCallNotifications() {
         : Promise.resolve(),
     ),
   );
-  await nativeCallNotifications?.cancelAllIncomingCallNotifications();
+  await Promise.all([
+    nativeCallNotifications?.cancelAllIncomingCallNotifications(),
+    endAllSystemCalls('missed'),
+  ]);
 }
 
-export function startIncomingCallRingtone() {
+export function startIncomingCallRingtone(expiresAt?: string) {
   if (Platform.OS !== 'android') return;
-  InCallManager.startRingtone(
-    '_DEFAULT_',
-    [0, 700, 450, 700],
-    'default',
-    0,
-  );
+  const expiry = expiresAt ? Date.parse(expiresAt) : null;
+  const startNative = nativeCallNotifications?.startNativeIncomingRingtone;
+  if (startNative) {
+    void startNative(expiry).then((started) => {
+      if (!started) {
+        InCallManager.startRingtone(
+          '_DEFAULT_',
+          [0, 700, 450, 700],
+          'default',
+          0,
+        );
+      }
+    }).catch(() => {
+      InCallManager.startRingtone(
+        '_DEFAULT_',
+        [0, 700, 450, 700],
+        'default',
+        0,
+      );
+    });
+    return;
+  }
+  InCallManager.startRingtone('_DEFAULT_', [0, 700, 450, 700], 'default', 0);
 }
 
 export function stopIncomingCallRingtone() {
   if (Platform.OS !== 'android') return;
+  void nativeCallNotifications?.stopNativeIncomingRingtone?.().catch(() => {});
   try {
     InCallManager.stopRingtone();
   } catch {

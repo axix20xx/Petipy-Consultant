@@ -2,6 +2,7 @@ import { useColors } from '@/hooks/useColors';
 import { finishCall, joinCall } from '@/lib/petipy-api';
 import { VoiceCallClient } from '@/lib/voice-call';
 import { setAvailabilityCallState } from '@/lib/background-monitor';
+import { endSystemCall, markSystemCallActive } from '@/lib/system-calling';
 import { useConsultantSession } from '@/providers/consultant-session';
 import RemoteVideo from '@/components/RemoteVideo';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,7 +31,7 @@ function formatDuration(totalSeconds: number) {
 
 export default function ConsultantCallScreen() {
   const colors = useColors();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, action } = useLocalSearchParams<{ id: string; action?: string }>();
   const callId = Array.isArray(id) ? id[0] : id;
   const { token, activeCall, setActiveCall } = useConsultantSession();
   const matchingCall = activeCall?.callId === callId ? activeCall : null;
@@ -47,6 +48,7 @@ export default function ConsultantCallScreen() {
   const [joining, setJoining] = useState(false);
   const [ending, setEnding] = useState(false);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const systemActionHandled = useRef(false);
   const permissionIssue =
     Boolean(error) && /permission|denied|میکروفون|دسترسی/i.test(error ?? '');
   const hasRemoteVideo =
@@ -90,6 +92,7 @@ export default function ConsultantCallScreen() {
           setError(null);
           setStatus('تماس برقرار است');
           setAvailabilityCallState(callId ?? null, 'connected');
+          if (callId) void markSystemCallActive(callId);
         },
         onDisconnected: () => {
           if (!isMounted) return;
@@ -173,12 +176,25 @@ export default function ConsultantCallScreen() {
     } catch {
       setError('تماس روی دستگاه پایان یافت؛ وضعیت سرور هنوز تأیید نشده است.');
     } finally {
+      if (callId) await endSystemCall(callId, 'local');
       setActiveCall(null);
       setConnected(false);
       router.replace('/(tabs)');
       setEnding(false);
     }
   }
+
+  useEffect(() => {
+    if (
+      action !== 'hangup' ||
+      !matchingCall ||
+      systemActionHandled.current
+    ) {
+      return;
+    }
+    systemActionHandled.current = true;
+    void endCall(true);
+  }, [action, matchingCall]);
 
   async function reconnect() {
     if (!token || !callId || joining) return;

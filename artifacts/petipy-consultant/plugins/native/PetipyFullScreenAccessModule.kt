@@ -92,6 +92,87 @@ class PetipyFullScreenAccessModule(
   }
 
   @ReactMethod
+  fun registerSystemPhoneAccount(promise: Promise) {
+    try {
+      promise.resolve(PetipyTelecomCallState.registerPhoneAccount(reactContext))
+    } catch (error: Exception) {
+      promise.reject("TELECOM_ACCOUNT_REGISTER_FAILED", error)
+    }
+  }
+
+  @ReactMethod
+  fun addSystemIncomingCall(
+    callId: String,
+    expiresAtMillis: Double?,
+    promise: Promise,
+  ) {
+    try {
+      if (!CALL_ID_PATTERN.matches(callId)) {
+        promise.reject("INVALID_CALL_ID", "The call ID is invalid.")
+        return
+      }
+      val expiry = expiresAtMillis?.takeIf { it.isFinite() }?.toLong()
+      promise.resolve(PetipyTelecomCallState.addIncomingCall(reactContext, callId, expiry))
+    } catch (error: Exception) {
+      promise.reject("TELECOM_INCOMING_CALL_FAILED", error)
+    }
+  }
+
+  @ReactMethod
+  fun markSystemCallActive(callId: String, promise: Promise) {
+    try {
+      promise.resolve(PetipyTelecomCallState.markCallActive(callId))
+    } catch (error: Exception) {
+      promise.reject("TELECOM_CALL_ACTIVATE_FAILED", error)
+    }
+  }
+
+  @ReactMethod
+  fun endSystemCall(
+    callId: String,
+    reason: String,
+    promise: Promise,
+  ) {
+    try {
+      promise.resolve(PetipyTelecomCallState.endCall(callId, reason))
+    } catch (error: Exception) {
+      promise.reject("TELECOM_CALL_END_FAILED", error)
+    }
+  }
+
+  @ReactMethod
+  fun endAllSystemCalls(reason: String, promise: Promise) {
+    try {
+      promise.resolve(PetipyTelecomCallState.endAllCalls(reason))
+    } catch (error: Exception) {
+      promise.reject("TELECOM_CALLS_END_FAILED", error)
+    }
+  }
+
+  @ReactMethod
+  fun startNativeIncomingRingtone(
+    expiresAtMillis: Double?,
+    promise: Promise,
+  ) {
+    try {
+      val expiry = expiresAtMillis?.takeIf { it.isFinite() }?.toLong()
+      promise.resolve(PetipyTelecomCallState.startRingtone(reactContext, expiry))
+    } catch (error: Exception) {
+      promise.reject("CALL_RINGTONE_START_FAILED", error)
+    }
+  }
+
+  @ReactMethod
+  fun stopNativeIncomingRingtone(promise: Promise) {
+    try {
+      PetipyTelecomCallState.stopRingtone()
+      promise.resolve(true)
+    } catch (error: Exception) {
+      promise.reject("CALL_RINGTONE_STOP_FAILED", error)
+    }
+  }
+
+  @ReactMethod
   fun showIncomingCallNotification(
     callId: String,
     expiresAtMillis: Double?,
@@ -257,7 +338,7 @@ class PetipyFullScreenAccessModule(
   private fun notificationTag(callId: String) = "$NOTIFICATION_TAG_PREFIX$callId"
 
   private companion object {
-    const val CALL_CHANNEL_ID = "incoming-calls"
+    const val CALL_CHANNEL_ID = "incoming-calls-v2"
     const val NOTIFICATION_TAG_PREFIX = "petipy-call-"
     const val NOTIFICATION_ID = 1
     val CALL_ID_PATTERN = Regex("^[A-Za-z0-9_-]{12,64}$")

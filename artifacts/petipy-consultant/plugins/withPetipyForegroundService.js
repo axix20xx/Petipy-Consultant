@@ -19,6 +19,10 @@ function withPetipyNativeCallModule(config) {
         path.join(__dirname, 'native/PetipyFullScreenAccessModule.kt'),
         path.join(javaDirectory, 'PetipyFullScreenAccessModule.kt'),
       );
+      fs.copyFileSync(
+        path.join(__dirname, 'native/PetipyTelecomConnectionService.kt'),
+        path.join(javaDirectory, 'PetipyTelecomConnectionService.kt'),
+      );
 
       const applicationPath = path.join(javaDirectory, 'MainApplication.kt');
       let application = fs.readFileSync(applicationPath, 'utf8');
@@ -79,6 +83,7 @@ module.exports = function withPetipyForegroundService(config) {
       'android.permission.FOREGROUND_SERVICE',
       'android.permission.FOREGROUND_SERVICE_MICROPHONE',
       'android.permission.USE_FULL_SCREEN_INTENT',
+      'android.permission.MANAGE_OWN_CALLS',
       'android.permission.POST_NOTIFICATIONS',
       'android.permission.RECORD_AUDIO',
       'android.permission.WAKE_LOCK',
@@ -104,6 +109,44 @@ module.exports = function withPetipyForegroundService(config) {
           'android:exported': 'false',
           'android:foregroundServiceType': 'microphone',
         },
+      });
+    }
+
+    const telecomServiceName =
+      'com.petipy.consultant.PetipyTelecomConnectionService';
+    const telecomService = app.service.find(
+      (entry) => entry.$?.['android:name'] === telecomServiceName,
+    );
+    if (telecomService) {
+      telecomService.$['android:permission'] =
+        'android.permission.BIND_TELECOM_CONNECTION_SERVICE';
+      telecomService.$['android:exported'] = 'true';
+      telecomService['intent-filter'] ??= [];
+      if (
+        !telecomService['intent-filter'].some((filter) =>
+          filter.action?.some(
+            (action) =>
+              action.$?.['android:name'] ===
+              'android.telecom.ConnectionService',
+          ),
+        )
+      ) {
+        telecomService['intent-filter'].push({
+          action: [{ $: { 'android:name': 'android.telecom.ConnectionService' } }],
+        });
+      }
+    } else {
+      app.service.push({
+        $: {
+          'android:name': telecomServiceName,
+          'android:permission': 'android.permission.BIND_TELECOM_CONNECTION_SERVICE',
+          'android:exported': 'true',
+        },
+        'intent-filter': [
+          {
+            action: [{ $: { 'android:name': 'android.telecom.ConnectionService' } }],
+          },
+        ],
       });
     }
 

@@ -9,6 +9,11 @@ import {
   startIncomingCallRingtone,
   stopIncomingCallRingtone,
 } from '@/lib/incoming-call-alerts';
+import {
+  endSystemCall,
+  registerSystemCalling,
+  reportSystemIncomingCall,
+} from '@/lib/system-calling';
 
 const POLL_INTERVAL_MS = 5_000;
 type ActiveCallState = 'connecting' | 'connected' | 'reconnecting';
@@ -90,6 +95,7 @@ async function monitorIncomingCalls(params?: MonitorParams) {
   let connectionNoticeShown = false;
   let ringtoneStarted = false;
   const notifiedCallIds = new Set<string>();
+  const systemCallIds = new Set<string>();
 
   try {
     while (BackgroundService.isRunning()) {
@@ -119,6 +125,9 @@ async function monitorIncomingCalls(params?: MonitorParams) {
             } catch {
               // A stale notification should not stop the request poller.
             }
+            if (systemCallIds.delete(callId)) {
+              await endSystemCall(callId, 'missed');
+            }
             notifiedCallIds.delete(callId);
           }
         }
@@ -127,6 +136,9 @@ async function monitorIncomingCalls(params?: MonitorParams) {
           if (notifiedCallIds.has(call.id)) continue;
           try {
             await notifyIncomingCall(call.id, call.expiresAt);
+            if (await reportSystemIncomingCall(call.id, call.expiresAt)) {
+              systemCallIds.add(call.id);
+            }
             notifiedCallIds.add(call.id);
           } catch {
             await BackgroundService.updateNotification({
@@ -136,9 +148,13 @@ async function monitorIncomingCalls(params?: MonitorParams) {
           }
         }
 
-        if (pendingCalls.length > 0 && !ringtoneStarted) {
+        if (pendingCalls.length > 0) {
           try {
-            startIncomingCallRingtone();
+            const expiry = pendingCalls
+              .map((call) => call.expiresAt)
+              .filter((value): value is string => Boolean(value))
+              .sort((left, right) => Date.parse(left) - Date.parse(right))[0];
+            startIncomingCallRingtone(expiry);
             ringtoneStarted = true;
           } catch {
             await BackgroundService.updateNotification({
@@ -177,6 +193,9 @@ async function monitorIncomingCalls(params?: MonitorParams) {
     }
   } finally {
     if (ringtoneStarted) stopIncomingCallRingtone();
+    await Promise.all(
+      [...systemCallIds].map((callId) => endSystemCall(callId, 'missed')),
+    );
     activeCallNotice = null;
     await Promise.all(
       [...notifiedCallIds].map(async (callId) => {
@@ -199,6 +218,7 @@ export async function startAvailabilityService(
     throw new Error('نشست مشاور منقضی شده است؛ دوباره وارد شوید.');
   }
   await prepareIncomingCallAlerts();
+  await registerSystemCalling();
 
   await BackgroundService.start(monitorIncomingCalls, {
     taskName: 'PetipyConsultantAvailability',

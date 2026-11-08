@@ -12,6 +12,7 @@ import {
   startAvailabilityService,
   stopAvailabilityService,
 } from '@/lib/background-monitor';
+import { markSystemCallActive } from '@/lib/system-calling';
 import {
   cancelIncomingCallNotification,
   stopIncomingCallRingtone,
@@ -215,6 +216,7 @@ export default function ConsultantHome() {
     setAcceptingId(callId);
     try {
       const session = await acceptIncomingCall(token, callId);
+      await markSystemCallActive(session.callId);
       setAvailabilityCallState(session.callId, 'connecting');
       stopIncomingCallRingtone();
       try {

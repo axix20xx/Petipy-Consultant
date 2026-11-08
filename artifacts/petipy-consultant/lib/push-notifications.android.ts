@@ -23,7 +23,9 @@ import { readStoredConsultantSession } from '@/lib/consultant-auth';
 import {
   notifyIncomingCall,
   prepareIncomingCallAlerts,
+  startIncomingCallRingtone,
 } from '@/lib/incoming-call-alerts';
+import { reportSystemIncomingCall } from '@/lib/system-calling';
 import { requestAvailabilityPermissions } from '@/lib/background-monitor';
 import type { PushSetupState, PushStatusListener } from '@/lib/push-notifications';
 
@@ -207,6 +209,8 @@ export async function handleBackgroundIncomingMessage(message: PushMessage) {
 
     await prepareIncomingCallAlerts();
     await notifyIncomingCall(callId, activeCall.expiresAt);
+    startIncomingCallRingtone(activeCall.expiresAt);
+    await reportSystemIncomingCall(callId, activeCall.expiresAt);
   } catch {
     // A push is only a signal. Ignore it if session or API validation fails.
   }

@@ -10,6 +10,7 @@ import {
   stopIncomingCallRingtone,
 } from '@/lib/incoming-call-alerts';
 import { setAvailabilityCallState } from '@/lib/background-monitor';
+import { endSystemCall, markSystemCallActive } from '@/lib/system-calling';
 import { findActiveIncomingCall } from '@/lib/incoming-push-routing';
 import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
@@ -82,6 +83,7 @@ export default function IncomingCallScreen() {
       }
 
       const session = await acceptIncomingCall(token, callId);
+      await markSystemCallActive(session.callId);
       setAvailabilityCallState(session.callId, 'connecting');
       stopIncomingCallRingtone();
       try {
@@ -111,6 +113,7 @@ export default function IncomingCallScreen() {
     setActionError(null);
     try {
       await rejectIncomingCall(token, callId, 'busy');
+      await endSystemCall(callId, 'rejected');
       stopIncomingCallRingtone();
       setAvailabilityCallState(null, null);
       try {

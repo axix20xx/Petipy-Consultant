@@ -11,6 +11,12 @@ For the incoming call screen, use an Android full-screen notification intent wit
 
 **Why:** Android documents this unlocked-versus-locked behavior for full-screen intents; a minimized app on an unlocked phone is expected to show heads-up, not launch an activity.
 
+For WhatsApp-style Android call integration, use a self-managed `PhoneAccount` and `ConnectionService` to report call state to Telecom, while keeping the incoming-call notification and full-screen UI app-owned with CallStyle. Sync Telecom answer/reject/disconnect callbacks with the API and WebRTC state. This integration does not override full-screen access, force-stop, or FCM delivery rules.
+
+**Why:** Android's self-managed Telecom mode coordinates calls and audio but leaves the calling app responsible for its incoming-call UI; it is not a way to bypass Android's background-launch policy.
+
+**How to apply:** Keep native call state and API/WebRTC state synchronized, and test the app-owned CallStyle UI on a physical device in foreground, background, and locked states.
+
 Android notification-channel importance is fixed once a channel is created. Reusing an old channel ID does not repair a channel that was created with low importance or later changed by the user; use a new versioned ID when the channel configuration must be reset.
 
 **Why:** Multiple installed APK iterations can leave the device's original channel configuration in force even when the app code now requests high importance.

@@ -8,9 +8,11 @@ import notifee, {
 import InCallManager from 'react-native-incall-manager';
 import { Platform } from 'react-native';
 import {
+  INCOMING_CALL_ANSWER_ACTION,
   INCOMING_CALL_CHANNEL_ID,
   INCOMING_CALL_FULL_SCREEN_ACTION,
   INCOMING_CALL_PRESS_ACTION,
+  isIncomingCallAnswerAction,
   shouldOpenIncomingCallFromNotificationEvent,
 } from '@/lib/incoming-call-alert-config';
 
@@ -68,7 +70,7 @@ export async function notifyIncomingCall(callId: string) {
   await notifee.displayNotification({
     id: notificationId(callId),
     title: 'تماس ورودی Petipy',
-    body: 'درخواست مشاوره جدید دارید. برای پاسخ، برنامه را باز کنید.',
+    body: 'درخواست مشاوره جدید دارید. برای پاسخ، دکمه‌ی «پاسخ» را بزنید.',
     data: { type: 'incoming-call', callId },
     android: {
       channelId: INCOMING_CALL_CHANNEL_ID,
@@ -80,6 +82,12 @@ export async function notifyIncomingCall(callId: string) {
       color: '#6b3fe1',
       lightUpScreen: true,
       autoCancel: true,
+      actions: [
+        {
+          title: 'پاسخ',
+          pressAction: INCOMING_CALL_ANSWER_ACTION,
+        },
+      ],
       pressAction: INCOMING_CALL_PRESS_ACTION,
       fullScreenAction: INCOMING_CALL_FULL_SCREEN_ACTION,
     },
@@ -126,11 +134,14 @@ export function stopIncomingCallRingtone() {
 }
 
 export function onIncomingCallNotificationOpen(
-  onOpen: (callId: string) => void,
+  onOpen: (callId: string, shouldAnswer: boolean) => void,
 ) {
   if (Platform.OS !== 'android') return () => {};
 
-  const openIncomingCall = (data?: Notification['data']) => {
+  const openIncomingCall = (
+    data?: Notification['data'],
+    actionId?: unknown,
+  ) => {
     if (
       data?.type !== 'incoming-call' ||
       typeof data.callId !== 'string' ||
@@ -138,7 +149,7 @@ export function onIncomingCallNotificationOpen(
     ) {
       return;
     }
-    onOpen(data.callId);
+    onOpen(data.callId, isIncomingCallAnswerAction(actionId));
   };
 
   const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
@@ -161,14 +172,17 @@ export function onIncomingCallNotificationOpen(
     ) {
       const id = notification.id;
       if (id) void notifee.cancelNotification(id).catch(() => {});
-      openIncomingCall(notification.data);
+      openIncomingCall(notification.data, detail.pressAction?.id);
     }
   });
 
   void notifee
     .getInitialNotification()
     .then((initial) => {
-      openIncomingCall(initial?.notification.data);
+      openIncomingCall(
+        initial?.notification.data,
+        initial?.pressAction.id,
+      );
     })
     .catch(() => {});
 

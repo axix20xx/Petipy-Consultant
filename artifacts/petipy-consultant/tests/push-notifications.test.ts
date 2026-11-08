@@ -6,9 +6,11 @@ import {
   resolveIncomingPushRoute,
 } from '../lib/incoming-push-routing';
 import {
+  INCOMING_CALL_ANSWER_ACTION,
   INCOMING_CALL_CHANNEL_ID,
   INCOMING_CALL_FULL_SCREEN_ACTION,
   INCOMING_CALL_PRESS_ACTION,
+  isIncomingCallAnswerAction,
   shouldOpenIncomingCallFromNotificationEvent,
 } from '../lib/incoming-call-alert-config';
 
@@ -120,6 +122,12 @@ test('URL-encodes call IDs before routing', () => {
 });
 
 test('incoming-call notification explicitly launches the default Android activity', () => {
+  assert.deepEqual(INCOMING_CALL_ANSWER_ACTION, {
+    id: 'answer',
+    launchActivity: 'default',
+  });
+  assert.equal(isIncomingCallAnswerAction('answer'), true);
+  assert.equal(isIncomingCallAnswerAction('default'), false);
   assert.deepEqual(INCOMING_CALL_FULL_SCREEN_ACTION, {
     id: 'incoming-call',
     launchActivity: 'default',

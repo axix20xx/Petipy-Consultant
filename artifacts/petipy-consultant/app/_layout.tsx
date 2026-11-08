@@ -32,8 +32,10 @@ const queryClient = new QueryClient();
 function RootLayoutNav() {
   const router = useRouter();
   const { token, state } = useConsultantSession();
-  const [pendingNotificationCallId, setPendingNotificationCallId] =
-    useState<string | null>(null);
+  const [pendingNotificationCall, setPendingNotificationCall] = useState<{
+    callId: string;
+    shouldAnswer: boolean;
+  } | null>(null);
 
   useEffect(() => {
     focusManager.setFocused(AppState.currentState === 'active');
@@ -44,13 +46,15 @@ function RootLayoutNav() {
   }, []);
 
   useEffect(() => {
-    return onIncomingCallNotificationOpen(setPendingNotificationCallId);
+    return onIncomingCallNotificationOpen((callId, shouldAnswer) =>
+      setPendingNotificationCall({ callId, shouldAnswer }),
+    );
   }, []);
 
   useEffect(() => {
-    if (!pendingNotificationCallId || state === 'loading') return;
+    if (!pendingNotificationCall || state === 'loading') return;
     if (state !== 'connected' || !token) {
-      setPendingNotificationCallId(null);
+      setPendingNotificationCall(null);
       return;
     }
 
@@ -58,22 +62,28 @@ function RootLayoutNav() {
     void getIncomingCalls(token)
       .then((requests) => {
         const route = resolveIncomingPushRoute(requests, {
-          callId: pendingNotificationCallId,
+          callId: pendingNotificationCall.callId,
         });
         if (active && route) {
-          router.replace(`/incoming-call/${encodeURIComponent(route.callId)}`);
+          router.replace({
+            pathname: '/incoming-call/[id]',
+            params: {
+              id: route.callId,
+              ...(pendingNotificationCall.shouldAnswer ? { answer: '1' } : {}),
+            },
+          });
         }
       })
       .catch(() => {
         // A notification is only a signal; the request API remains authoritative.
       })
       .finally(() => {
-        if (active) setPendingNotificationCallId(null);
+        if (active) setPendingNotificationCall(null);
       });
     return () => {
       active = false;
     };
-  }, [pendingNotificationCallId, router, state, token]);
+  }, [pendingNotificationCall, router, state, token]);
 
   useEffect(() => {
     if (state !== 'connected' || !token) return;

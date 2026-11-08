@@ -13,7 +13,7 @@ import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   PermissionsAndroid,
@@ -29,8 +29,12 @@ export default function IncomingCallScreen() {
   const colors = useColors();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const { id, answer } = useLocalSearchParams<{
+    id?: string | string[];
+    answer?: string | string[];
+  }>();
   const callId = Array.isArray(id) ? id[0] : id;
+  const answerParam = Array.isArray(answer) ? answer[0] : answer;
   const {
     token,
     state: sessionState,
@@ -51,24 +55,7 @@ export default function IncomingCallScreen() {
       ? findActiveIncomingCall(queue.data, callId)
       : null;
 
-  if (sessionState === 'loading') {
-    return (
-      <SafeAreaView
-        style={[styles.safe, { backgroundColor: colors.background }]}
-        edges={['top', 'bottom']}
-      >
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (sessionState !== 'connected' || !token) {
-    return <Redirect href="/sign-in" />;
-  }
-
-  async function acceptCall() {
+  const acceptCall = useCallback(async () => {
     if (!token || !callId || accepting || !call) return;
     setAccepting(true);
     setActionError(null);
@@ -111,6 +98,37 @@ export default function IncomingCallScreen() {
     } finally {
       setAccepting(false);
     }
+  }, [accepting, call, callId, queryClient, router, setActiveCall, token]);
+
+  const autoAnswerHandled = useRef(false);
+  useEffect(() => {
+    if (
+      answerParam !== '1' ||
+      sessionState !== 'connected' ||
+      !call ||
+      autoAnswerHandled.current
+    ) {
+      return;
+    }
+    autoAnswerHandled.current = true;
+    void acceptCall();
+  }, [acceptCall, answerParam, call, sessionState]);
+
+  if (sessionState === 'loading') {
+    return (
+      <SafeAreaView
+        style={[styles.safe, { backgroundColor: colors.background }]}
+        edges={['top', 'bottom']}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (sessionState !== 'connected' || !token) {
+    return <Redirect href="/sign-in" />;
   }
 
   const isLoading = queue.isPending;

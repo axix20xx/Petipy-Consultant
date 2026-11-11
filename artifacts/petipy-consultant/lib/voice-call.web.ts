@@ -8,5 +8,8 @@ export class VoiceCallClient {
 
   setMuted(_muted: boolean) {}
   setSpeaker(_enabled: boolean) {}
+  acknowledgePetCards() {
+    return false;
+  }
   close(_sendHangup = false) {}
 }

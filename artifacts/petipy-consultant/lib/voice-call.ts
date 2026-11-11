@@ -6,6 +6,11 @@ import {
   type RTCIceCandidate,
 } from 'react-native-webrtc';
 import type { CallSession } from '@/lib/petipy-api';
+import {
+  PET_CARD_SHARED_ACKNOWLEDGEMENT,
+  parsePetCardShareMessage,
+  type PetCard,
+} from '@/lib/pet-card-protocol';
 import { Platform } from 'react-native';
 
 export type VoiceCallCallbacks = {
@@ -15,6 +20,7 @@ export type VoiceCallCallbacks = {
   onEnded: () => void;
   onError: (message: string) => void;
   onRemoteVideo: (stream: MediaStream | null) => void;
+  onPetCardsReceived: (shareId: number, pets: PetCard[]) => void;
 };
 
 type SignalMessage = {
@@ -53,10 +59,12 @@ export class VoiceCallClient {
   private pendingCandidates: RTCIceCandidate[] = [];
   private callbacks: VoiceCallCallbacks | null = null;
   private closed = false;
+  private petCardShareSequence = 0;
 
   async start(session: CallSession, callbacks: VoiceCallCallbacks) {
     this.callbacks = callbacks;
     this.closed = false;
+    this.petCardShareSequence = 0;
     callbacks.onStatus('در حال آماده‌سازی تماس امن…');
 
     if (
@@ -159,15 +167,30 @@ export class VoiceCallClient {
     };
   }
 
-  private send(message: { type: string; payload?: unknown }) {
-    if (this.socket?.readyState !== WebSocket.OPEN) return;
+  private send(message: { type: string; payload?: unknown }): boolean {
+    if (this.socket?.readyState !== WebSocket.OPEN) return false;
     this.socket.send(JSON.stringify(message));
+    return true;
+  }
+
+  acknowledgePetCards(): boolean {
+    return this.send(PET_CARD_SHARED_ACKNOWLEDGEMENT);
   }
 
   private async handleSignal(data: unknown) {
     const message = readSignal(data);
     if (!message || !this.peer) return;
     if (message.from === 'consultant') return;
+
+    const petCardShare = parsePetCardShareMessage(message);
+    if (petCardShare) {
+      this.petCardShareSequence += 1;
+      this.callbacks?.onPetCardsReceived(
+        this.petCardShareSequence,
+        petCardShare.payload.pets,
+      );
+      return;
+    }
 
     if (message.type === 'joined') {
       this.callbacks?.onStatus('وارد اتاق تماس شدید؛ در انتظار مشتری…');
@@ -245,6 +268,7 @@ export class VoiceCallClient {
     this.localStream = null;
     this.callbacks?.onRemoteVideo(null);
     this.pendingCandidates = [];
+    this.petCardShareSequence = 0;
     if (Platform.OS === 'android') InCallManager.stop();
   }
 }

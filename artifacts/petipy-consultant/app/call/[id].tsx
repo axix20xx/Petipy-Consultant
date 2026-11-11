@@ -5,6 +5,7 @@ import { setAvailabilityCallState } from '@/lib/background-monitor';
 import { endSystemCall, markSystemCallActive } from '@/lib/system-calling';
 import { useConsultantSession } from '@/providers/consultant-session';
 import RemoteVideo from '@/components/RemoteVideo';
+import type { PetCard } from '@/lib/pet-card-protocol';
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -17,6 +18,7 @@ import {
   PermissionsAndroid,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -48,6 +50,10 @@ export default function ConsultantCallScreen() {
   const [joining, setJoining] = useState(false);
   const [ending, setEnding] = useState(false);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [petCardBatches, setPetCardBatches] = useState<
+    { shareId: number; pets: PetCard[] }[]
+  >([]);
+  const acknowledgedPetSharesRef = useRef<Set<number>>(new Set());
   const systemActionHandled = useRef(false);
   const permissionIssue =
     Boolean(error) && /permission|denied|میکروفون|دسترسی/i.test(error ?? '');
@@ -72,6 +78,8 @@ export default function ConsultantCallScreen() {
     setConnected(false);
     setElapsed(0);
     setRemoteStream(null);
+    setPetCardBatches([]);
+    acknowledgedPetSharesRef.current.clear();
     if (timerCallIdRef.current !== callId) {
       timerCallIdRef.current = callId ?? null;
       connectedAtRef.current = null;
@@ -125,6 +133,10 @@ export default function ConsultantCallScreen() {
         onRemoteVideo: (stream) => {
           if (isMounted) setRemoteStream(stream);
         },
+        onPetCardsReceived: (shareId, pets) => {
+          if (!isMounted) return;
+          setPetCardBatches((current) => [...current, { shareId, pets }]);
+        },
       })
       .catch((startError: unknown) => {
         client.close();
@@ -144,12 +156,26 @@ export default function ConsultantCallScreen() {
       isMounted = false;
       client.close();
       setRemoteStream(null);
+      setPetCardBatches([]);
       setAvailabilityCallState(null, null);
       if (clientRef.current === client) clientRef.current = null;
     };
     // Restart the peer when a rejoin returns a fresh call-session token.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchingCall]);
+
+  useEffect(() => {
+    if (!matchingCall || petCardBatches.length === 0) return;
+    const frame = requestAnimationFrame(() => {
+      for (const batch of petCardBatches) {
+        if (acknowledgedPetSharesRef.current.has(batch.shareId)) continue;
+        if (clientRef.current?.acknowledgePetCards()) {
+          acknowledgedPetSharesRef.current.add(batch.shareId);
+        }
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [matchingCall, petCardBatches]);
 
   useEffect(() => {
     if (!connected) return;
@@ -349,6 +375,78 @@ export default function ConsultantCallScreen() {
           {formatDuration(elapsed)}
         </Text>
 
+        {petCardBatches.length > 0 ? (
+          <View
+            testID="shared-pet-cards"
+            accessibilityLabel="اطلاعات حیوان‌های انتخاب‌شده"
+            style={[
+              styles.petCardsPanel,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <View style={styles.petCardsHeading}>
+              <Ionicons name="paw" size={17} color={colors.primary} />
+              <Text style={[styles.petCardsTitle, { color: colors.foreground }]}>
+                اطلاعات حیوان‌های انتخاب‌شده
+              </Text>
+              <Text style={[styles.petCardsCount, { color: colors.mutedForeground }]}>
+                {petCardBatches.reduce((count, batch) => count + batch.pets.length, 0)}
+              </Text>
+            </View>
+            <ScrollView
+              style={styles.petCardsScroll}
+              contentContainerStyle={styles.petCardsList}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={false}
+            >
+              {petCardBatches.flatMap((batch) =>
+                batch.pets.map((pet, index) => (
+                  <View
+                    key={`${batch.shareId}-${index}`}
+                    style={[
+                      styles.petCard,
+                      { backgroundColor: colors.muted, borderColor: colors.border },
+                    ]}
+                  >
+                    <View style={styles.petCardTop}>
+                      <Text style={[styles.petName, { color: colors.foreground }]}>
+                        {pet.name}
+                      </Text>
+                      <Text style={[styles.petDetails, { color: colors.mutedForeground }]}>
+                        {[pet.species, pet.breed].filter(Boolean).join(' · ')}
+                      </Text>
+                    </View>
+                    <Text style={[styles.petDetails, { color: colors.mutedForeground }]}>
+                      {[pet.age ? `سن: ${pet.age}` : null, pet.weight ? `وزن: ${pet.weight}` : null]
+                        .filter(Boolean)
+                        .join('  •  ')}
+                    </Text>
+                    {pet.health ? (
+                      <View style={styles.petHealth}>
+                        {pet.health.allergies ? (
+                          <Text style={[styles.petHealthText, { color: colors.accentForeground }]}>
+                            حساسیت: {pet.health.allergies}
+                          </Text>
+                        ) : null}
+                        {pet.health.medicalConditions ? (
+                          <Text style={[styles.petHealthText, { color: colors.accentForeground }]}>
+                            شرایط پزشکی: {pet.health.medicalConditions}
+                          </Text>
+                        ) : null}
+                        {pet.health.dietaryRestrictions ? (
+                          <Text style={[styles.petHealthText, { color: colors.accentForeground }]}>
+                            محدودیت غذایی: {pet.health.dietaryRestrictions}
+                          </Text>
+                        ) : null}
+                      </View>
+                    ) : null}
+                  </View>
+                )),
+              )}
+            </ScrollView>
+          </View>
+        ) : null}
+
         {!matchingCall ? (
           <Pressable
             testID="rejoin-call"
@@ -503,6 +601,34 @@ const styles = StyleSheet.create({
   liveDot: { width: 7, height: 7, borderRadius: 4 },
   status: { fontSize: 12, writingDirection: 'rtl' },
   timer: { fontSize: 33, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  petCardsPanel: {
+    width: '100%',
+    maxHeight: 190,
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 10,
+    gap: 8,
+  },
+  petCardsHeading: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 7,
+  },
+  petCardsTitle: { flex: 1, fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
+  petCardsCount: { fontSize: 11, fontWeight: '600' },
+  petCardsScroll: { flexGrow: 0 },
+  petCardsList: { gap: 7, paddingBottom: 2 },
+  petCard: { borderWidth: 1, borderRadius: 13, padding: 9, gap: 4 },
+  petCardTop: {
+    flexDirection: 'row-reverse',
+    alignItems: 'baseline',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  petName: { fontSize: 13, fontWeight: '700', writingDirection: 'rtl' },
+  petDetails: { fontSize: 10, writingDirection: 'rtl', textAlign: 'right' },
+  petHealth: { gap: 2, marginTop: 2 },
+  petHealthText: { fontSize: 10, lineHeight: 15, writingDirection: 'rtl', textAlign: 'right' },
   errorActions: { alignItems: 'center', gap: 9, maxWidth: 320 },
   errorText: { maxWidth: 310, textAlign: 'center', lineHeight: 20, fontSize: 12, writingDirection: 'rtl' },
   retryButton: { minHeight: 44, minWidth: 190, paddingHorizontal: 16, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },

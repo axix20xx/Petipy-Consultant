@@ -305,17 +305,16 @@ export default function ConsultantCallScreen() {
   if (!token && !activeCall) return <Redirect href="/sign-in" />;
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <View style={styles.topBar}>
         <View style={styles.topBrand}>
-          <View
-            style={[styles.brandMark, { backgroundColor: colors.secondary }]}
-          >
-            <Ionicons name="paw" size={18} color={colors.primary} />
+          <View style={[styles.brandMark, { backgroundColor: colors.primary }]}>
+            <Ionicons name="paw" size={17} color={colors.primaryForeground} />
           </View>
-          <Text style={[styles.topLabel, { color: colors.mutedForeground }]}>
-            تماس خصوصی پتی‌پای
-          </Text>
+          <View style={styles.topBrandCopy}>
+            <Text style={[styles.topBrandName, { color: colors.foreground }]}>پتی‌پای</Text>
+            <Text style={[styles.topLabel, { color: colors.mutedForeground }]}>تماس خصوصی</Text>
+          </View>
         </View>
         <Pressable
           testID="call-chat"
@@ -326,56 +325,48 @@ export default function ConsultantCallScreen() {
             if (!callId) return;
             router.push({ pathname: '/call/[id]/chat', params: { id: callId } });
           }}
-          style={[
+          style={({ pressed }) => [
             styles.chatButton,
-            { backgroundColor: colors.secondary },
-            (!callId || !token) && styles.chatButtonDisabled,
+            { backgroundColor: colors.secondary, opacity: !callId || !token ? 0.48 : pressed ? 0.78 : 1 },
           ]}
         >
-          <Ionicons name="chatbubble-ellipses" size={17} color={colors.primary} />
-          <Text style={[styles.chatButtonText, { color: colors.primary }]}>
-            گفت‌وگو
-          </Text>
+          <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.primary} />
+          <Text style={[styles.chatButtonText, { color: colors.secondaryForeground }]}>گفت‌وگو</Text>
         </Pressable>
       </View>
 
-      <View style={styles.center}>
+      <ScrollView
+        style={styles.mainScroll}
+        contentContainerStyle={styles.mainContent}
+        showsVerticalScrollIndicator={false}
+      >
         {hasRemoteVideo && remoteStream ? (
-          <View
-            style={[
-              styles.videoStage,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
-          >
+          <View style={[styles.videoStage, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <RemoteVideo
               key={`${callId ?? 'call'}-${remoteStream.id}`}
               stream={remoteStream}
               label="تصویر زنده‌ی مشتری یا حیوان خانگی"
             />
-            <View
-              style={[styles.videoBadge, { backgroundColor: colors.foreground }]}
-            >
-              <Ionicons name="videocam" size={14} color={colors.background} />
-              <Text style={[styles.videoBadgeText, { color: colors.background }]}>
-                تصویر زنده
-              </Text>
+            <View style={[styles.videoBadge, { backgroundColor: colors.card }]}>
+              <View style={[styles.liveDot, { backgroundColor: colors.success }]} />
+              <Ionicons name="videocam" size={14} color={colors.primary} />
+              <Text style={[styles.videoBadgeText, { color: colors.foreground }]}>تصویر زنده</Text>
             </View>
           </View>
         ) : (
-          <View
-            style={[
-              styles.avatarOuter,
-              {
-                backgroundColor: colors.secondary,
-                borderColor: connected ? colors.success : colors.primary,
-              },
-            ]}
-          >
-            <View style={[styles.avatarInner, { backgroundColor: colors.card }]}>
-              <Ionicons name="paw" size={39} color={colors.primary} />
+          <View style={styles.voiceStage}>
+            <View style={[styles.avatarOuter, { backgroundColor: colors.secondary, borderColor: connected ? colors.success : colors.accent }]}>
+              <View style={[styles.avatarInner, { backgroundColor: colors.card }]}>
+                <Ionicons name="paw" size={38} color={colors.primary} />
+              </View>
+            </View>
+            <View style={[styles.audioOnlyBadge, { backgroundColor: colors.secondary }]}>
+              <Ionicons name="mic-outline" size={14} color={colors.secondaryForeground} />
+              <Text style={[styles.audioOnlyText, { color: colors.secondaryForeground }]}>تماس صوتی</Text>
             </View>
           </View>
         )}
+
         <View style={[styles.callInfo, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.callInfoTop}>
             <Text style={[styles.kicker, { color: colors.primary }]}>مشاوره‌ی صوتی پتی‌پای</Text>
@@ -384,20 +375,15 @@ export default function ConsultantCallScreen() {
               <Text style={[styles.privateBadgeText, { color: colors.secondaryForeground }]}>خصوصی</Text>
             </View>
           </View>
-          <Text style={[styles.name, { color: colors.foreground }]}>
-            {matchingCall?.displayName ?? 'تماس مشاوره'}
-          </Text>
+          <Text style={[styles.name, { color: colors.foreground }]}>{matchingCall?.displayName ?? 'تماس مشاوره'}</Text>
           <View style={styles.liveStatus}>
-            <View
-              style={[
-                styles.liveDot,
-                { backgroundColor: connected ? colors.success : colors.warning },
-              ]}
-            />
+            <View style={[styles.liveDot, { backgroundColor: connected ? colors.success : colors.warning }]} />
             <Text style={[styles.status, { color: colors.mutedForeground }]}>{status}</Text>
           </View>
           <View style={[styles.timerTrack, { backgroundColor: colors.muted }]}>
-            <Ionicons name="time-outline" size={15} color={colors.primary} />
+            <Ionicons name="time-outline" size={17} color={colors.primary} />
+            <Text style={[styles.timerLabel, { color: colors.mutedForeground }]}>مدت تماس</Text>
+            <View style={styles.timerSpacer} />
             <Text style={[styles.timer, { color: colors.foreground }]}>{formatDuration(elapsed)}</Text>
           </View>
         </View>
@@ -406,65 +392,33 @@ export default function ConsultantCallScreen() {
           <View
             testID="shared-pet-cards"
             accessibilityLabel="اطلاعات حیوان‌های انتخاب‌شده"
-            style={[
-              styles.petCardsPanel,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
+            style={[styles.petCardsPanel, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
             <View style={styles.petCardsHeading}>
-              <Ionicons name="paw" size={17} color={colors.primary} />
-              <Text style={[styles.petCardsTitle, { color: colors.foreground }]}>
-                اطلاعات حیوان‌های انتخاب‌شده
-              </Text>
+              <View style={[styles.petHeadingIcon, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="paw" size={16} color={colors.primary} />
+              </View>
+              <Text style={[styles.petCardsTitle, { color: colors.foreground }]}>اطلاعات حیوان‌های انتخاب‌شده</Text>
               <Text style={[styles.petCardsCount, { color: colors.mutedForeground }]}>
                 {petCardBatches.reduce((count, batch) => count + batch.pets.length, 0)}
               </Text>
             </View>
-            <ScrollView
-              style={styles.petCardsScroll}
-              contentContainerStyle={styles.petCardsList}
-              nestedScrollEnabled
-              showsVerticalScrollIndicator={false}
-            >
+            <ScrollView style={styles.petCardsScroll} contentContainerStyle={styles.petCardsList} nestedScrollEnabled showsVerticalScrollIndicator={false}>
               {petCardBatches.flatMap((batch) =>
                 batch.pets.map((pet, index) => (
-                  <View
-                    key={`${batch.shareId}-${index}`}
-                    style={[
-                      styles.petCard,
-                      { backgroundColor: colors.muted, borderColor: colors.border },
-                    ]}
-                  >
+                  <View key={`${batch.shareId}-${index}`} style={[styles.petCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
                     <View style={styles.petCardTop}>
-                      <Text style={[styles.petName, { color: colors.foreground }]}>
-                        {pet.name}
-                      </Text>
-                      <Text style={[styles.petDetails, { color: colors.mutedForeground }]}>
-                        {[pet.species, pet.breed].filter(Boolean).join(' · ')}
-                      </Text>
+                      <Text style={[styles.petName, { color: colors.foreground }]}>{pet.name}</Text>
+                      <Text style={[styles.petDetails, { color: colors.mutedForeground }]}>{[pet.species, pet.breed].filter(Boolean).join(' · ')}</Text>
                     </View>
                     <Text style={[styles.petDetails, { color: colors.mutedForeground }]}>
-                      {[pet.age ? `سن: ${pet.age}` : null, pet.weight ? `وزن: ${pet.weight}` : null]
-                        .filter(Boolean)
-                        .join('  •  ')}
+                      {[pet.age ? `سن: ${pet.age}` : null, pet.weight ? `وزن: ${pet.weight}` : null].filter(Boolean).join('  •  ')}
                     </Text>
                     {pet.health ? (
                       <View style={styles.petHealth}>
-                        {pet.health.allergies ? (
-                          <Text style={[styles.petHealthText, { color: colors.accentForeground }]}>
-                            حساسیت: {pet.health.allergies}
-                          </Text>
-                        ) : null}
-                        {pet.health.medicalConditions ? (
-                          <Text style={[styles.petHealthText, { color: colors.accentForeground }]}>
-                            شرایط پزشکی: {pet.health.medicalConditions}
-                          </Text>
-                        ) : null}
-                        {pet.health.dietaryRestrictions ? (
-                          <Text style={[styles.petHealthText, { color: colors.accentForeground }]}>
-                            محدودیت غذایی: {pet.health.dietaryRestrictions}
-                          </Text>
-                        ) : null}
+                        {pet.health.allergies ? <Text style={[styles.petHealthText, { color: colors.accentForeground }]}>حساسیت: {pet.health.allergies}</Text> : null}
+                        {pet.health.medicalConditions ? <Text style={[styles.petHealthText, { color: colors.accentForeground }]}>شرایط پزشکی: {pet.health.medicalConditions}</Text> : null}
+                        {pet.health.dietaryRestrictions ? <Text style={[styles.petHealthText, { color: colors.accentForeground }]}>محدودیت غذایی: {pet.health.dietaryRestrictions}</Text> : null}
                       </View>
                     ) : null}
                   </View>
@@ -479,242 +433,155 @@ export default function ConsultantCallScreen() {
             testID="rejoin-call"
             onPress={() => void reconnect()}
             disabled={joining || !token}
-            style={[styles.rejoinButton, { backgroundColor: colors.primary }]}
+            style={({ pressed }) => [styles.rejoinButton, { backgroundColor: colors.primary, opacity: pressed ? 0.88 : 1 }]}
           >
-            {joining ? (
-              <ActivityIndicator color={colors.primaryForeground} />
-            ) : (
-              <Ionicons name="refresh" size={18} color={colors.primaryForeground} />
-            )}
-            <Text style={[styles.rejoinText, { color: colors.primaryForeground }]}>
-              اتصال مجدد به تماس
-            </Text>
+            {joining ? <ActivityIndicator color={colors.primaryForeground} /> : <Ionicons name="refresh" size={18} color={colors.primaryForeground} />}
+            <Text style={[styles.rejoinText, { color: colors.primaryForeground }]}>اتصال مجدد به تماس</Text>
           </Pressable>
         ) : null}
 
         {error ? (
-          <View style={styles.errorActions}>
-            <Text
-              accessibilityRole="alert"
-              style={[styles.errorText, { color: colors.destructive }]}
-            >
-              {error}
-            </Text>
+          <View style={[styles.errorActions, { backgroundColor: colors.accent }]}>
+            <Text accessibilityRole="alert" style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
             <Pressable
               testID="retry-call"
               accessibilityRole="button"
               onPress={() => void retryConnection()}
               disabled={joining || !token || !callId}
-              style={[styles.retryButton, { backgroundColor: colors.primary }]}
+              style={({ pressed }) => [styles.retryButton, { backgroundColor: colors.primary, opacity: pressed ? 0.86 : 1 }]}
             >
-              {joining ? (
-                <ActivityIndicator color={colors.primaryForeground} />
-              ) : (
-                <Text style={[styles.retryText, { color: colors.primaryForeground }]}>
-                  تلاش دوباره برای اتصال
-                </Text>
-              )}
+              {joining ? <ActivityIndicator color={colors.primaryForeground} /> : <Text style={[styles.retryText, { color: colors.primaryForeground }]}>تلاش دوباره برای اتصال</Text>}
             </Pressable>
             {permissionIssue ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={openPermissionSettings}
-                style={[styles.settingsButton, { borderColor: colors.border }]}
-              >
-                <Text style={[styles.settingsText, { color: colors.foreground }]}>
-                  باز کردن تنظیمات دسترسی
-                </Text>
+              <Pressable accessibilityRole="button" onPress={openPermissionSettings} style={[styles.settingsButton, { borderColor: colors.border }]}>
+                <Text style={[styles.settingsText, { color: colors.foreground }]}>باز کردن تنظیمات دسترسی</Text>
               </Pressable>
             ) : null}
           </View>
         ) : null}
-      </View>
+      </ScrollView>
 
-      <View style={styles.controls}>
-        <Pressable
-          testID="call-earpiece"
-          accessibilityRole="button"
-          accessibilityLabel="انتقال صدا به گوشی"
-          accessibilityState={{ selected: audioRoute === 'earpiece' }}
-          onPress={() => void selectAudioRoute('earpiece')}
-          disabled={!matchingCall || routeChanging || Platform.OS === 'web'}
-          style={[
-            styles.control,
-            {
-              backgroundColor:
-                audioRoute === 'earpiece' ? colors.secondary : colors.card,
-              borderColor: colors.border,
-            },
-          ]}
-        >
-          {routeChanging && audioRoute === 'speaker' ? (
-            <ActivityIndicator color={colors.primary} />
-          ) : (
-            <Ionicons
-              name="phone-portrait-outline"
-              size={22}
-              color={colors.primary}
-            />
-          )}
-          <Text style={[styles.controlLabel, { color: colors.foreground }]}>
-            گوشی
-          </Text>
-        </Pressable>
-        <Pressable
-          testID="call-mute"
-          accessibilityRole="button"
-          accessibilityLabel={muted ? 'روشن کردن میکروفون' : 'خاموش کردن میکروفون'}
-          onPress={toggleMute}
-          disabled={!matchingCall}
-          style={[
-            styles.control,
-            { backgroundColor: muted ? colors.accent : colors.card, borderColor: colors.border },
-          ]}
-        >
-          <Ionicons
-            name={muted ? 'mic-off' : 'mic-outline'}
-            size={23}
-            color={muted ? colors.accentForeground : colors.foreground}
-          />
-          <Text style={[styles.controlLabel, { color: colors.foreground }]}>
-            {muted ? 'میکروفون خاموش' : 'بی‌صدا'}
-          </Text>
-        </Pressable>
-        <Pressable
-          testID="call-speaker"
-          accessibilityRole="button"
-          accessibilityLabel="انتقال صدا به بلندگو"
-          accessibilityState={{ selected: audioRoute === 'speaker' }}
-          onPress={() => void selectAudioRoute('speaker')}
-          disabled={!matchingCall || routeChanging || Platform.OS === 'web'}
-          style={[
-            styles.control,
-            {
-              backgroundColor:
-                audioRoute === 'speaker' ? colors.secondary : colors.card,
-              borderColor: colors.border,
-            },
-          ]}
-        >
-          {routeChanging && audioRoute === 'earpiece' ? (
-            <ActivityIndicator color={colors.primary} />
-          ) : (
-            <Ionicons name="volume-high" size={23} color={colors.primary} />
-          )}
-          <Text style={[styles.controlLabel, { color: colors.foreground }]}>
-            بلندگو
-          </Text>
-        </Pressable>
-        <Pressable
-          testID="call-hangup"
-          accessibilityRole="button"
-          accessibilityLabel="پایان تماس"
-          onPress={() => void endCall(true)}
-          disabled={ending}
-          style={[styles.endButton, { backgroundColor: colors.destructive }]}
-        >
-          {ending ? (
-            <ActivityIndicator color={colors.destructiveForeground} />
-          ) : (
-            <Ionicons
-              name="call"
-              size={24}
-              color={colors.destructiveForeground}
-              style={styles.hangupIcon}
-            />
-          )}
-        </Pressable>
+      <View style={[styles.controlDock, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={styles.controls}>
+          <Pressable
+            testID="call-earpiece"
+            accessibilityRole="button"
+            accessibilityLabel="انتقال صدا به گوشی"
+            accessibilityState={{ selected: audioRoute === 'earpiece' }}
+            onPress={() => void selectAudioRoute('earpiece')}
+            disabled={!matchingCall || routeChanging || Platform.OS === 'web'}
+            style={({ pressed }) => [
+              styles.control,
+              { backgroundColor: audioRoute === 'earpiece' ? colors.secondary : colors.background, borderColor: colors.border, opacity: !matchingCall || routeChanging || Platform.OS === 'web' ? 0.5 : pressed ? 0.78 : 1 },
+            ]}
+          >
+            {routeChanging && audioRoute === 'speaker' ? <ActivityIndicator color={colors.primary} /> : <Ionicons name="phone-portrait-outline" size={21} color={colors.primary} />}
+            <Text style={[styles.controlLabel, { color: colors.foreground }]}>گوشی</Text>
+          </Pressable>
+          <Pressable
+            testID="call-mute"
+            accessibilityRole="button"
+            accessibilityLabel={muted ? 'روشن کردن میکروفون' : 'خاموش کردن میکروفون'}
+            onPress={toggleMute}
+            disabled={!matchingCall}
+            style={({ pressed }) => [styles.control, { backgroundColor: muted ? colors.accent : colors.background, borderColor: colors.border, opacity: !matchingCall ? 0.5 : pressed ? 0.78 : 1 }]}
+          >
+            <Ionicons name={muted ? 'mic-off' : 'mic-outline'} size={22} color={muted ? colors.accentForeground : colors.foreground} />
+            <Text style={[styles.controlLabel, { color: colors.foreground }]}>{muted ? 'بی‌صدا' : 'میکروفون'}</Text>
+          </Pressable>
+          <Pressable
+            testID="call-speaker"
+            accessibilityRole="button"
+            accessibilityLabel="انتقال صدا به بلندگو"
+            accessibilityState={{ selected: audioRoute === 'speaker' }}
+            onPress={() => void selectAudioRoute('speaker')}
+            disabled={!matchingCall || routeChanging || Platform.OS === 'web'}
+            style={({ pressed }) => [
+              styles.control,
+              { backgroundColor: audioRoute === 'speaker' ? colors.secondary : colors.background, borderColor: colors.border, opacity: !matchingCall || routeChanging || Platform.OS === 'web' ? 0.5 : pressed ? 0.78 : 1 },
+            ]}
+          >
+            {routeChanging && audioRoute === 'earpiece' ? <ActivityIndicator color={colors.primary} /> : <Ionicons name="volume-high-outline" size={22} color={colors.primary} />}
+            <Text style={[styles.controlLabel, { color: colors.foreground }]}>بلندگو</Text>
+          </Pressable>
+          <Pressable
+            testID="call-hangup"
+            accessibilityRole="button"
+            accessibilityLabel="پایان تماس"
+            onPress={() => void endCall(true)}
+            disabled={ending}
+            style={({ pressed }) => [styles.endButton, { backgroundColor: colors.destructive, opacity: ending ? 0.7 : pressed ? 0.86 : 1 }]}
+          >
+            {ending ? <ActivityIndicator color={colors.destructiveForeground} /> : <Ionicons name="call" size={22} color={colors.destructiveForeground} style={styles.hangupIcon} />}
+            <Text style={[styles.endLabel, { color: colors.destructiveForeground }]}>پایان</Text>
+          </Pressable>
+        </View>
+        {routeError ? <Text accessibilityRole="alert" style={[styles.routeError, { color: colors.destructive }]}>{routeError}</Text> : null}
       </View>
-      {routeError ? (
-        <Text
-          accessibilityRole="alert"
-          style={[styles.routeError, { color: colors.destructive }]}
-        >
-          {routeError}
-        </Text>
-      ) : null}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, paddingHorizontal: 17, paddingTop: 7, paddingBottom: 12 },
-  topBar: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+  safe: { flex: 1, paddingHorizontal: 15, paddingTop: 6, paddingBottom: 8 },
+  topBar: { minHeight: 49, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
   topBrand: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
-  brandMark: { width: 36, height: 36, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  topLabel: { fontSize: 12, writingDirection: 'rtl' },
-  chatButton: {
-    minHeight: 43,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 7,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-  },
-  chatButtonDisabled: { opacity: 0.45 },
+  brandMark: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  topBrandCopy: { alignItems: 'flex-end', gap: 1 },
+  topBrandName: { fontSize: 12, fontWeight: '800', writingDirection: 'rtl' },
+  topLabel: { fontSize: 9, writingDirection: 'rtl' },
+  chatButton: { minHeight: 46, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7, paddingHorizontal: 13, borderRadius: 14 },
   chatButtonText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 13 },
-  avatarOuter: { width: 132, height: 132, borderRadius: 48, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 5 },
-  avatarInner: { width: 108, height: 108, borderRadius: 39, alignItems: 'center', justifyContent: 'center' },
-  videoStage: { width: '100%', height: '58%', minHeight: 220, maxHeight: 430, borderRadius: 26, borderWidth: 1, overflow: 'hidden', position: 'relative', marginBottom: 3 },
-  videoBadge: { position: 'absolute', right: 12, bottom: 12, zIndex: 1, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 11, paddingVertical: 8, borderRadius: 14 },
-  videoBadgeText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
-  callInfo: { width: '100%', borderWidth: 1, borderRadius: 27, paddingHorizontal: 17, paddingVertical: 16, alignItems: 'center', gap: 8, shadowColor: '#672334', shadowOpacity: 0.045, shadowRadius: 13, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
+  mainScroll: { flex: 1 },
+  mainContent: { alignItems: 'center', justifyContent: 'center', gap: 11, paddingVertical: 6 },
+  voiceStage: { alignItems: 'center', gap: 9, marginVertical: 2 },
+  avatarOuter: { width: 106, height: 106, borderRadius: 38, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  avatarInner: { width: 82, height: 82, borderRadius: 29, alignItems: 'center', justifyContent: 'center' },
+  audioOnlyBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 5 },
+  audioOnlyText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  videoStage: { width: '100%', height: 250, maxHeight: 330, borderRadius: 24, borderWidth: 1, overflow: 'hidden', position: 'relative' },
+  videoBadge: { position: 'absolute', right: 11, bottom: 11, zIndex: 1, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 12 },
+  videoBadgeText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  liveDot: { width: 7, height: 7, borderRadius: 4 },
+  callInfo: { width: '100%', borderWidth: 1, borderRadius: 21, paddingHorizontal: 15, paddingVertical: 13, alignItems: 'center', gap: 7, shadowColor: '#5D2934', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
   callInfoTop: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
-  privateBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 5 },
+  privateBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, borderRadius: 9, paddingHorizontal: 7, paddingVertical: 5 },
   privateBadgeText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
   kicker: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  name: { fontSize: 23, fontWeight: '800', writingDirection: 'rtl' },
+  name: { fontSize: 21, fontWeight: '800', textAlign: 'center', writingDirection: 'rtl' },
   liveStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7 },
-  liveDot: { width: 7, height: 7, borderRadius: 4 },
-  status: { fontSize: 12, writingDirection: 'rtl' },
-  timerTrack: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 8, marginTop: 2 },
-  timer: { fontSize: 22, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  petCardsPanel: {
-    width: '100%',
-    maxHeight: 190,
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 10,
-    gap: 8,
-  },
-  petCardsHeading: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 7,
-  },
-  petCardsTitle: { flex: 1, fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  petCardsCount: { fontSize: 11, fontWeight: '600' },
+  status: { fontSize: 11, textAlign: 'right', writingDirection: 'rtl' },
+  timerTrack: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', gap: 8, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginTop: 1 },
+  timerLabel: { fontSize: 10, writingDirection: 'rtl' },
+  timerSpacer: { flex: 1 },
+  timer: { fontSize: 21, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  petCardsPanel: { width: '100%', maxHeight: 174, borderWidth: 1, borderRadius: 18, padding: 10, gap: 8 },
+  petCardsHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7 },
+  petHeadingIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  petCardsTitle: { flex: 1, fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
+  petCardsCount: { fontSize: 10, fontWeight: '700' },
   petCardsScroll: { flexGrow: 0 },
   petCardsList: { gap: 7, paddingBottom: 2 },
-  petCard: { borderWidth: 1, borderRadius: 13, padding: 9, gap: 4 },
-  petCardTop: {
-    flexDirection: 'row-reverse',
-    alignItems: 'baseline',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  petName: { fontSize: 13, fontWeight: '700', writingDirection: 'rtl' },
+  petCard: { borderWidth: 1, borderRadius: 12, padding: 9, gap: 4 },
+  petCardTop: { flexDirection: 'row-reverse', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' },
+  petName: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
   petDetails: { fontSize: 10, writingDirection: 'rtl', textAlign: 'right' },
   petHealth: { gap: 2, marginTop: 2 },
   petHealthText: { fontSize: 10, lineHeight: 15, writingDirection: 'rtl', textAlign: 'right' },
-  errorActions: { alignItems: 'center', gap: 9, maxWidth: 320 },
-  errorText: { maxWidth: 310, textAlign: 'center', lineHeight: 20, fontSize: 12, writingDirection: 'rtl' },
-  retryButton: { minHeight: 44, minWidth: 190, paddingHorizontal: 16, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  retryText: { fontWeight: '700', fontSize: 12, writingDirection: 'rtl' },
-  settingsButton: { minHeight: 42, paddingHorizontal: 14, borderWidth: 1, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  settingsText: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
-  rejoinButton: { minHeight: 44, flexDirection: 'row-reverse', gap: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, borderRadius: 15, marginTop: 8 },
-  rejoinText: { fontWeight: '700', fontSize: 12, writingDirection: 'rtl' },
-  controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 7, paddingBottom: 7 },
-  control: { flex: 1, maxWidth: 76, minHeight: 74, borderRadius: 22, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 7 },
-  controlLabel: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
-  endButton: { width: 68, height: 68, borderRadius: 25, alignItems: 'center', justifyContent: 'center', marginHorizontal: 4 },
-  routeError: { textAlign: 'center', fontSize: 11, lineHeight: 16, writingDirection: 'rtl', marginTop: -4 },
+  errorActions: { width: '100%', alignItems: 'center', gap: 8, borderRadius: 15, padding: 10 },
+  errorText: { maxWidth: 310, textAlign: 'center', lineHeight: 19, fontSize: 11, writingDirection: 'rtl' },
+  retryButton: { minHeight: 43, minWidth: 190, paddingHorizontal: 16, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  retryText: { fontWeight: '700', fontSize: 11, writingDirection: 'rtl' },
+  settingsButton: { minHeight: 42, paddingHorizontal: 14, borderWidth: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  settingsText: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
+  rejoinButton: { minHeight: 44, width: '100%', flexDirection: 'row-reverse', gap: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, borderRadius: 14 },
+  rejoinText: { fontWeight: '700', fontSize: 11, writingDirection: 'rtl' },
+  controlDock: { borderWidth: 1, borderRadius: 20, padding: 8, marginTop: 5, shadowColor: '#5D2934', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 6 },
+  control: { flex: 1, minWidth: 0, minHeight: 67, borderRadius: 15, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 5 },
+  controlLabel: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  endButton: { width: 69, minHeight: 67, borderRadius: 15, alignItems: 'center', justifyContent: 'center', gap: 3 },
+  endLabel: { fontSize: 9, fontWeight: '800', writingDirection: 'rtl' },
+  routeError: { textAlign: 'center', fontSize: 10, lineHeight: 15, writingDirection: 'rtl', marginTop: 4 },
   hangupIcon: { transform: [{ rotate: '135deg' }] },
 });

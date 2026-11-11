@@ -287,16 +287,17 @@ export default function ConsultantHome() {
     ? colors.success
     : colors.warning;
 
+  const pendingCount = queue.data?.length ?? 0;
+  const todayLabel = new Intl.DateTimeFormat('fa-IR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(new Date());
+
   return (
-    <SafeAreaView
-      style={[styles.safe, { backgroundColor: colors.background }]}
-      edges={['top']}
-    >
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          Platform.OS === 'web' && styles.webContent,
-        ]}
+        contentContainerStyle={[styles.content, Platform.OS === 'web' && styles.webContent]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -307,199 +308,185 @@ export default function ConsultantHome() {
           />
         }
       >
-        <View style={[styles.header, { backgroundColor: colors.primary }]}>
-          <View style={styles.headerMasthead}>
-            <View
-              style={[
-                styles.avatar,
-                { backgroundColor: colors.card, borderColor: colors.accent },
-              ]}
-            >
-              <Ionicons name="paw" size={23} color={colors.primary} />
+        <View style={styles.topLine}>
+          <View style={[styles.brandMark, { backgroundColor: colors.primary }]}>
+            <Ionicons name="paw" size={19} color={colors.primaryForeground} />
+          </View>
+          <View style={styles.topBrandCopy}>
+            <Text style={[styles.brandName, { color: colors.foreground }]}>پتی‌پای</Text>
+            <Text style={[styles.brandCaption, { color: colors.mutedForeground }]}>میز مشاوره</Text>
+          </View>
+          <View style={styles.topDate}>
+            <Text style={[styles.dateCaption, { color: colors.mutedForeground }]}>{todayLabel}</Text>
+            <View style={styles.liveFlag}>
+              <View style={[styles.liveDot, { backgroundColor: isAvailable ? colors.success : colors.mutedForeground }]} />
+              <Text style={[styles.liveText, { color: colors.foreground }]}>{isAvailable ? 'آماده‌به‌کار' : 'آفلاین'}</Text>
             </View>
-            <Text style={[styles.eyebrow, { color: colors.primaryForeground }]}>
-              PETIPY  /  مشاوران
+          </View>
+        </View>
+
+        <View style={styles.welcome}>
+          <View style={styles.welcomeCopy}>
+            <Text style={[styles.welcomeEyebrow, { color: colors.primary }]}>روز خوش،</Text>
+            <Text style={[styles.greeting, { color: colors.foreground }]}>{profile?.displayName ?? 'مشاور عزیز'}</Text>
+            <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+              یک گفت‌وگوی آرام می‌تواند تفاوت بزرگی بسازد.
             </Text>
           </View>
-          <View style={styles.headerText}>
-            <Text style={[styles.greeting, { color: colors.primaryForeground }]}>
-              سلام، {profile?.displayName ?? 'مشاور'}
-            </Text>
-            <Text style={[styles.subtitle, { color: colors.primaryForeground }]}>
-              امروز، یک گفت‌وگوی خوب از شما شروع می‌شود
-            </Text>
-          </View>
-          <View style={[styles.headerRule, { backgroundColor: colors.primaryForeground }]} />
-          <View style={styles.headerFoot}>
-            <View style={styles.headerStat}>
-              <Text style={[styles.headerStatValue, { color: colors.primaryForeground }]}>
-                {history.isLoading ? '—' : todayCount}
-              </Text>
-              <Text style={[styles.headerStatLabel, { color: colors.primaryForeground }]}>
-                تماس امروز
-              </Text>
-            </View>
-            <View style={[styles.headerStatDivider, { backgroundColor: colors.primaryForeground }]} />
-            <View style={styles.headerStat}>
-              <Text style={[styles.headerStatValue, { color: colors.primaryForeground }]}>
-                {history.isLoading ? '—' : `${Math.floor(todayDuration / 60)} دقیقه`}
-              </Text>
-              <Text style={[styles.headerStatLabel, { color: colors.primaryForeground }]}>
-                زمان گفت‌وگو
-              </Text>
-            </View>
-            <Ionicons name="heart-outline" size={19} color={colors.primaryForeground} />
+          <View style={[styles.welcomeBadge, { backgroundColor: colors.secondary }]}>
+            <Ionicons name="heart" size={17} color={colors.primary} />
           </View>
         </View>
 
         {!isConnected ? (
-          <View
-            style={[
-              styles.connectionNotice,
-              { backgroundColor: colors.accent, borderColor: colors.border },
-            ]}
-          >
-            <Ionicons
-              name="information-circle-outline"
-              size={21}
-              color={colors.accentForeground}
-            />
-            <Text
-              style={[
-                styles.noticeText,
-                { color: colors.accentForeground },
-              ]}
-            >
-              {sessionMessage ??
-                'برای ورود مشاور، مسیر رسمی Petipy برای صدور bearer token باید تنظیم شود.'}
+          <View style={[styles.connectionNotice, { backgroundColor: colors.accent, borderColor: colors.border }]}>
+            <Ionicons name="information-circle-outline" size={20} color={colors.accentForeground} />
+            <Text style={[styles.noticeText, { color: colors.accentForeground }]}>
+              {sessionMessage ?? 'برای ورود مشاور، مسیر رسمی Petipy برای صدور bearer token باید تنظیم شود.'}
             </Text>
           </View>
         ) : null}
 
-        <View style={[styles.availabilityCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.availabilityCopy}>
-            <View
-              style={[
-                styles.statusDot,
-                {
-                   backgroundColor: readinessTone,
-                },
-              ]}
-            />
-            <View style={styles.availabilityText}>
-              <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-                {isAvailable ? 'وضعیت دریافت تماس' : 'در دسترس نیستید'}
-              </Text>
-              <Text style={[styles.bodyText, { color: colors.mutedForeground }]}>
-                {isAvailable
-                  ? serviceRunning && pushReady
-                    ? 'سرویس پس‌زمینه و اعلان دستگاه آماده‌اند'
-                    : pushSetupMessage ?? (serviceRunning
-                      ? 'سرویس فعال است؛ ثبت اعلان هنوز تأیید نشده'
-                      : 'سرویس پس‌زمینه فعال نیست؛ تنظیمات را بررسی کنید')
-                  : isConnected
-                    ? 'برای دریافت تماس، وضعیت خود را فعال کنید'
-                    : 'پس از اتصال ورود رسمی Petipy فعال می‌شود'}
+        <View style={[styles.availabilityPanel, { backgroundColor: colors.primary }]}>
+          <View style={styles.availabilityTop}>
+            <View style={styles.availabilityTitleBlock}>
+              <Text style={[styles.panelEyebrow, { color: colors.primaryForeground }]}>وضعیت دریافت تماس</Text>
+              <Text style={[styles.availabilityTitle, { color: colors.primaryForeground }]}>
+                {isAvailable ? 'در دسترس هستید' : 'فعلاً استراحت'}
               </Text>
             </View>
+            <View style={[styles.switchWell, { backgroundColor: colors.primaryForeground }]}>
+              {availabilityBusy ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : (
+                <Switch
+                  testID="availability-switch"
+                  value={Boolean(isAvailable)}
+                  onValueChange={updateAvailability}
+                  disabled={!isConnected}
+                  trackColor={{ false: colors.border, true: colors.success }}
+                  thumbColor={colors.card}
+                  accessibilityLabel="وضعیت در دسترس بودن مشاور"
+                />
+              )}
+            </View>
           </View>
-          {availabilityBusy ? (
-            <ActivityIndicator color={colors.primary} />
-          ) : (
-            <Switch
-              testID="availability-switch"
-              value={Boolean(isAvailable)}
-              onValueChange={updateAvailability}
-              disabled={!isConnected}
-              trackColor={{ false: colors.border, true: colors.primary }}
-              thumbColor={colors.card}
-              accessibilityLabel="وضعیت در دسترس بودن مشاور"
-            />
-          )}
+          <View style={[styles.availabilityDivider, { backgroundColor: colors.primaryForeground }]} />
+          <View style={styles.availabilityBottom}>
+            <View style={[styles.serviceIcon, { backgroundColor: colors.primaryForeground }]}>
+              <Ionicons name={serviceRunning ? 'radio' : 'radio-outline'} size={17} color={readinessTone} />
+            </View>
+            <Text style={[styles.availabilityDetail, { color: colors.primaryForeground }]}>
+              {isAvailable
+                ? serviceRunning && pushReady
+                  ? 'سرویس پس‌زمینه و اعلان دستگاه آماده‌اند'
+                  : pushSetupMessage ?? (serviceRunning
+                    ? 'سرویس فعال است؛ ثبت اعلان هنوز تأیید نشده'
+                    : 'سرویس پس‌زمینه فعال نیست؛ تنظیمات را بررسی کنید')
+                : isConnected
+                  ? 'برای دریافت درخواست تازه، وضعیت را روشن کنید'
+                  : 'پس از اتصال ورود رسمی Petipy فعال می‌شود'}
+            </Text>
+          </View>
+          {isAvailable ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="بررسی وضعیت تماس در تنظیمات"
+              onPress={() => router.push('/(tabs)/settings')}
+              style={({ pressed }) => [styles.readiness, { backgroundColor: colors.primaryForeground, opacity: pressed ? 0.86 : 1 }]}
+              testID="call-readiness-settings"
+            >
+              <Ionicons name={pushReady && serviceRunning ? 'checkmark-circle' : 'alert-circle-outline'} size={16} color={readinessTone} />
+              <Text style={[styles.readinessText, { color: colors.foreground }]}>
+                {pushReady ? 'اعلان دستگاه تأیید شده' : pushSetupMessage ?? `وضعیت اعلان: ${pushSetupState}`}
+                {' · '}
+                {serviceRunning ? 'سرویس در حال اجرا' : 'سرویس متوقف است'}
+              </Text>
+              <Ionicons name="chevron-back" size={15} color={colors.foreground} />
+            </Pressable>
+          ) : null}
         </View>
-        {isAvailable ? (
+
+        <View style={styles.queueHeading}>
+          <View style={styles.queueTitleGroup}>
+            <Text style={[styles.sectionKicker, { color: colors.primary }]}>میز تماس</Text>
+            <Text style={[styles.sectionHeading, { color: colors.foreground }]}>درخواست‌های ورودی</Text>
+          </View>
           <Pressable
+            testID="refresh-queue"
             accessibilityRole="button"
-            accessibilityLabel="بررسی وضعیت تماس در تنظیمات"
-            onPress={() => router.push('/(tabs)/settings')}
-            style={[styles.readiness, { backgroundColor: colors.secondary }]}
-            testID="call-readiness-settings"
+            accessibilityLabel="تازه‌سازی صف تماس"
+            onPress={() => void refreshAll()}
+            disabled={queue.isRefetching || history.isRefetching}
+            style={({ pressed }) => [styles.refreshButton, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
           >
-            <Ionicons name={pushReady && serviceRunning ? 'checkmark-circle' : 'alert-circle-outline'} size={16} color={readinessTone} />
-            <Text style={[styles.readinessText, { color: colors.secondaryForeground }]}>
-              {pushReady ? 'اعلان دستگاه تأیید شده' : pushSetupMessage ?? `وضعیت اعلان: ${pushSetupState}`}
-              {' · '}
-              {serviceRunning ? 'سرویس در حال اجرا' : 'سرویس متوقف است'}
-            </Text>
-            <Ionicons name="chevron-back" size={15} color={colors.secondaryForeground} />
+            {queue.isRefetching ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <Ionicons name="refresh-outline" size={18} color={colors.primary} />
+            )}
           </Pressable>
-        ) : null}
+        </View>
 
-        <View style={[styles.queueSectionHeading, { borderBottomColor: colors.border }]}>
-          <View style={styles.queueHeadingMark}>
-            <Text style={[styles.queueIndex, { color: colors.primary }]}>۰۱</Text>
-            <View style={[styles.queueHeadingRule, { backgroundColor: colors.primary }]} />
+        <View style={styles.queueMeta}>
+          <View style={[styles.countBadge, { backgroundColor: colors.secondary }]}>
+            <Text style={[styles.countText, { color: colors.secondaryForeground }]}>{pendingCount.toLocaleString('fa-IR')}</Text>
           </View>
-          <View style={styles.queueHeadingCopy}>
-            <Text style={[styles.sectionHeading, { color: colors.foreground }]}>
-              صف تماس‌های ورودی
-            </Text>
-            <Text style={[styles.sectionTrailing, { color: colors.mutedForeground }]}>
-              تازه‌سازی هر ۵ ثانیه
-            </Text>
-          </View>
-          <View style={[styles.queueCount, { backgroundColor: colors.secondary }]}>
-            <Ionicons name="call-outline" size={15} color={colors.primary} />
+          <Text style={[styles.queueMetaText, { color: colors.mutedForeground }]}>
+            درخواست در انتظار پاسخ
+          </Text>
+          <View style={styles.metaSpacer} />
+          <View style={styles.pollingLabel}>
+            <View style={[styles.pollingDot, { backgroundColor: colors.success }]} />
+            <Text style={[styles.pollingText, { color: colors.mutedForeground }]}>بررسی خودکار هر ۵ ثانیه</Text>
           </View>
         </View>
 
         {!isConnected ? (
-          <View
-            style={[
-              styles.emptyCard,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
-          >
-            <View style={[styles.emptyIcon, { backgroundColor: colors.secondary }]}>
-              <Ionicons name="headset-outline" size={27} color={colors.primary} />
+          <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.emptyIllustration, { backgroundColor: colors.secondary }]}>
+              <Ionicons name="headset-outline" size={26} color={colors.primary} />
             </View>
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-              ورود مشاور لازم است
-            </Text>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>ورود مشاور لازم است</Text>
             <Text style={[styles.emptyDescription, { color: colors.mutedForeground }]}>
-              ورود رسمی Android هنوز متصل نیست؛ صف پس از تأیید حساب VOICE_CONSULTANT نمایش داده می‌شود.
+              صف پس از تأیید حساب VOICE_CONSULTANT از سوی Petipy نمایش داده می‌شود.
             </Text>
           </View>
         ) : queue.isLoading ? (
-          <View style={styles.loading}>
-            <ActivityIndicator color={colors.primary} />
-            <Text style={[styles.bodyText, { color: colors.mutedForeground }]}>
-              در حال دریافت صف تماس…
-            </Text>
+          <View style={styles.skeletonStack} accessibilityLabel="در حال دریافت صف تماس">
+            {[0, 1].map((item) => (
+              <View key={item} style={[styles.skeletonCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={styles.skeletonHeader}>
+                  <View style={[styles.skeletonAvatar, { backgroundColor: colors.muted }]} />
+                  <View style={styles.skeletonLines}>
+                    <View style={[styles.skeletonLine, styles.skeletonLineLong, { backgroundColor: colors.muted }]} />
+                    <View style={[styles.skeletonLine, styles.skeletonLineShort, { backgroundColor: colors.muted }]} />
+                  </View>
+                </View>
+                <View style={[styles.skeletonAction, { backgroundColor: colors.muted }]} />
+              </View>
+            ))}
           </View>
         ) : queue.isError ? (
-          <View
-            style={[
-              styles.emptyCard,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
-          >
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-              دریافت صف تماس ممکن نشد
-            </Text>
+          <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.emptyIllustration, { backgroundColor: colors.accent }]}>
+              <Ionicons name="cloud-offline-outline" size={24} color={colors.accentForeground} />
+            </View>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>دریافت صف تماس ممکن نشد</Text>
+            <Text style={[styles.emptyDescription, { color: colors.mutedForeground }]}>اتصال را بررسی کنید و دوباره تلاش کنید.</Text>
             <Pressable
               testID="retry-queue"
+              accessibilityRole="button"
               onPress={() => void queue.refetch()}
-              style={[styles.retryButton, { backgroundColor: colors.secondary }]}
+              style={({ pressed }) => [styles.retryButton, { backgroundColor: colors.primary, opacity: pressed ? 0.86 : 1 }]}
             >
-              <Text style={[styles.retryText, { color: colors.primary }]}>
-                تلاش دوباره
-              </Text>
+              <Ionicons name="refresh-outline" size={16} color={colors.primaryForeground} />
+              <Text style={[styles.retryText, { color: colors.primaryForeground }]}>تلاش دوباره</Text>
             </Pressable>
           </View>
         ) : queue.data?.length ? (
           <View style={styles.queueList}>
-            {queue.data.map((call) => (
+            {queue.data.map((call, index) => (
               <View
                 key={call.id}
                 style={[
@@ -507,23 +494,33 @@ export default function ConsultantHome() {
                   { backgroundColor: colors.card, borderColor: colors.border },
                 ]}
               >
+                <View style={[styles.ticketAccent, { backgroundColor: index === 0 ? colors.primary : colors.accent }]} />
                 <View style={styles.callHeader}>
-                  <View style={[styles.callIcon, { backgroundColor: colors.accent }]}>
-                    <Ionicons
-                      name="call"
-                      size={18}
-                      color={colors.accentForeground}
-                    />
+                  <View style={[styles.callIcon, { backgroundColor: colors.secondary }]}>
+                    <Ionicons name="call" size={18} color={colors.primary} />
                   </View>
                   <View style={styles.callCopy}>
-                    <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-                      {call.callerName || 'درخواست تماس مشاوره'}
-                    </Text>
+                    <View style={styles.callNameRow}>
+                      <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+                        {call.callerName || 'درخواست تماس مشاوره'}
+                      </Text>
+                      <View style={[styles.pendingPill, { backgroundColor: colors.accent }]}>
+                        <View style={[styles.pendingDot, { backgroundColor: colors.warning }]} />
+                        <Text style={[styles.pendingText, { color: colors.accentForeground }]}>در انتظار پاسخ</Text>
+                      </View>
+                    </View>
                     <Text style={[styles.bodyText, { color: colors.mutedForeground }]}>
                       {call.petName ? `درباره‌ی ${call.petName} · ${formatTime(call.createdAt)}` : formatTime(call.createdAt)}
                     </Text>
-                    {call.subject ? <Text numberOfLines={1} style={[styles.callSubject, { color: colors.accentForeground }]}>{call.subject}</Text> : null}
+                    {call.subject ? <Text numberOfLines={1} style={[styles.callSubject, { color: colors.secondaryForeground }]}>{call.subject}</Text> : null}
                   </View>
+                </View>
+                <View style={[styles.ticketRule, { backgroundColor: colors.border }]} />
+                <View style={styles.callMetaRow}>
+                  <Ionicons name="time-outline" size={15} color={colors.mutedForeground} />
+                  <Text style={[styles.callMetaText, { color: colors.mutedForeground }]}>
+                    {call.expiresAt ? `مهلت پاسخ تا ${formatTime(call.expiresAt)}` : `ثبت درخواست · ${formatTime(call.createdAt)}`}
+                  </Text>
                 </View>
                 <View style={styles.callActions}>
                   <Pressable
@@ -532,25 +529,14 @@ export default function ConsultantHome() {
                     onPress={() => void acceptCall(call.id)}
                     disabled={acceptingId !== null}
                     android_ripple={{ color: colors.secondary }}
-                    style={[styles.acceptButton, { backgroundColor: colors.primary }]}
+                    style={({ pressed }) => [styles.acceptButton, { backgroundColor: colors.primary, opacity: pressed ? 0.88 : 1 }]}
                   >
                     {acceptingId === call.id ? (
                       <ActivityIndicator color={colors.primaryForeground} />
                     ) : (
-                      <Ionicons
-                        name="call"
-                        size={17}
-                        color={colors.primaryForeground}
-                      />
+                      <Ionicons name="call" size={17} color={colors.primaryForeground} />
                     )}
-                    <Text
-                      style={[
-                        styles.acceptText,
-                        { color: colors.primaryForeground },
-                      ]}
-                    >
-                      پاسخ
-                    </Text>
+                    <Text style={[styles.acceptText, { color: colors.primaryForeground }]}>پاسخ به تماس</Text>
                   </Pressable>
                   <Pressable
                     testID={`reject-${call.id}`}
@@ -560,54 +546,48 @@ export default function ConsultantHome() {
                     onPress={() => void rejectCall(call.id)}
                     disabled={rejectingId !== null || acceptingId !== null}
                     android_ripple={{ color: colors.secondary }}
-                    style={[
-                      styles.rejectButton,
-                      { backgroundColor: colors.accent },
-                    ]}
+                    style={({ pressed }) => [styles.rejectButton, { backgroundColor: colors.background, borderColor: colors.border, opacity: pressed ? 0.75 : 1 }]}
                   >
-                    {rejectingId === call.id ? <ActivityIndicator color={colors.accentForeground} /> : <Ionicons name="close" size={18} color={colors.accentForeground} />}
-                    <Text
-                      style={[
-                        styles.rejectText,
-                        { color: colors.accentForeground },
-                      ]}
-                    >
+                    {rejectingId === call.id ? <ActivityIndicator color={colors.destructive} /> : <Ionicons name="close" size={18} color={colors.destructive} />}
+                    <Text style={[styles.rejectText, { color: colors.destructive }]}>
                       {rejectingId === call.id ? 'در حال رد' : 'رد'}
                     </Text>
                   </Pressable>
                 </View>
-                {rejectError?.callId === call.id ? <Text accessibilityRole="alert" style={[styles.missingAction, { color: colors.destructive }]}>{rejectError.message}</Text> : null}
+                {rejectError?.callId === call.id ? (
+                  <Text accessibilityRole="alert" style={[styles.missingAction, { color: colors.destructive }]}>{rejectError.message}</Text>
+                ) : null}
               </View>
             ))}
           </View>
         ) : (
-          <View
-            style={[
-              styles.emptyCard,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
-          >
-            <View style={[styles.emptyIcon, { backgroundColor: colors.secondary }]}>
-              <Ionicons name="headset-outline" size={27} color={colors.primary} />
+          <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.emptyIllustration, { backgroundColor: colors.secondary }]}>
+              <Ionicons name="chatbubbles-outline" size={26} color={colors.primary} />
             </View>
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-              صف تماس خالی است
-            </Text>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>فعلاً درخواستی ندارید</Text>
             <Text style={[styles.emptyDescription, { color: colors.mutedForeground }]}>
-              درخواست‌های واقعی تماس پس از ثبت در سرویس Petipy اینجا نمایش داده می‌شوند.
+              وقتی درخواست تازه‌ای ثبت شود، همین‌جا برای پاسخ‌گویی می‌بینید.
             </Text>
           </View>
         )}
 
         <View style={[styles.footerNote, { borderTopColor: colors.border }]}>
-          <Ionicons
-            name="shield-checkmark-outline"
-            size={17}
-            color={colors.mutedForeground}
-          />
+          <Ionicons name="shield-checkmark-outline" size={16} color={colors.mutedForeground} />
           <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-            مجوز حساب مشاور صوتی توسط API Petipy بررسی می‌شود. توقف اجباری Android سرویس و اعلان‌ها را تا بازکردن دوباره‌ی برنامه متوقف می‌کند.
+            دسترسی مشاور و وضعیت تماس از سرویس Petipy بررسی می‌شود.
           </Text>
+          <View style={styles.todaySummary}>
+            <Text style={[styles.todaySummaryValue, { color: colors.foreground }]}>
+              {history.isLoading ? '—' : todayCount.toLocaleString('fa-IR')}
+            </Text>
+            <Text style={[styles.todaySummaryLabel, { color: colors.mutedForeground }]}>تماس امروز</Text>
+            <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
+            <Text style={[styles.todaySummaryValue, { color: colors.foreground }]}>
+              {history.isLoading ? '—' : `${Math.floor(todayDuration / 60).toLocaleString('fa-IR')} دقیقه`}
+            </Text>
+            <Text style={[styles.todaySummaryLabel, { color: colors.mutedForeground }]}>گفت‌وگو</Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -616,64 +596,92 @@ export default function ConsultantHome() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { paddingHorizontal: 18, paddingTop: 18, paddingBottom: 30, gap: 17 },
+  content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 28, gap: 19 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  header: { flexDirection: 'column', alignItems: 'stretch', marginBottom: 2, borderRadius: 30, paddingHorizontal: 20, paddingVertical: 19, minHeight: 218, overflow: 'hidden', shadowColor: '#672334', shadowOpacity: 0.15, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
-  headerMasthead: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
-  headerText: { alignItems: 'flex-end', gap: 5, marginTop: 16 },
-  eyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
-  greeting: { fontSize: 27, fontWeight: '800', writingDirection: 'rtl' },
-  subtitle: { fontSize: 11, marginTop: 2, textAlign: 'right', writingDirection: 'rtl', opacity: 0.86 },
-  avatar: { width: 43, height: 43, borderRadius: 16, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
-  headerRule: { height: 1, width: '100%', opacity: 0.2, marginTop: 15 },
-  headerFoot: { flexDirection: 'row-reverse', alignItems: 'center', gap: 13, paddingTop: 12 },
-  headerStat: { alignItems: 'flex-end', gap: 2, minWidth: 78 },
-  headerStatValue: { fontSize: 15, fontWeight: '800', writingDirection: 'rtl' },
-  headerStatLabel: { fontSize: 9, writingDirection: 'rtl', opacity: 0.78 },
-  headerStatDivider: { width: 1, height: 27, opacity: 0.3 },
-  connectionNotice: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, borderRadius: 15, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12 },
-  noticeText: { flex: 1, textAlign: 'right', lineHeight: 21, fontSize: 12, writingDirection: 'rtl' },
-  availabilityCard: { borderRadius: 24, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 17, flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', shadowColor: '#672334', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
-  readiness: { minHeight: 42, borderRadius: 14, paddingHorizontal: 11, flexDirection: 'row-reverse', alignItems: 'center', gap: 7, marginTop: -12 },
+  topLine: { flexDirection: 'row-reverse', alignItems: 'center', minHeight: 43, gap: 9 },
+  brandMark: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  topBrandCopy: { alignItems: 'flex-end', gap: 1 },
+  brandName: { fontSize: 13, fontWeight: '800', writingDirection: 'rtl' },
+  brandCaption: { fontSize: 9, writingDirection: 'rtl' },
+  topDate: { flex: 1, alignItems: 'flex-start', gap: 4 },
+  dateCaption: { fontSize: 9, writingDirection: 'rtl' },
+  liveFlag: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5 },
+  liveDot: { width: 7, height: 7, borderRadius: 4 },
+  liveText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  welcome: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 3 },
+  welcomeCopy: { alignItems: 'flex-end', flex: 1, gap: 4 },
+  welcomeEyebrow: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
+  greeting: { fontSize: 25, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  subtitle: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
+  welcomeBadge: { width: 38, height: 38, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginLeft: 11 },
+  connectionNotice: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9, borderRadius: 15, borderWidth: 1, paddingHorizontal: 13, paddingVertical: 11 },
+  noticeText: { flex: 1, textAlign: 'right', lineHeight: 20, fontSize: 11, writingDirection: 'rtl' },
+  availabilityPanel: { borderRadius: 23, padding: 17, gap: 12, overflow: 'hidden', shadowColor: '#5D2934', shadowOpacity: 0.12, shadowRadius: 15, shadowOffset: { width: 0, height: 7 }, elevation: 3 },
+  availabilityTop: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  availabilityTitleBlock: { alignItems: 'flex-end', gap: 5, flex: 1 },
+  panelEyebrow: { fontSize: 10, opacity: 0.78, textAlign: 'right', writingDirection: 'rtl' },
+  availabilityTitle: { fontSize: 19, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  switchWell: { minWidth: 68, minHeight: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  availabilityDivider: { height: StyleSheet.hairlineWidth, opacity: 0.25 },
+  availabilityBottom: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
+  serviceIcon: { width: 31, height: 31, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  availabilityDetail: { flex: 1, fontSize: 10, lineHeight: 17, textAlign: 'right', writingDirection: 'rtl', opacity: 0.9 },
+  readiness: { minHeight: 40, borderRadius: 13, paddingHorizontal: 10, flexDirection: 'row-reverse', alignItems: 'center', gap: 7 },
   readinessText: { flex: 1, fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl' },
-  availabilityCopy: { flexDirection: 'row-reverse', alignItems: 'center', flex: 1, gap: 11 },
-  statusDot: { width: 10, height: 10, borderRadius: 5 },
-  availabilityText: { alignItems: 'flex-end', gap: 5 },
-  cardTitle: { fontSize: 15, fontWeight: '700', writingDirection: 'rtl' },
-  bodyText: { fontSize: 11, textAlign: 'right', writingDirection: 'rtl' },
-  summaryRow: { minHeight: 99, flexDirection: 'row-reverse', alignItems: 'center', gap: 13, borderRadius: 25, borderWidth: 1, paddingHorizontal: 17, paddingVertical: 14, borderLeftWidth: 4 },
-  summaryMetric: { flex: 1, alignItems: 'flex-end', gap: 3 },
-  summaryDivider: { height: 38, width: StyleSheet.hairlineWidth },
-  summaryMark: { height: 37, width: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  summaryNumber: { fontSize: 24, fontWeight: '800', alignSelf: 'flex-end' },
-  summaryLabel: { fontSize: 10, writingDirection: 'rtl' },
-  queueSectionHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, borderBottomWidth: 1, paddingBottom: 12, marginTop: 3 },
-  queueHeadingMark: { alignItems: 'center', gap: 5 },
-  queueIndex: { fontSize: 10, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  queueHeadingRule: { height: 2, width: 24, borderRadius: 2 },
-  queueHeadingCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
-  queueCount: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  queueHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, marginTop: 1 },
+  queueTitleGroup: { flex: 1, alignItems: 'flex-end', gap: 3 },
+  sectionKicker: { fontSize: 9, fontWeight: '800', letterSpacing: 0.4, writingDirection: 'rtl' },
   sectionHeading: { fontSize: 19, fontWeight: '800', writingDirection: 'rtl' },
-  sectionTrailing: { fontSize: 11, writingDirection: 'rtl' },
-  emptyCard: { borderRadius: 26, borderWidth: 1, paddingHorizontal: 22, paddingVertical: 28, alignItems: 'center' },
-  emptyIcon: { width: 56, height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  emptyTitle: { fontSize: 15, fontWeight: '700', marginBottom: 7, writingDirection: 'rtl' },
-  emptyDescription: { fontSize: 12, lineHeight: 20, textAlign: 'center', writingDirection: 'rtl' },
-  loading: { paddingVertical: 30, alignItems: 'center', gap: 10 },
+  refreshButton: { width: 42, height: 42, borderWidth: 1, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  queueMeta: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7, marginTop: -10 },
+  countBadge: { minWidth: 25, height: 24, borderRadius: 9, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5 },
+  countText: { fontSize: 11, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  queueMetaText: { fontSize: 10, writingDirection: 'rtl' },
+  metaSpacer: { flex: 1 },
+  pollingLabel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5 },
+  pollingDot: { width: 5, height: 5, borderRadius: 3 },
+  pollingText: { fontSize: 9, writingDirection: 'rtl' },
+  emptyState: { borderRadius: 22, borderWidth: 1, paddingHorizontal: 22, paddingVertical: 24, alignItems: 'center', gap: 8 },
+  emptyIllustration: { width: 52, height: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
+  emptyTitle: { fontSize: 15, fontWeight: '800', writingDirection: 'rtl', textAlign: 'center' },
+  emptyDescription: { fontSize: 11, lineHeight: 19, textAlign: 'center', writingDirection: 'rtl' },
+  skeletonStack: { gap: 11 },
+  skeletonCard: { borderRadius: 20, borderWidth: 1, padding: 15, gap: 15 },
+  skeletonHeader: { flexDirection: 'row-reverse', alignItems: 'center', gap: 11 },
+  skeletonAvatar: { width: 40, height: 40, borderRadius: 14 },
+  skeletonLines: { flex: 1, alignItems: 'flex-end', gap: 8 },
+  skeletonLine: { height: 9, borderRadius: 5 },
+  skeletonLineLong: { width: '54%' },
+  skeletonLineShort: { width: '36%' },
+  skeletonAction: { height: 44, borderRadius: 14 },
+  retryButton: { minHeight: 43, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7, borderRadius: 13, paddingHorizontal: 18, marginTop: 5 },
+  retryText: { fontSize: 11, fontWeight: '800', writingDirection: 'rtl' },
   queueList: { gap: 12 },
-  callCard: { borderRadius: 25, borderWidth: 1, padding: 16, gap: 14, shadowColor: '#672334', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
-  callHeader: { flexDirection: 'row-reverse', alignItems: 'center', gap: 11 },
-  callIcon: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  callCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
+  callCard: { position: 'relative', borderRadius: 21, borderWidth: 1, padding: 15, paddingLeft: 18, gap: 12, overflow: 'hidden', shadowColor: '#5D2934', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
+  ticketAccent: { position: 'absolute', right: 0, top: 0, bottom: 0, width: 4 },
+  callHeader: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10 },
+  callIcon: { width: 41, height: 41, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  callCopy: { flex: 1, alignItems: 'flex-end', gap: 5 },
+  callNameRow: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'flex-start', gap: 7, flexWrap: 'wrap' },
+  cardTitle: { fontSize: 14, fontWeight: '800', writingDirection: 'rtl' },
+  pendingPill: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 4 },
+  pendingDot: { width: 5, height: 5, borderRadius: 3 },
+  pendingText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  bodyText: { fontSize: 10, textAlign: 'right', writingDirection: 'rtl' },
   callSubject: { maxWidth: '100%', fontSize: 10, writingDirection: 'rtl', textAlign: 'right' },
-  callActions: { flexDirection: 'row-reverse', gap: 10 },
-  acceptButton: { flex: 1, minHeight: 50, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  acceptText: { fontSize: 13, fontWeight: '700', writingDirection: 'rtl' },
-  rejectButton: { width: 92, minHeight: 50, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 5 },
-  rejectText: { fontSize: 13, fontWeight: '600', writingDirection: 'rtl' },
-  missingAction: { fontSize: 10, textAlign: 'right', writingDirection: 'rtl' },
-  retryButton: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 14, marginTop: 7 },
-  retryText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  footerNote: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 14, flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
-  footerText: { fontSize: 11, flex: 1, textAlign: 'right', writingDirection: 'rtl' },
+  ticketRule: { height: StyleSheet.hairlineWidth },
+  callMetaRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
+  callMetaText: { fontSize: 10, writingDirection: 'rtl' },
+  callActions: { flexDirection: 'row-reverse', gap: 8 },
+  acceptButton: { flex: 1, minHeight: 49, borderRadius: 14, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  acceptText: { fontSize: 12, fontWeight: '800', writingDirection: 'rtl' },
+  rejectButton: { width: 82, minHeight: 49, borderWidth: 1, borderRadius: 14, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 5 },
+  rejectText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
+  missingAction: { fontSize: 10, textAlign: 'right', writingDirection: 'rtl', lineHeight: 17 },
+  footerNote: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 13, flexDirection: 'row-reverse', alignItems: 'center', gap: 7, flexWrap: 'wrap' },
+  footerText: { fontSize: 9, flex: 1, textAlign: 'right', writingDirection: 'rtl' },
+  todaySummary: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', gap: 7, paddingTop: 3 },
+  todaySummaryValue: { fontSize: 11, fontWeight: '800', writingDirection: 'rtl' },
+  todaySummaryLabel: { fontSize: 9, writingDirection: 'rtl' },
+  summaryDivider: { width: 1, height: 17, marginHorizontal: 4 },
 });

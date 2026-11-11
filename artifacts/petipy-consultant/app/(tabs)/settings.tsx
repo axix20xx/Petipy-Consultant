@@ -1,6 +1,9 @@
 import { useColors } from '@/hooks/useColors';
 import { setConsultantAvailability } from '@/lib/petipy-api';
-import { stopAvailabilityService } from '@/lib/background-monitor';
+import {
+  isAvailabilityServiceRunning,
+  stopAvailabilityService,
+} from '@/lib/background-monitor';
 import {
   canUseFullScreenIntent,
   openFullScreenIntentSettings,
@@ -12,11 +15,13 @@ import {
 import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   AppState,
   ActivityIndicator,
   Alert,
   Linking,
+  PermissionsAndroid,
   Platform,
   Pressable,
   ScrollView,
@@ -31,11 +36,15 @@ function InfoRow({
   title,
   detail,
   color,
+  status,
+  statusColor,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   detail: string;
   color: string;
+  status?: string;
+  statusColor?: string;
 }) {
   const colors = useColors();
   return (
@@ -44,7 +53,15 @@ function InfoRow({
         <Ionicons name={icon} size={19} color={color} />
       </View>
       <View style={styles.rowCopy}>
-        <Text style={[styles.rowTitle, { color: colors.foreground }]}>{title}</Text>
+        <View style={styles.rowTitleLine}>
+          <Text style={[styles.rowTitle, { color: colors.foreground }]}>{title}</Text>
+          {status ? (
+            <View style={[styles.rowStatus, { backgroundColor: colors.muted }]}>
+              <View style={[styles.statusDot, { backgroundColor: statusColor ?? color }]} />
+              <Text style={[styles.rowStatusText, { color: colors.foreground }]}>{status}</Text>
+            </View>
+          ) : null}
+        </View>
         <Text style={[styles.rowDetail, { color: colors.mutedForeground }]}>{detail}</Text>
       </View>
     </View>
@@ -74,16 +91,33 @@ export default function SettingsScreen() {
     | 'missing'
     | 'unavailable'
   >('unavailable');
+  const [serviceRunning, setServiceRunning] = useState<boolean | null>(null);
+  const [notificationAccess, setNotificationAccess] = useState<boolean | null>(null);
   const isConnected = state === 'connected' && Boolean(token);
 
   const refreshCallAlertStatus = useCallback(async () => {
-    const [access, channelStatus] = await Promise.all([
+    const [access, channelStatus, notifications] = await Promise.all([
       canUseFullScreenIntent(),
       getIncomingCallChannelStatus(),
+      Platform.OS === 'android'
+        ? Number(Platform.Version) < 33
+          ? Promise.resolve(true)
+          : PermissionsAndroid.check(
+              PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+            )
+        : Promise.resolve(null),
     ]);
     setFullScreenAccess(access);
     setCallChannelStatus(channelStatus);
+    setNotificationAccess(notifications);
+    setServiceRunning(isAvailabilityServiceRunning());
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshCallAlertStatus();
+    }, [refreshCallAlertStatus]),
+  );
 
   useEffect(() => {
     void refreshCallAlertStatus();
@@ -134,26 +168,31 @@ export default function SettingsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.brandLine}>
-          <View style={[styles.brandMark, { backgroundColor: colors.secondary }]}>
-            <Ionicons name="paw" size={17} color={colors.primary} />
+        <View style={[styles.pageHero, { backgroundColor: colors.primary }]}>
+          <View style={styles.heroTop}>
+            <View style={[styles.brandMark, { backgroundColor: colors.primaryForeground }]}>
+              <Ionicons name="paw" size={18} color={colors.primary} />
+            </View>
+            <Text style={[styles.brandLabel, { color: colors.primaryForeground }]}>PETIPY  /  مشاوران</Text>
           </View>
-          <Text style={[styles.brandLabel, { color: colors.mutedForeground }]}>PETIPY  /  مشاوران</Text>
+          <View style={styles.heroCopy}>
+            <Text style={[styles.eyebrow, { color: colors.primaryForeground }]}>حساب و دستگاه</Text>
+            <Text style={[styles.title, { color: colors.primaryForeground }]}>تنظیمات</Text>
+            <Text style={[styles.subtitle, { color: colors.primaryForeground }]}>
+              وضعیت واقعی نشست و آمادگی تماس شما
+            </Text>
+          </View>
+          <View style={[styles.heroOrnament, { borderColor: colors.primaryForeground }]} pointerEvents="none" />
         </View>
-        <Text style={[styles.eyebrow, { color: colors.primary }]}>ACCOUNT & CALLS</Text>
-        <Text style={[styles.title, { color: colors.foreground }]}>تنظیمات</Text>
-        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-          وضعیت حساب و راهنمای تماس در پس‌زمینه
-        </Text>
 
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.cardHeading}>
-            <Ionicons name="shield-checkmark-outline" size={20} color={colors.primary} />
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>حساب مشاور</Text>
-          </View>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionKicker, { color: colors.primary }]}>پروفایل</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>حساب شما</Text>
+        </View>
+        <View style={[styles.accountCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           {isConnected ? (
             <>
-                <View style={[styles.profilePanel, { borderColor: colors.border }]}>
+              <View style={[styles.profilePanel, { backgroundColor: colors.background, borderColor: colors.border }]}>
                 <View style={[styles.profileMark, { backgroundColor: colors.secondary }]}>
                   <Ionicons name="person-outline" size={22} color={colors.primary} />
                 </View>
@@ -208,16 +247,47 @@ export default function SettingsScreen() {
           )}
         </View>
 
-        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.cardHeading}>
-            <Ionicons name="phone-portrait-outline" size={20} color={colors.primary} />
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>تماس در پس‌زمینه</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionKicker, { color: colors.primary }]}>آمادگی دستگاه</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>دریافت تماس</Text>
+        </View>
+        <View style={[styles.capabilityPanel, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.serviceSummary, { backgroundColor: serviceRunning ? colors.secondary : colors.muted }]}>
+            <View style={[styles.serviceSummaryIcon, { backgroundColor: colors.card }]}>
+              <Ionicons name={serviceRunning ? 'radio' : 'radio-outline'} size={20} color={serviceRunning ? colors.success : colors.warning} />
+            </View>
+            <View style={styles.serviceSummaryCopy}>
+              <Text style={[styles.rowTitle, { color: colors.foreground }]}>سرویس تماس پس‌زمینه</Text>
+              <Text style={[styles.rowDetail, { color: colors.mutedForeground }]}>
+                {serviceRunning === null
+                  ? 'در حال خواندن وضعیت سرویس دستگاه…'
+                  : serviceRunning
+                    ? 'سرویس foreground در حال اجراست.'
+                    : Platform.OS === 'android'
+                      ? 'سرویس فعلاً متوقف است؛ برای دریافت تماس، در خانه آنلاین شوید.'
+                      : 'سرویس تماس پس‌زمینه فقط در Android در دسترس است.'}
+              </Text>
+            </View>
+            <View style={[styles.statePill, { backgroundColor: colors.card }]}>
+              <View style={[styles.statusDot, { backgroundColor: serviceRunning ? colors.success : colors.warning }]} />
+              <Text style={[styles.statePillText, { color: colors.foreground }]}>
+                {serviceRunning === null ? 'بررسی' : serviceRunning ? 'فعال' : Platform.OS === 'android' ? 'متوقف' : 'فقط Android'}
+              </Text>
+            </View>
           </View>
           <InfoRow
             icon="notifications-outline"
             title="اعلان تماس فعال"
-            detail="وقتی آنلاین هستید، سرویس foreground با اعلان دائمی درخواست‌ها را بررسی می‌کند."
-            color={colors.primary}
+            detail={
+              notificationAccess === null
+                ? 'وضعیت مجوز اعلان دستگاه در دسترس نیست.'
+                : notificationAccess
+                  ? 'مجوز اعلان دستگاه فعال است.'
+                  : 'مجوز اعلان Android مسدود است؛ اعلان تماس ممکن است نمایش داده نشود.'
+            }
+            color={notificationAccess === false ? colors.warning : colors.primary}
+            status={notificationAccess === null ? 'نامشخص' : notificationAccess ? 'مجاز' : 'مسدود'}
+            statusColor={notificationAccess === false ? colors.warning : notificationAccess ? colors.success : colors.mutedForeground}
           />
           <InfoRow
             icon="phone-portrait-outline"
@@ -230,6 +300,8 @@ export default function SettingsScreen() {
                   : 'وضعیت دسترسی تمام‌صفحه از Android قابل‌خواندن نیست.'
             }
             color={fullScreenAccess === false ? colors.warning : colors.primary}
+            status={fullScreenAccess === null ? 'در حال بررسی' : fullScreenAccess ? 'مجاز' : 'مسدود'}
+            statusColor={fullScreenAccess === false ? colors.warning : fullScreenAccess ? colors.success : colors.mutedForeground}
           />
           <InfoRow
             icon="notifications-outline"
@@ -250,6 +322,22 @@ export default function SettingsScreen() {
                           : 'وضعیت کانال در دسترس نیست.'
             }
             color={callChannelStatus === 'high' ? colors.success : colors.warning}
+            status={
+              callChannelStatus === 'high'
+                ? 'فعال'
+                : callChannelStatus === 'high-silent'
+                  ? 'بی‌صدا'
+                  : callChannelStatus === 'low'
+                    ? 'اولویت پایین'
+                    : callChannelStatus === 'low-silent'
+                      ? 'پایین و بی‌صدا'
+                      : callChannelStatus === 'blocked'
+                        ? 'مسدود'
+                        : callChannelStatus === 'missing'
+                          ? 'ساخته نشده'
+                          : 'نامشخص'
+            }
+            statusColor={callChannelStatus === 'high' ? colors.success : colors.warning}
           />
           {Platform.OS === 'android' && fullScreenAccess !== true ? (
             <Pressable
@@ -321,6 +409,18 @@ export default function SettingsScreen() {
                   ? colors.warning
                   : colors.primary
             }
+            status={
+              pushSetupState === 'ready'
+                ? 'ثبت شده'
+                : pushSetupState === 'idle'
+                  ? 'در انتظار'
+                  : pushSetupState === 'unsupported'
+                    ? 'پشتیبانی نمی‌شود'
+                    : pushSetupState === 'error' || pushSetupState === 'permission-denied' || pushSetupState === 'server-disabled'
+                      ? 'نیاز به بررسی'
+                      : 'در حال ثبت'
+            }
+            statusColor={pushSetupState === 'ready' ? colors.success : colors.warning}
           />
           {isConnected && pushSetupState !== 'ready' ? (
             <Pressable
@@ -377,10 +477,16 @@ export default function SettingsScreen() {
           </Text>
         </View>
 
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionKicker, { color: colors.primary }]}>یادآوری</Text>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>نکته‌های تماس امن</Text>
+        </View>
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.cardHeading}>
-            <Ionicons name="server-outline" size={20} color={colors.primary} />
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>سرویس تماس</Text>
+            <View style={[styles.safetyIcon, { backgroundColor: colors.secondary }]}>
+              <Ionicons name="shield-checkmark-outline" size={20} color={colors.primary} />
+            </View>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>حفاظت از اتصال</Text>
           </View>
           <Text style={[styles.body, { color: colors.mutedForeground }]}>
             تماس با API پتی‌پای برقرار می‌شود و TURN relay-only از نشست دریافت می‌شود. FCM فقط اعلان را می‌رساند و هیچ Google STUN استفاده نمی‌شود.
@@ -399,19 +505,33 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { paddingHorizontal: 18, paddingTop: 22, paddingBottom: 34, gap: 17 },
+  content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 34, gap: 13 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  brandLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9, marginBottom: 5 },
-  brandMark: { width: 36, height: 36, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  pageHero: { minHeight: 190, borderRadius: 26, padding: 19, overflow: 'hidden', justifyContent: 'space-between', marginBottom: 3 },
+  heroTop: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
+  brandMark: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   brandLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.1, writingDirection: 'rtl' },
-  eyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.8, textAlign: 'right' },
-  title: { fontSize: 32, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
-  subtitle: { fontSize: 13, textAlign: 'right', writingDirection: 'rtl', marginBottom: 6 },
-  card: { borderRadius: 27, borderWidth: 1, padding: 18, gap: 14, shadowColor: '#672334', shadowOpacity: 0.045, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
+  heroCopy: { alignItems: 'flex-end', gap: 4 },
+  eyebrow: { fontSize: 10, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl', opacity: 0.8 },
+  title: { fontSize: 29, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  subtitle: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl', opacity: 0.82 },
+  heroOrnament: { position: 'absolute', width: 144, height: 144, borderWidth: 1, borderRadius: 72, opacity: 0.11, left: -45, top: -62 },
+  sectionHeader: { alignItems: 'flex-end', gap: 3, marginTop: 5 },
+  sectionKicker: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6, writingDirection: 'rtl' },
+  sectionTitle: { fontSize: 18, fontWeight: '800', writingDirection: 'rtl' },
+  card: { borderRadius: 22, borderWidth: 1, padding: 16, gap: 14, shadowColor: '#5D2934', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
+  accountCard: { borderRadius: 22, borderWidth: 1, padding: 16, gap: 13 },
+  capabilityPanel: { borderRadius: 22, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 7, shadowColor: '#5D2934', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
+  serviceSummary: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9, borderRadius: 16, padding: 11, marginVertical: 7 },
+  serviceSummaryIcon: { width: 39, height: 39, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  serviceSummaryCopy: { flex: 1, alignItems: 'flex-end', gap: 3 },
+  statePill: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 6 },
+  statePillText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
   cardHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
+  safetyIcon: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   cardTitle: { fontSize: 15, fontWeight: '700', writingDirection: 'rtl' },
   profileName: { fontSize: 17, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
-  profilePanel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14, padding: 14, borderRadius: 20, backgroundColor: 'transparent', borderWidth: 1 },
+  profilePanel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14, padding: 13, borderRadius: 17, borderWidth: 1 },
   profileMark: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   profileCopy: { flex: 1, alignItems: 'flex-end', gap: 6 },
   profileStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 8, paddingVertical: 4 },
@@ -426,10 +546,14 @@ const styles = StyleSheet.create({
   statusBadge: { alignSelf: 'flex-end', flexDirection: 'row-reverse', alignItems: 'center', gap: 7, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20 },
   badgeDot: { width: 7, height: 7, borderRadius: 4 },
   badgeText: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
-  infoRow: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 12, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
-  rowIcon: { width: 40, height: 40, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  rowCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
-  rowTitle: { fontSize: 13, fontWeight: '600', textAlign: 'right', writingDirection: 'rtl' },
+  infoRow: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 10, paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth },
+  rowIcon: { width: 38, height: 38, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  rowCopy: { flex: 1, alignItems: 'flex-end', gap: 5 },
+  rowTitleLine: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  rowStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 7, paddingVertical: 5 },
+  rowStatusText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
+  rowTitle: { flexShrink: 1, fontSize: 12, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
   rowDetail: { fontSize: 11, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl' },
   footnote: { fontSize: 11, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl', marginTop: 1 },
 });

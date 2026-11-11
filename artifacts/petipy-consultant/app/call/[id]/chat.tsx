@@ -310,17 +310,17 @@ export default function VoiceCallChatScreen() {
           accessibilityRole="button"
           accessibilityLabel="بازگشت به تماس"
           onPress={() => router.back()}
-          style={[styles.iconButton, { backgroundColor: colors.secondary }]}
+          style={({ pressed }) => [styles.iconButton, { backgroundColor: colors.secondary, opacity: pressed ? 0.74 : 1 }]}
         >
           <Ionicons name="arrow-forward" size={20} color={colors.primary} />
         </Pressable>
+        <View style={[styles.chatSeal, { backgroundColor: colors.primary }]}>
+          <Ionicons name="chatbubbles-outline" size={17} color={colors.primaryForeground} />
+        </View>
         <View style={styles.headerText}>
-          <Text style={[styles.title, { color: colors.foreground }]}>
-            گفت‌وگوی تماس
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            پیام‌ها و فایل‌های همین تماس
-          </Text>
+          <Text style={[styles.eyebrow, { color: colors.primary }]}>همراهِ تماس</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>گفت‌وگو</Text>
+          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>پیام‌ها و فایل‌های همین تماس</Text>
         </View>
         <Pressable
           testID="voice-chat-refresh"
@@ -328,13 +328,9 @@ export default function VoiceCallChatScreen() {
           accessibilityLabel="تازه‌سازی پیام‌ها"
           onPress={() => void loadMessages()}
           disabled={loading}
-          style={[styles.iconButton, { backgroundColor: colors.secondary }]}
+          style={({ pressed }) => [styles.iconButton, { backgroundColor: colors.secondary, opacity: loading ? 0.55 : pressed ? 0.74 : 1 }]}
         >
-          {loading ? (
-            <ActivityIndicator size="small" color={colors.primary} />
-          ) : (
-            <Ionicons name="refresh" size={19} color={colors.primary} />
-          )}
+          {loading ? <ActivityIndicator size="small" color={colors.primary} /> : <Ionicons name="refresh" size={19} color={colors.primary} />}
         </Pressable>
       </View>
 
@@ -355,10 +351,19 @@ export default function VoiceCallChatScreen() {
           ListEmptyComponent={
             loading ? (
               <View style={styles.emptyState}>
-                <ActivityIndicator color={colors.primary} />
-                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                  در حال دریافت گفت‌وگو…
-                </Text>
+                <View style={[styles.emptyIcon, { backgroundColor: colors.secondary }]}>
+                  <ActivityIndicator color={colors.primary} />
+                </View>
+                <Text style={[styles.emptyTitle, { color: colors.foreground }]}>در حال آماده‌سازی</Text>
+                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>در حال دریافت پیام‌های این تماس…</Text>
+              </View>
+            ) : error ? (
+              <View style={styles.emptyState}>
+                <View style={[styles.emptyIcon, { backgroundColor: colors.accent }]}>
+                  <Ionicons name="cloud-offline-outline" size={25} color={colors.destructive} />
+                </View>
+                <Text style={[styles.emptyTitle, { color: colors.foreground }]}>گفت‌وگو بارگذاری نشد</Text>
+                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>از دکمه‌ی تازه‌سازی برای تلاش دوباره استفاده کنید.</Text>
               </View>
             ) : (
               <View style={styles.emptyState}>
@@ -389,7 +394,7 @@ export default function VoiceCallChatScreen() {
           <Text
             testID="voice-chat-error"
             accessibilityRole="alert"
-            style={[styles.error, { color: colors.destructive }]}
+            style={[styles.error, { color: colors.destructive, backgroundColor: colors.accent }]}
           >
             {error}
           </Text>
@@ -398,13 +403,8 @@ export default function VoiceCallChatScreen() {
         {files.length ? (
           <View style={styles.selectedFiles}>
             {files.map((file) => (
-              <View
-                key={file.uri}
-                style={[
-                  styles.fileChip,
-                  { backgroundColor: colors.secondary },
-                ]}
-              >
+              <View key={file.uri} style={[styles.fileChip, { backgroundColor: colors.secondary }]}>
+                <Ionicons name={file.contentType === 'application/pdf' ? 'document-text-outline' : 'image-outline'} size={14} color={colors.primary} />
                 <Text
                   numberOfLines={1}
                   style={[styles.fileChipText, { color: colors.foreground }]}
@@ -441,7 +441,7 @@ export default function VoiceCallChatScreen() {
             accessibilityLabel="افزودن عکس یا فایل PDF"
             onPress={() => void chooseFiles()}
             disabled={sending}
-            style={[styles.composerIcon, { backgroundColor: colors.secondary }]}
+                  style={({ pressed }) => [styles.composerIcon, { backgroundColor: colors.secondary, opacity: pressed ? 0.76 : 1 }]}
           >
             <Ionicons name="attach" size={22} color={colors.primary} />
           </Pressable>
@@ -464,11 +464,9 @@ export default function VoiceCallChatScreen() {
             accessibilityLabel="ارسال پیام"
             disabled={sending || (!draft.trim() && files.length === 0)}
             onPress={() => void submitMessage()}
-            style={[
+            style={({ pressed }) => [
               styles.sendButton,
-              { backgroundColor: colors.primary },
-              (sending || (!draft.trim() && files.length === 0)) &&
-                styles.sendDisabled,
+              { backgroundColor: colors.primary, opacity: sending || (!draft.trim() && files.length === 0) ? 0.48 : pressed ? 0.82 : 1 },
             ]}
           >
             {sending ? (
@@ -486,39 +484,41 @@ export default function VoiceCallChatScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 78,
+    minHeight: 84,
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
+    gap: 9,
+    paddingHorizontal: 13,
+    paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    backgroundColor: 'transparent',
   },
   iconButton: {
     width: 46,
     height: 46,
-    borderRadius: 17,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerText: { flex: 1, alignItems: 'flex-end', gap: 3 },
-  title: { fontSize: 17, fontWeight: '700', writingDirection: 'rtl' },
-  subtitle: { fontSize: 10, writingDirection: 'rtl' },
+  chatSeal: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  headerText: { flex: 1, alignItems: 'flex-end', gap: 1 },
+  eyebrow: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  title: { fontSize: 16, fontWeight: '800', writingDirection: 'rtl' },
+  subtitle: { fontSize: 9, writingDirection: 'rtl' },
   keyboardView: { flex: 1 },
   messageList: {
     flexGrow: 1,
     justifyContent: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 18,
     gap: 10,
   },
   messageRow: { width: '100%', marginVertical: 5 },
   messageMine: { alignItems: 'flex-end' },
   messageTheirs: { alignItems: 'flex-start' },
   bubble: {
-    maxWidth: '89%',
+    maxWidth: '88%',
     borderWidth: 1,
-    borderRadius: 24,
+    borderRadius: 21,
     paddingHorizontal: 15,
     paddingVertical: 13,
     gap: 8,
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
     minHeight: 250,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 11,
+    gap: 9,
     paddingHorizontal: 28,
     transform: [{ scaleY: -1 }],
   },
@@ -582,8 +582,11 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   error: {
-    paddingHorizontal: 18,
-    paddingBottom: 8,
+    marginHorizontal: 14,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 12,
     fontSize: 11,
     lineHeight: 18,
     textAlign: 'right',
@@ -598,12 +601,12 @@ const styles = StyleSheet.create({
   },
   fileChip: {
     maxWidth: '100%',
-    minHeight: 32,
+    minHeight: 36,
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 7,
-    paddingHorizontal: 9,
-    borderRadius: 11,
+    paddingHorizontal: 10,
+    borderRadius: 12,
   },
   fileChipText: {
     maxWidth: 190,
@@ -611,15 +614,15 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   composer: {
-    minHeight: 58,
+    minHeight: 62,
     flexDirection: 'row-reverse',
     alignItems: 'flex-end',
     gap: 9,
     marginHorizontal: 12,
-    marginBottom: 10,
+    marginBottom: 9,
     padding: 7,
     borderWidth: 1,
-    borderRadius: 23,
+    borderRadius: 20,
   },
   composerIcon: {
     width: 46,
@@ -646,5 +649,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sendDisabled: { opacity: 0.48 },
 });

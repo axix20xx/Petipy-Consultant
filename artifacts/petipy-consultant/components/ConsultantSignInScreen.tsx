@@ -22,7 +22,9 @@ export function SessionLoadingScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <View style={styles.loading}>
-        <ActivityIndicator color={colors.primary} size="large" />
+        <View style={[styles.loadingMark, { backgroundColor: colors.secondary }]}>
+          <Ionicons name="paw" size={26} color={colors.primary} />
+        </View>
         <Text style={[styles.body, { color: colors.mutedForeground }]}>
           در حال بررسی نشست امن Petipy…
         </Text>
@@ -60,142 +62,76 @@ export default function ConsultantSignInScreen() {
       style={[styles.safe, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      <View
-        pointerEvents="none"
-        style={[
-          styles.orb,
-          styles.orbTop,
-          { backgroundColor: colors.secondary },
-        ]}
-      />
-      <View
-        pointerEvents="none"
-        style={[
-          styles.orb,
-          styles.orbBottom,
-          { backgroundColor: colors.accent },
-        ]}
-      />
       <KeyboardAwareScrollViewCompat
         contentContainerStyle={styles.scrollContent}
-        bottomOffset={24}
+        bottomOffset={26}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.hero, { backgroundColor: colors.primary }]}>
-          <View
-            style={[
-              styles.brandHalo,
-              { backgroundColor: colors.accent },
-            ]}
-          >
-            <View
-              style={[
-                styles.brandMark,
-                { backgroundColor: colors.card },
-              ]}
-            >
-              <Ionicons name="paw" size={29} color={colors.primary} />
+        <View style={styles.pageTop}>
+          <View style={styles.brandLine}>
+            <View style={[styles.miniMark, { backgroundColor: colors.primary }]}>
+              <Ionicons name="paw" size={17} color={colors.primaryForeground} />
             </View>
-            <View
-              style={[
-                styles.sparkle,
-                { backgroundColor: colors.accent },
-              ]}
-            >
-              <Ionicons name="sparkles" size={15} color={colors.warning} />
+            <View style={styles.brandWords}>
+              <Text style={[styles.brandName, { color: colors.foreground }]}>PETIPY</Text>
+              <Text style={[styles.brandSub, { color: colors.mutedForeground }]}>میز مشاوره</Text>
             </View>
           </View>
-          <View style={styles.heroText}>
-            <Text style={[styles.eyebrow, { color: colors.primaryForeground }]}>
-              PETIPY  ·  CONSULTANT
-            </Text>
-            <Text style={[styles.title, { color: colors.primaryForeground }]}>
-              همراهِ مراقبت
-            </Text>
-            <Text style={[styles.heroCopy, { color: colors.primaryForeground }]}>
-              ورود به فضای مشاوره‌ی امن پتی‌پای
-            </Text>
+          <View style={[styles.securePill, { backgroundColor: colors.secondary }]}>
+            <Ionicons name="shield-checkmark-outline" size={14} color={colors.secondaryForeground} />
+            <Text style={[styles.secureLabel, { color: colors.secondaryForeground }]}>ورود امن</Text>
           </View>
         </View>
 
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-        >
-          <View style={styles.cardHeading}>
-            <View style={styles.cardHeadingText}>
-              <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-                ورود مشاور
-              </Text>
-              <Text style={[styles.body, { color: colors.mutedForeground }]}>
-                فقط حساب فعال VOICE_CONSULTANT مجاز است
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.headingIcon,
-                { backgroundColor: colors.secondary },
-              ]}
-            >
-              <Ionicons
-                name="lock-closed"
-                size={18}
-                color={colors.primary}
-              />
-            </View>
+        <View style={[styles.welcomePanel, { backgroundColor: colors.primary }]}>
+          <View style={[styles.panelSeal, { backgroundColor: colors.accent }]}>
+            <Ionicons name="paw" size={32} color={colors.primaryForeground} />
           </View>
+          <View style={styles.panelCopy}>
+            <Text style={[styles.panelKicker, { color: colors.primaryForeground }]}>PETIPY  /  CONSULTANT</Text>
+            <Text style={[styles.title, { color: colors.primaryForeground }]}>سلام، همراهِ مراقبت</Text>
+            <Text style={[styles.heroCopy, { color: colors.primaryForeground }]}>
+              به فضای امن پاسخ‌گویی مشاوران پتی‌پای خوش آمدید.
+            </Text>
+          </View>
+          <View pointerEvents="none" style={[styles.panelDisc, { borderColor: colors.primaryForeground }]} />
+          <View pointerEvents="none" style={[styles.panelDiscSmall, { borderColor: colors.primaryForeground }]} />
+        </View>
 
-          {devAuthAvailable ? (
-            <>
-              <View
-                style={[
-                  styles.notice,
-                  { backgroundColor: colors.accent },
-                ]}
-              >
-                <Ionicons
-                  name="flask-outline"
-                  size={19}
-                  color={colors.warning}
-                />
-                <Text
-                  style={[
-                    styles.noticeText,
-                    { color: colors.accentForeground },
-                  ]}
-                >
-                  ورود آزمایشی است، نه ورود زنده. اعتبار فعلی را سرور تعیین می‌کند (۲ ساعت)؛ برای ۳۰ روز باید سرور هم به‌روزرسانی شود.
-                </Text>
+        <View style={styles.formIntro}>
+          <View style={styles.formIntroText}>
+            <Text style={[styles.formTitle, { color: colors.foreground }]}>ورود مشاور</Text>
+            <Text style={[styles.body, { color: colors.mutedForeground }]}>
+              دسترسی فقط برای حساب فعال مشاور صوتی
+            </Text>
+          </View>
+          <View style={[styles.roleTag, { backgroundColor: colors.muted }]}>
+            <Text style={[styles.roleTagText, { color: colors.mutedForeground }]}>VOICE_CONSULTANT</Text>
+          </View>
+        </View>
+
+        {devAuthAvailable ? (
+          <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.devNotice, { backgroundColor: colors.secondary }]}>
+              <View style={[styles.noticeIcon, { backgroundColor: colors.card }]}>
+                <Ionicons name="flask-outline" size={17} color={colors.secondaryForeground} />
               </View>
+              <Text style={[styles.noticeText, { color: colors.secondaryForeground }]}>
+                ورود آزمایشی فقط برای توسعه است. توکن فعلی ۲ ساعت اعتبار دارد و زمان انقضا را سرور تعیین می‌کند.
+              </Text>
+            </View>
 
-              <View style={styles.form}>
-                <Text style={[styles.label, { color: colors.foreground }]}>
-                  شماره موبایل حساب مشاور
-                </Text>
-                <View
-                  style={[
-                    styles.inputShell,
-                    {
-                      backgroundColor: colors.background,
-                      borderColor: colors.input,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="call-outline"
-                    size={19}
-                    color={colors.mutedForeground}
-                  />
+            <View style={styles.form}>
+              <View style={styles.fieldBlock}>
+                <Text style={[styles.label, { color: colors.foreground }]}>شماره موبایل حساب مشاور</Text>
+                <View style={[styles.inputShell, { backgroundColor: colors.background, borderColor: colors.input }]}>
+                  <Ionicons name="call-outline" size={18} color={colors.mutedForeground} />
                   <TextInput
                     testID="consultant-phone-input"
                     accessibilityLabel="شماره موبایل حساب مشاور"
                     value={phone}
-                    onChangeText={(value) =>
-                      setPhone(normalizeMobileDigits(value))
-                    }
+                    onChangeText={(value) => setPhone(normalizeMobileDigits(value))}
                     placeholder="09xxxxxxxxx"
                     placeholderTextColor={colors.mutedForeground}
                     keyboardType="phone-pad"
@@ -208,33 +144,17 @@ export default function ConsultantSignInScreen() {
                     style={[styles.input, { color: colors.foreground }]}
                   />
                 </View>
-                <Text style={[styles.label, { color: colors.foreground }]}>
-                  کد توسعه‌ای ۶ رقمی
-                </Text>
-                <View
-                  style={[
-                    styles.inputShell,
-                    {
-                      backgroundColor: colors.background,
-                      borderColor: colors.input,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="keypad-outline"
-                    size={19}
-                    color={colors.mutedForeground}
-                  />
+              </View>
+              <View style={styles.fieldBlock}>
+                <Text style={[styles.label, { color: colors.foreground }]}>کد توسعه‌ای ۶ رقمی</Text>
+                <View style={[styles.inputShell, { backgroundColor: colors.background, borderColor: colors.input }]}>
+                  <Ionicons name="keypad-outline" size={18} color={colors.mutedForeground} />
                   <TextInput
                     testID="consultant-code-input"
                     accessibilityLabel="کد توسعه‌ای شش رقمی"
                     value={code}
                     onChangeText={(value) =>
-                      setCode(
-                        normalizeMobileDigits(value)
-                          .replace(/\D/g, '')
-                          .slice(0, 6),
-                      )
+                      setCode(normalizeMobileDigits(value).replace(/\D/g, '').slice(0, 6))
                     }
                     placeholder="••••••"
                     placeholderTextColor={colors.mutedForeground}
@@ -245,85 +165,58 @@ export default function ConsultantSignInScreen() {
                     maxLength={6}
                     secureTextEntry
                     textAlign="center"
-                    style={[
-                      styles.input,
-                      styles.codeInput,
-                      { color: colors.foreground },
-                    ]}
+                    style={[styles.input, styles.codeInput, { color: colors.foreground }]}
                   />
                 </View>
-                <View style={styles.rememberNote}>
-                  <Ionicons
-                    name="shield-checkmark-outline"
-                    size={17}
-                    color={colors.success}
-                  />
-                  <Text
-                    style={[
-                      styles.rememberText,
-                      { color: colors.mutedForeground },
-                    ]}
-                  >
-                    ورود امن روی این دستگاه حفظ می‌شود تا نشست منقضی شود.
-                  </Text>
-                </View>
-                <Pressable
-                  testID="consultant-sign-in"
-                  accessibilityRole="button"
-                  accessibilityState={{ disabled: !canSubmit }}
-                  disabled={!canSubmit}
-                  onPress={() => void submit()}
-                  android_ripple={{ color: colors.secondary }}
-                  style={[
-                    styles.primaryButton,
-                    { backgroundColor: colors.primary },
-                    !canSubmit && styles.disabledButton,
-                  ]}
-                >
-                  {authBusy ? (
-                    <ActivityIndicator color={colors.primaryForeground} />
-                  ) : (
-                    <>
-                      <Text
-                        style={[
-                          styles.primaryButtonText,
-                          { color: colors.primaryForeground },
-                        ]}
-                      >
-                        ورود امن به پنل
-                      </Text>
-                      <Ionicons
-                        name="arrow-back"
-                        size={19}
-                        color={colors.primaryForeground}
-                      />
-                    </>
-                  )}
-                </Pressable>
               </View>
-            </>
-          ) : (
-            <View
-              style={[
-                styles.notice,
-                { backgroundColor: colors.accent },
-              ]}
-            >
-              <Ionicons
-                name="lock-closed-outline"
-                size={18}
-                color={colors.warning}
-              />
-              <Text
-                accessibilityRole="alert"
-                style={[styles.noticeText, { color: colors.accentForeground }]}
-              >
-                {unavailableMessage}
+            </View>
+
+            <View style={styles.privacyRow}>
+              <Ionicons name="lock-closed-outline" size={16} color={colors.success} />
+              <Text style={[styles.privacyText, { color: colors.mutedForeground }]}>
+                نشست امن این دستگاه در SecureStore نگهداری می‌شود.
               </Text>
             </View>
-          )}
 
-          {message && devAuthAvailable ? (
+            <Pressable
+              testID="consultant-sign-in"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canSubmit }}
+              disabled={!canSubmit}
+              onPress={() => void submit()}
+              android_ripple={{ color: colors.secondary }}
+              style={({ pressed }) => [
+                styles.primaryButton,
+                { backgroundColor: colors.primary, opacity: !canSubmit ? 0.58 : pressed ? 0.88 : 1 },
+              ]}
+            >
+              {authBusy ? (
+                <ActivityIndicator color={colors.primaryForeground} />
+              ) : (
+                <>
+                  <Ionicons name="arrow-back" size={18} color={colors.primaryForeground} />
+                  <Text style={[styles.primaryButtonText, { color: colors.primaryForeground }]}>
+                    ورود به میز مشاوره
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          </View>
+        ) : (
+          <View style={[styles.unavailableCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.unavailableIcon, { backgroundColor: colors.accent }]}>
+              <Ionicons name="lock-closed-outline" size={21} color={colors.accentForeground} />
+            </View>
+            <Text style={[styles.unavailableTitle, { color: colors.foreground }]}>ورود در دسترس نیست</Text>
+            <Text accessibilityRole="alert" style={[styles.noticeText, styles.unavailableCopy, { color: colors.foreground }]}>
+              {unavailableMessage}
+            </Text>
+          </View>
+        )}
+
+        {message && devAuthAvailable ? (
+          <View style={[styles.errorBox, { backgroundColor: colors.accent }]}>
+            <Ionicons name="alert-circle-outline" size={17} color={colors.destructive} />
             <Text
               testID="consultant-auth-error"
               accessibilityRole="alert"
@@ -331,285 +224,95 @@ export default function ConsultantSignInScreen() {
             >
               {message}
             </Text>
-          ) : null}
+          </View>
+        ) : null}
 
-          {state === 'error' ? (
-            <Pressable
-              testID="retry-session-check"
-              accessibilityRole="button"
-              onPress={() => void refresh()}
-              disabled={authBusy}
-              style={[styles.retryButton, { borderColor: colors.border }]}
-            >
-              <Text style={[styles.retryText, { color: colors.primary }]}>
-                بررسی دوباره نشست
-              </Text>
-            </Pressable>
-          ) : null}
-        </View>
-        <View style={styles.footerRow}>
-          <Ionicons
-            name="heart"
-            size={13}
-            color={colors.primary}
-          />
+        {state === 'error' ? (
+          <Pressable
+            testID="retry-session-check"
+            accessibilityRole="button"
+            onPress={() => void refresh()}
+            disabled={authBusy}
+            style={({ pressed }) => [styles.retryButton, { borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Ionicons name="refresh-outline" size={16} color={colors.primary} />
+            <Text style={[styles.retryText, { color: colors.primary }]}>بررسی دوباره نشست</Text>
+          </Pressable>
+        ) : null}
+
+        <View style={styles.footerBlock}>
+          <View style={[styles.footerRule, { backgroundColor: colors.border }]} />
           <Text style={[styles.footer, { color: colors.mutedForeground }]}>
             همراهِ مراقبت بهتر از حیوانات خانگی
           </Text>
+          <Text style={[styles.footerTiny, { color: colors.mutedForeground }]}>
+            کد و توکن در گزارش‌ها ثبت نمی‌شوند.
+          </Text>
+          {!devAuthAvailable && state !== 'auth-unavailable' && message ? (
+            <Text accessibilityRole="alert" style={[styles.footer, { color: colors.destructive }]}>{message}</Text>
+          ) : null}
+          {!devAuthAvailable && state !== 'auth-unavailable' ? (
+            <Text style={[styles.footerTiny, { color: colors.mutedForeground }]}>
+              فرم آزمایشی فقط هنگام فعال‌بودن حالت توسعه نمایش داده می‌شود.
+            </Text>
+          ) : null}
         </View>
-        <Text style={[styles.privacy, { color: colors.mutedForeground }]}>
-          کد و توکن در گزارش‌ها ثبت نمی‌شوند و نشست در SecureStore نگهداری می‌شود.
-        </Text>
-        {!devAuthAvailable && state !== 'auth-unavailable' && message ? (
-          <Text
-            accessibilityRole="alert"
-            style={[styles.footer, { color: colors.destructive }]}
-          >
-            {message}
-          </Text>
-        ) : null}
-        {!devAuthAvailable && state !== 'auth-unavailable' ? (
-          <Text style={[styles.footer, { color: colors.mutedForeground }]}>
-            فرم آزمایشی فقط وقتی حالت توسعه‌ی احراز هویت Petipy فعال باشد نمایش داده می‌شود.
-          </Text>
-        ) : null}
       </KeyboardAwareScrollViewCompat>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, overflow: 'hidden' },
-  orb: {
-    position: 'absolute',
-    borderRadius: 999,
-    opacity: 0.38,
-  },
-  orbTop: {
-    width: 240,
-    height: 240,
-    top: -122,
-    right: -92,
-  },
-  orbBottom: {
-    width: 188,
-    height: 188,
-    bottom: -91,
-    left: -94,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 28,
-    gap: 17,
-  },
-  hero: {
-    minHeight: 184,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 17,
-    borderRadius: 31,
-    padding: 21,
-    overflow: 'hidden',
-    marginBottom: 3,
-  },
-  brandHalo: {
-    width: 72,
-    height: 72,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  heroText: {
-    flex: 1,
-    alignItems: 'flex-end',
-    gap: 6,
-  },
-  card: {
-    alignItems: 'stretch',
-    borderWidth: 1,
-    borderRadius: 28,
-    padding: 20,
-    gap: 16,
-    shadowColor: '#55232F',
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 11 },
-    elevation: 3,
-  },
-  brandMark: {
-    width: 53,
-    height: 53,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sparkle: {
-    position: 'absolute',
-    top: -3,
-    right: -3,
-    width: 27,
-    height: 27,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  eyebrow: {
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 1.4,
-    textAlign: 'right',
-    alignSelf: 'flex-end',
-  },
-  title: {
-    fontSize: 25,
-    fontWeight: '800',
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  heroCopy: {
-    fontSize: 11,
-    lineHeight: 18,
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  cardHeading: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 12,
-  },
-  cardHeadingText: { flex: 1, gap: 4 },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  headingIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  body: {
-    fontSize: 11,
-    lineHeight: 18,
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  notice: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 10,
-    borderRadius: 15,
-    padding: 13,
-  },
-  noticeText: {
-    flex: 1,
-    fontSize: 10,
-    lineHeight: 18,
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  form: { gap: 10, marginTop: 1 },
-  label: {
-    fontSize: 11,
-    fontWeight: '600',
-    textAlign: 'right',
-    writingDirection: 'rtl',
-    marginTop: 4,
-  },
-  inputShell: {
-    minHeight: 58,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 10,
-    borderWidth: 1,
-    borderRadius: 18,
-    paddingHorizontal: 14,
-  },
-  input: {
-    flex: 1,
-    minHeight: 52,
-    fontSize: 14,
-    writingDirection: 'ltr',
-  },
-  codeInput: {
-    letterSpacing: 10,
-    fontWeight: '700',
-    writingDirection: 'ltr',
-  },
-  rememberNote: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 8,
-    paddingTop: 3,
-  },
-  rememberText: {
-    flex: 1,
-    fontSize: 10,
-    lineHeight: 17,
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  primaryButton: {
-    minHeight: 58,
-    borderRadius: 19,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 11,
-    paddingHorizontal: 18,
-    marginTop: 5,
-  },
-  disabledButton: { opacity: 0.7 },
-  primaryButtonText: {
-    fontSize: 13,
-    fontWeight: '700',
-    writingDirection: 'rtl',
-  },
-  error: {
-    fontSize: 12,
-    lineHeight: 19,
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  retryButton: {
-    minHeight: 42,
-    borderWidth: 1,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  safe: { flex: 1 },
+  scrollContent: { flexGrow: 1, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, gap: 21 },
+  pageTop: { minHeight: 45, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
+  brandLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
+  miniMark: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  brandWords: { alignItems: 'flex-end', gap: 1 },
+  brandName: { fontSize: 12, fontWeight: '800', letterSpacing: 1.3 },
+  brandSub: { fontSize: 10, writingDirection: 'rtl' },
+  securePill: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 8 },
+  secureLabel: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  welcomePanel: { minHeight: 205, borderRadius: 27, padding: 22, overflow: 'hidden', justifyContent: 'space-between' },
+  panelSeal: { width: 58, height: 58, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  panelCopy: { alignItems: 'flex-end', gap: 7, zIndex: 1 },
+  panelKicker: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, opacity: 0.78 },
+  title: { fontSize: 24, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  heroCopy: { maxWidth: 270, fontSize: 12, lineHeight: 20, textAlign: 'right', writingDirection: 'rtl', opacity: 0.86 },
+  panelDisc: { position: 'absolute', width: 158, height: 158, borderWidth: 1, borderRadius: 80, opacity: 0.11, top: -67, left: -35 },
+  panelDiscSmall: { position: 'absolute', width: 100, height: 100, borderWidth: 1, borderRadius: 50, opacity: 0.1, top: -38, left: -7 },
+  formIntro: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 1 },
+  formIntroText: { alignItems: 'flex-end', gap: 4 },
+  formTitle: { fontSize: 19, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  body: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
+  roleTag: { borderRadius: 9, paddingHorizontal: 8, paddingVertical: 6 },
+  roleTagText: { fontSize: 8, fontWeight: '700', letterSpacing: 0.3 },
+  formCard: { borderRadius: 25, borderWidth: 1, padding: 17, gap: 17, shadowColor: '#5D2934', shadowOpacity: 0.07, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2 },
+  devNotice: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, borderRadius: 15, paddingHorizontal: 12, paddingVertical: 11 },
+  noticeIcon: { width: 31, height: 31, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  noticeText: { flex: 1, fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
+  form: { gap: 15 },
+  fieldBlock: { gap: 8 },
+  label: { fontSize: 11, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
+  inputShell: { minHeight: 56, flexDirection: 'row-reverse', alignItems: 'center', gap: 11, borderWidth: 1, borderRadius: 15, paddingHorizontal: 14 },
+  input: { flex: 1, minHeight: 52, fontSize: 15, writingDirection: 'ltr' },
+  codeInput: { letterSpacing: 9, fontWeight: '700' },
+  privacyRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
+  privacyText: { flex: 1, fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl' },
+  primaryButton: { minHeight: 56, borderRadius: 16, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 16 },
+  primaryButtonText: { fontSize: 13, fontWeight: '800', writingDirection: 'rtl' },
+  unavailableCard: { alignItems: 'center', borderWidth: 1, borderRadius: 24, padding: 22, gap: 10 },
+  unavailableIcon: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  unavailableTitle: { fontSize: 16, fontWeight: '800', writingDirection: 'rtl' },
+  unavailableCopy: { fontSize: 12, textAlign: 'center', lineHeight: 22 },
+  errorBox: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, borderRadius: 13, padding: 12 },
+  error: { flex: 1, fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
+  retryButton: { minHeight: 46, borderWidth: 1, borderRadius: 14, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8 },
   retryText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  footerRow: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 7,
-    marginTop: 3,
-  },
-  footer: {
-    fontSize: 10,
-    lineHeight: 16,
-    textAlign: 'center',
-    writingDirection: 'rtl',
-  },
-  privacy: {
-    fontSize: 9,
-    lineHeight: 15,
-    textAlign: 'center',
-    writingDirection: 'rtl',
-    marginTop: 7,
-  },
-  loading: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 13,
-    paddingHorizontal: 22,
-  },
+  footerBlock: { alignItems: 'center', gap: 7, paddingTop: 2 },
+  footerRule: { width: 42, height: 2, borderRadius: 2, marginBottom: 3 },
+  footer: { fontSize: 12, lineHeight: 19, textAlign: 'center', writingDirection: 'rtl' },
+  footerTiny: { fontSize: 10, lineHeight: 17, textAlign: 'center', writingDirection: 'rtl' },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 13, paddingHorizontal: 22 },
+  loadingMark: { width: 62, height: 62, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
 });

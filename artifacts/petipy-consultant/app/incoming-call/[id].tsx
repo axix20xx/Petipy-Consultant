@@ -216,161 +216,115 @@ export default function IncomingCallScreen() {
   const isUnavailable = !isLoading && !queue.isError && !call;
 
   return (
-    <SafeAreaView
-      style={[styles.safe, { backgroundColor: colors.background }]}
-      edges={['top', 'bottom']}
-    >
-      <View style={styles.content}>
-        <View style={styles.callDetails}>
-          <View style={styles.brandLine}>
-            <View style={[styles.brandMark, { backgroundColor: colors.secondary }]}>
-              <Ionicons name="paw" size={16} color={colors.primary} />
-            </View>
-            <Text style={[styles.brand, { color: colors.mutedForeground }]}>PETIPY CONSULTANT</Text>
-            <View style={[styles.liveChip, { backgroundColor: colors.accent }]}>
-              <View style={[styles.liveDot, { backgroundColor: colors.warning }]} />
-              <Text style={[styles.liveChipText, { color: colors.accentForeground }]}>تماس تازه</Text>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+      <View style={styles.page}>
+        <View style={styles.brandLine}>
+          <View style={[styles.brandMark, { backgroundColor: colors.primary }]}>
+            <Ionicons name="paw" size={17} color={colors.primaryForeground} />
+          </View>
+          <View style={styles.brandCopy}>
+            <Text style={[styles.brandName, { color: colors.foreground }]}>پتی‌پای</Text>
+            <Text style={[styles.brandCaption, { color: colors.mutedForeground }]}>میز مشاوره</Text>
+          </View>
+          <View style={[styles.liveChip, { backgroundColor: colors.accent }]}>
+            <View style={[styles.liveDot, { backgroundColor: colors.warning }]} />
+            <Text style={[styles.liveChipText, { color: colors.accentForeground }]}>درخواست تازه</Text>
+          </View>
+        </View>
+
+        <View style={[styles.callerCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.callerHeading}>
+            <Text style={[styles.eyebrow, { color: colors.primary }]}>تماس ورودی مشاوره</Text>
+            <View style={[styles.avatarHalo, { backgroundColor: colors.secondary, borderColor: colors.accent }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.card }]}>
+                <Ionicons name="paw" size={37} color={colors.primary} accessible={false} />
+              </View>
             </View>
           </View>
-          <View
-            style={[
-              styles.avatarHalo,
-              { backgroundColor: colors.secondary },
-            ]}
-          >
-            <View style={[styles.avatar, { backgroundColor: colors.card, borderColor: colors.card }]}>
-              <Ionicons name="paw" size={42} color={colors.primary} accessible={false} />
-            </View>
-          </View>
-          <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>
-            تماس ورودی مشاوره
-          </Text>
           <Text style={[styles.callerName, { color: colors.foreground }]}>
             {call?.callerName || 'درخواست تماس جدید'}
           </Text>
           {call?.petName ? (
-            <Text style={[styles.petName, { color: colors.mutedForeground }]}>
-              درباره‌ی {call.petName}
-            </Text>
+            <View style={[styles.petContext, { backgroundColor: colors.secondary }]}>
+              <Ionicons name="paw-outline" size={15} color={colors.secondaryForeground} />
+              <Text style={[styles.petName, { color: colors.secondaryForeground }]}>درباره‌ی {call.petName}</Text>
+            </View>
           ) : null}
           {call?.subject ? (
-            <Text style={[styles.subject, { color: colors.mutedForeground }]}>
-              {call.subject}
-            </Text>
+            <Text style={[styles.subject, { color: colors.mutedForeground }]}>{call.subject}</Text>
           ) : null}
-
-          <View
-            style={[
-              styles.statusCard,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                borderRadius: colors.radius,
-              },
-            ]}
-          >
-            {isLoading ? (
-              <>
+          <View style={[styles.statusCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <View style={[styles.statusIcon, { backgroundColor: isLoading ? colors.secondary : queue.isError ? colors.accent : colors.card }]}>
+              {isLoading ? (
                 <ActivityIndicator color={colors.primary} />
-                <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
-                  بررسی درخواست تماس…
-                </Text>
-              </>
-            ) : queue.isError ? (
-              <>
-                <Text style={[styles.statusText, { color: colors.destructive }]}>
-                  صف تماس در دسترس نیست. اتصال اینترنت را بررسی کنید.
-                </Text>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => void queue.refetch()}
-                  testID="incoming-call-retry"
-                >
-                  <Text style={[styles.linkText, { color: colors.primary }]}>
-                    تلاش دوباره
-                  </Text>
-                </Pressable>
-              </>
-            ) : isUnavailable ? (
-              <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
-                این درخواست دیگر فعال نیست یا منقضی شده است.
+              ) : (
+                <Ionicons name={queue.isError ? 'cloud-offline-outline' : isUnavailable ? 'time-outline' : 'call-outline'} size={18} color={queue.isError ? colors.destructive : colors.primary} />
+              )}
+            </View>
+            <View style={styles.statusCopy}>
+              <Text style={[styles.statusTitle, { color: colors.foreground }]}>
+                {isLoading ? 'در حال بررسی' : queue.isError ? 'ارتباط برقرار نیست' : isUnavailable ? 'درخواست غیرفعال است' : 'آماده‌ی پاسخ'}
               </Text>
-            ) : (
-              <Text style={[styles.statusText, { color: colors.mutedForeground }]}>
-                برای پاسخ، دکمه‌ی تماس را بزنید.
-              </Text>
-            )}
+              {isLoading ? (
+                <Text style={[styles.statusText, { color: colors.mutedForeground }]}>بررسی درخواست تماس…</Text>
+              ) : queue.isError ? (
+                <Text style={[styles.statusText, { color: colors.mutedForeground }]}>صف تماس در دسترس نیست. اتصال اینترنت را بررسی کنید.</Text>
+              ) : isUnavailable ? (
+                <Text style={[styles.statusText, { color: colors.mutedForeground }]}>این درخواست دیگر فعال نیست یا منقضی شده است.</Text>
+              ) : (
+                <Text style={[styles.statusText, { color: colors.mutedForeground }]}>برای پاسخ به تماس، گزینه‌ی ruby را انتخاب کنید.</Text>
+              )}
+            </View>
+            {queue.isError ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => void queue.refetch()}
+                testID="incoming-call-retry"
+                style={({ pressed }) => [styles.refreshAction, { backgroundColor: colors.secondary, opacity: pressed ? 0.75 : 1 }]}
+              >
+                <Ionicons name="refresh-outline" size={17} color={colors.primary} />
+              </Pressable>
+            ) : null}
           </View>
-
           {actionError ? (
-            <Text
-              accessibilityRole="alert"
-              style={[styles.errorText, { color: colors.destructive }]}
-            >
-              {actionError}
-            </Text>
+            <View style={[styles.errorBox, { backgroundColor: colors.accent }]}>
+              <Ionicons name="alert-circle-outline" size={17} color={colors.destructive} />
+              <Text accessibilityRole="alert" style={[styles.errorText, { color: colors.destructive }]}>{actionError}</Text>
+            </View>
           ) : null}
         </View>
 
-        <View style={styles.actions}>
+        <View style={styles.actionDock}>
           {call ? (
             <View style={styles.callActions}>
-              <View style={styles.actionOption}>
-                <Pressable
-                  accessibilityLabel="رد تماس"
-                  accessibilityRole="button"
-                  disabled={accepting || rejecting}
-                  onPress={() => void rejectCall()}
-                  style={[
-                    styles.acceptButton,
-                    { backgroundColor: colors.destructive },
-                    (accepting || rejecting) && styles.disabledButton,
-                  ]}
-                  testID="incoming-call-reject"
-                >
-                  {rejecting ? (
-                    <ActivityIndicator color={colors.primaryForeground} />
-                  ) : (
-                    <Ionicons
-                      name="close"
-                      size={31}
-                      color={colors.primaryForeground}
-                      accessible={false}
-                    />
-                  )}
-                </Pressable>
-                <Text style={[styles.actionLabel, { color: colors.foreground }]}>
-                  {rejecting ? 'در حال رد…' : 'رد تماس'}
-                </Text>
-              </View>
-              <View style={styles.actionOption}>
-                <Pressable
-                  accessibilityLabel="پاسخ به تماس"
-                  accessibilityRole="button"
-                  disabled={accepting || rejecting}
-                  onPress={() => void acceptCall()}
-                  style={[
-                    styles.acceptButton,
-                    { backgroundColor: colors.success },
-                    (accepting || rejecting) && styles.disabledButton,
-                  ]}
-                  testID="incoming-call-accept"
-                >
-                  {accepting ? (
-                    <ActivityIndicator color={colors.primaryForeground} />
-                  ) : (
-                <Ionicons
-                  name="call"
-                  size={31}
-                  color={colors.primaryForeground}
-                  accessible={false}
-                />
-              )}
-                </Pressable>
-                <Text style={[styles.actionLabel, { color: colors.foreground }]}>
-                  {accepting ? 'متصل می‌شوید…' : 'پاسخ به تماس'}
-                </Text>
-              </View>
+              <Pressable
+                accessibilityLabel="رد تماس"
+                accessibilityRole="button"
+                disabled={accepting || rejecting}
+                onPress={() => void rejectCall()}
+                style={({ pressed }) => [
+                  styles.rejectButton,
+                  { backgroundColor: colors.secondary, borderColor: colors.border, opacity: accepting || rejecting ? 0.55 : pressed ? 0.82 : 1 },
+                ]}
+                testID="incoming-call-reject"
+              >
+                {rejecting ? <ActivityIndicator color={colors.destructive} /> : <Ionicons name="close" size={22} color={colors.destructive} accessible={false} />}
+                <Text style={[styles.rejectLabel, { color: colors.destructive }]}>{rejecting ? 'در حال رد…' : 'رد تماس'}</Text>
+              </Pressable>
+              <Pressable
+                accessibilityLabel="پاسخ به تماس"
+                accessibilityRole="button"
+                disabled={accepting || rejecting}
+                onPress={() => void acceptCall()}
+                style={({ pressed }) => [
+                  styles.acceptButton,
+                  { backgroundColor: colors.primary, opacity: accepting || rejecting ? 0.58 : pressed ? 0.88 : 1 },
+                ]}
+                testID="incoming-call-accept"
+              >
+                {accepting ? <ActivityIndicator color={colors.primaryForeground} /> : <Ionicons name="call" size={20} color={colors.primaryForeground} accessible={false} />}
+                <Text style={[styles.acceptLabel, { color: colors.primaryForeground }]}>{accepting ? 'متصل می‌شوید…' : 'پاسخ به تماس'}</Text>
+              </Pressable>
             </View>
           ) : null}
           <Pressable
@@ -379,15 +333,8 @@ export default function IncomingCallScreen() {
             style={styles.backButton}
             testID="incoming-call-back"
           >
-            <Ionicons
-              name="arrow-forward"
-              size={18}
-              color={colors.primary}
-              accessible={false}
-            />
-            <Text style={[styles.linkText, { color: colors.primary }]}>
-              بازگشت به صف تماس‌ها
-            </Text>
+            <Ionicons name="arrow-forward" size={17} color={colors.primary} accessible={false} />
+            <Text style={[styles.linkText, { color: colors.primary }]}>بازگشت به صف تماس‌ها</Text>
           </Pressable>
         </View>
       </View>
@@ -396,137 +343,40 @@ export default function IncomingCallScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 18,
-  },
-  callDetails: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    paddingBottom: 10,
-  },
-  brandLine: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginBottom: 17 },
-  brandMark: { width: 36, height: 36, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  brand: {
-    flex: 1,
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 1.2,
-    textAlign: 'left',
-  },
-  liveChip: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 12, paddingHorizontal: 9, paddingVertical: 7 },
+  safe: { flex: 1 },
+  loadingContainer: { alignItems: 'center', flex: 1, justifyContent: 'center' },
+  page: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 12 },
+  brandLine: { minHeight: 43, flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
+  brandMark: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  brandCopy: { flex: 1, alignItems: 'flex-end', gap: 1 },
+  brandName: { fontSize: 13, fontWeight: '800', writingDirection: 'rtl' },
+  brandCaption: { fontSize: 9, writingDirection: 'rtl' },
+  liveChip: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 11, paddingHorizontal: 10, paddingVertical: 7 },
   liveDot: { width: 6, height: 6, borderRadius: 3 },
-  liveChipText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
-  avatarHalo: { alignItems: 'center', justifyContent: 'center', width: 142, height: 142, borderRadius: 50, marginBottom: 20, borderWidth: 1, borderColor: '#E7D5D0' },
-  avatar: {
-    alignItems: 'center',
-    borderRadius: 36,
-    borderWidth: 1,
-    height: 108,
-    justifyContent: 'center',
-    width: 108,
-  },
-  eyebrow: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  callerName: {
-    fontSize: 30,
-    fontWeight: '800',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  petName: {
-    fontSize: 16,
-    marginTop: 8,
-  },
-  subject: {
-    fontSize: 14,
-    marginTop: 6,
-    textAlign: 'center',
-  },
-  statusCard: {
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 22,
-    gap: 10,
-    marginTop: 22,
-    maxWidth: 340,
-    paddingHorizontal: 20,
-    paddingVertical: 17,
-    width: '100%',
-  },
-  statusText: {
-    fontSize: 14,
-    lineHeight: 21,
-    textAlign: 'center',
-  },
-  errorText: {
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 14,
-    textAlign: 'center',
-  },
-  actions: {
-    alignItems: 'center',
-    gap: 14,
-    paddingBottom: 5,
-  },
-  callActions: {
-    flexDirection: 'row',
-    gap: 48,
-    justifyContent: 'center',
-  },
-  actionOption: {
-    alignItems: 'center',
-    gap: 10,
-  },
-  actionLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  acceptButton: {
-    alignItems: 'center',
-    borderRadius: 36,
-    height: 76,
-    justifyContent: 'center',
-    width: 76,
-  },
-  disabledButton: {
-    opacity: 0.65,
-  },
-  acceptLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  backButton: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-    minHeight: 44,
-    paddingHorizontal: 12,
-  },
-  linkText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  note: {
-    fontSize: 12,
-    lineHeight: 18,
-    maxWidth: 340,
-    textAlign: 'center',
-  },
+  liveChipText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  callerCard: { width: '100%', maxWidth: 460, alignSelf: 'center', borderWidth: 1, borderRadius: 25, padding: 19, gap: 11, shadowColor: '#5D2934', shadowOpacity: 0.07, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 2 },
+  callerHeading: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
+  eyebrow: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
+  avatarHalo: { alignItems: 'center', justifyContent: 'center', width: 66, height: 66, borderRadius: 24, borderWidth: 1 },
+  avatar: { alignItems: 'center', borderRadius: 18, width: 52, height: 52, justifyContent: 'center' },
+  callerName: { fontSize: 26, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  petContext: { alignSelf: 'flex-end', flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 11, paddingHorizontal: 9, paddingVertical: 6 },
+  petName: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
+  subject: { fontSize: 12, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl' },
+  statusCard: { flexDirection: 'row-reverse', alignItems: 'center', borderWidth: 1, borderRadius: 16, gap: 10, marginTop: 4, padding: 11 },
+  statusIcon: { width: 37, height: 37, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  statusCopy: { flex: 1, alignItems: 'flex-end', gap: 3 },
+  statusTitle: { fontSize: 12, fontWeight: '800', writingDirection: 'rtl' },
+  statusText: { fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl' },
+  refreshAction: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  errorBox: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7, borderRadius: 12, padding: 10 },
+  errorText: { flex: 1, fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
+  actionDock: { alignItems: 'center', gap: 12, paddingBottom: 5 },
+  callActions: { width: '100%', flexDirection: 'row-reverse', gap: 10 },
+  rejectButton: { flex: 0.78, minHeight: 58, borderWidth: 1, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7 },
+  rejectLabel: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
+  acceptButton: { flex: 1.22, minHeight: 58, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, shadowColor: '#5D2934', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
+  acceptLabel: { fontSize: 13, fontWeight: '800', writingDirection: 'rtl' },
+  backButton: { alignItems: 'center', flexDirection: 'row-reverse', gap: 8, minHeight: 43, paddingHorizontal: 12 },
+  linkText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
 });

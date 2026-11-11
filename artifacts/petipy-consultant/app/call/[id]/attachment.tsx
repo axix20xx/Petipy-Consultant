@@ -133,38 +133,44 @@ export default function VoiceCallAttachmentScreen() {
           accessibilityRole="button"
           accessibilityLabel="بازگشت به گفت‌وگو"
           onPress={() => router.back()}
-          style={[styles.iconButton, { backgroundColor: colors.secondary }]}
+          style={({ pressed }) => [styles.iconButton, { backgroundColor: colors.secondary, opacity: pressed ? 0.76 : 1 }]}
         >
-          <Ionicons name="arrow-forward" size={21} color={colors.foreground} />
+          <Ionicons name="arrow-forward" size={20} color={colors.primary} />
         </Pressable>
-        <Text
-          numberOfLines={1}
-          style={[styles.title, { color: colors.foreground }]}
-        >
-          {preview.attachment?.fileName ?? 'پیش‌نمایش پیوست'}
-        </Text>
-        <View style={styles.headerSpacer} />
+        <View style={styles.headerCopy}>
+          <Text style={[styles.headerEyebrow, { color: colors.primary }]}>فایل امن تماس</Text>
+          <Text numberOfLines={1} style={[styles.title, { color: colors.foreground }]}>
+            {preview.attachment?.fileName ?? 'پیش‌نمایش پیوست'}
+          </Text>
+        </View>
+        <View style={[styles.fileTypeBadge, { backgroundColor: colors.secondary }]}>
+          <Ionicons
+            name={preview.attachment?.contentType === 'application/pdf' ? 'document-text-outline' : 'image-outline'}
+            size={16}
+            color={colors.primary}
+          />
+        </View>
       </View>
 
       <View style={styles.body}>
         {loading ? (
-          <View style={styles.centerState}>
-            <ActivityIndicator color={colors.primary} size="large" />
-            <Text style={[styles.stateText, { color: colors.mutedForeground }]}>
-              در حال آماده‌سازی فایل امن…
-            </Text>
+          <View style={[styles.centerState, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.stateIcon, { backgroundColor: colors.secondary }]}>
+              <ActivityIndicator color={colors.primary} size="small" />
+            </View>
+            <Text style={[styles.stateTitle, { color: colors.foreground }]}>در حال آماده‌سازی</Text>
+            <Text style={[styles.stateText, { color: colors.mutedForeground }]}>فایل امن در حال دریافت است…</Text>
           </View>
         ) : error ? (
-          <View style={styles.centerState}>
-            <Ionicons
-              name="document-text-outline"
-              size={38}
-              color={colors.mutedForeground}
-            />
+          <View style={[styles.centerState, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.stateIcon, { backgroundColor: colors.accent }]}>
+              <Ionicons name="document-text-outline" size={25} color={colors.destructive} />
+            </View>
+            <Text style={[styles.stateTitle, { color: colors.foreground }]}>نمایش فایل ممکن نشد</Text>
             <Text
               testID="attachment-preview-error"
               accessibilityRole="alert"
-              style={[styles.errorText, { color: colors.foreground }]}
+              style={[styles.errorText, { color: colors.mutedForeground }]}
             >
               {error}
             </Text>
@@ -172,31 +178,31 @@ export default function VoiceCallAttachmentScreen() {
               testID="attachment-preview-retry"
               accessibilityRole="button"
               onPress={() => setRetryKey((current) => current + 1)}
-              style={[styles.retryButton, { backgroundColor: colors.primary }]}
+              style={({ pressed }) => [styles.retryButton, { backgroundColor: colors.primary, opacity: pressed ? 0.84 : 1 }]}
             >
-              <Text
-                style={[
-                  styles.retryText,
-                  { color: colors.primaryForeground },
-                ]}
-              >
+              <Ionicons name="refresh-outline" size={16} color={colors.primaryForeground} />
+              <Text style={[styles.retryText, { color: colors.primaryForeground }]}>
                 تلاش دوباره
               </Text>
             </Pressable>
           </View>
         ) : preview.imageUrl ? (
-          <Image
-            testID="attachment-image-preview"
-            source={{ uri: preview.imageUrl }}
-            resizeMode="contain"
-            style={styles.image}
-            onError={() =>
-              setError('بارگذاری تصویر ناموفق بود. دوباره تلاش کنید.')
-            }
-            accessibilityLabel={preview.attachment?.fileName ?? 'تصویر پیوست'}
-          />
+          <View style={[styles.previewFrame, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Image
+              testID="attachment-image-preview"
+              source={{ uri: preview.imageUrl }}
+              resizeMode="contain"
+              style={styles.image}
+              onError={() => setError('بارگذاری تصویر ناموفق بود. دوباره تلاش کنید.')}
+              accessibilityLabel={preview.attachment?.fileName ?? 'تصویر پیوست'}
+            />
+            <View style={[styles.previewCaption, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Ionicons name="shield-checkmark-outline" size={15} color={colors.success} />
+              <Text style={[styles.previewCaptionText, { color: colors.mutedForeground }]}>پیش‌نمایش امن درون برنامه</Text>
+            </View>
+          </View>
         ) : preview.pdfUri ? (
-          <>
+          <View style={[styles.previewFrame, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <PdfView
               testID="attachment-pdf-preview"
               style={styles.pdf}
@@ -217,7 +223,7 @@ export default function VoiceCallAttachmentScreen() {
               <View
                 style={[
                   styles.pageBadge,
-                  { backgroundColor: colors.card, borderColor: colors.input },
+                  { backgroundColor: colors.card, borderColor: colors.border },
                 ]}
               >
                 <Text style={[styles.pageText, { color: colors.foreground }]}>
@@ -225,7 +231,7 @@ export default function VoiceCallAttachmentScreen() {
                 </Text>
               </View>
             ) : null}
-          </>
+          </View>
         ) : null}
       </View>
     </SafeAreaView>
@@ -235,57 +241,72 @@ export default function VoiceCallAttachmentScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 72,
+    minHeight: 76,
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingHorizontal: 14,
+    gap: 10,
+    paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   iconButton: {
     width: 46,
     height: 46,
-    borderRadius: 17,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  headerCopy: { flex: 1, alignItems: 'flex-end', gap: 2 },
+  headerEyebrow: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
   title: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '700',
+    maxWidth: '100%',
+    fontSize: 13,
+    fontWeight: '800',
     textAlign: 'right',
     writingDirection: 'rtl',
   },
-  headerSpacer: { width: 40 },
+  fileTypeBadge: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   body: { flex: 1 },
   centerState: {
     flex: 1,
+    margin: 18,
+    borderWidth: 1,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 28,
-    gap: 14,
+    gap: 10,
   },
+  stateIcon: { width: 54, height: 54, borderRadius: 19, alignItems: 'center', justifyContent: 'center', marginBottom: 3 },
+  stateTitle: { fontSize: 16, fontWeight: '800', textAlign: 'center', writingDirection: 'rtl' },
   stateText: {
-    fontSize: 12,
+    fontSize: 11,
+    lineHeight: 18,
     textAlign: 'center',
     writingDirection: 'rtl',
   },
   errorText: {
-    fontSize: 13,
-    lineHeight: 21,
+    fontSize: 11,
+    lineHeight: 19,
     textAlign: 'center',
     writingDirection: 'rtl',
   },
   retryButton: {
-    minHeight: 42,
+    minHeight: 46,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    flexDirection: 'row-reverse',
+    gap: 7,
+    paddingHorizontal: 18,
     borderRadius: 14,
+    marginTop: 5,
   },
-  retryText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  image: { flex: 1, width: '100%' },
+  retryText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
+  previewFrame: { flex: 1, margin: 12, borderWidth: 1, borderRadius: 20, overflow: 'hidden', position: 'relative' },
+  image: { flex: 1, width: '100%', padding: 10 },
   pdf: { flex: 1, width: '100%' },
+  previewCaption: { position: 'absolute', top: 11, left: 11, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 12, paddingHorizontal: 9, paddingVertical: 7 },
+  previewCaptionText: { fontSize: 9, writingDirection: 'rtl' },
   pageBadge: {
     position: 'absolute',
     bottom: 14,

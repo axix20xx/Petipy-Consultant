@@ -160,8 +160,11 @@ function RefreshButton({
       onPress={onPress}
       hitSlop={12}
       testID="refresh-call-activity"
-      style={styles.refreshButton}
-    android_ripple={{ color: colors.accent, borderless: true }}
+      style={({ pressed }) => [
+        styles.refreshButton,
+        { backgroundColor: colors.primaryForeground, opacity: pressed ? 0.78 : 1 },
+      ]}
+      android_ripple={{ color: colors.accent, borderless: true }}
     >
       {refreshing ? (
         <ActivityIndicator size="small" color={colors.primary} />
@@ -228,25 +231,35 @@ export default function ConsultantCallActivityScreen() {
           />
         }
       >
-        <View style={styles.header}>
-          <View style={styles.headerText}>
-            <Text style={[styles.eyebrow, { color: colors.primary }]}>
-              CONSULTANT ACTIVITY
-            </Text>
-            <Text style={[styles.title, { color: colors.foreground }]}>
-              آمار و سوابق تماس
-            </Text>
-            <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+        <View style={[styles.hero, { backgroundColor: colors.primary }]}>
+          <View style={styles.heroTop}>
+            <View style={[styles.heroMark, { backgroundColor: colors.primaryForeground }]}>
+              <Ionicons name="paw" size={17} color={colors.primary} />
+            </View>
+            <Text style={[styles.heroBrand, { color: colors.primaryForeground }]}>PETIPY  /  CONSULTANT</Text>
+            <RefreshButton
+              refreshing={refreshing}
+              onPress={() => void refreshAll()}
+              colors={colors}
+            />
+          </View>
+          <View style={styles.heroCopy}>
+            <Text style={[styles.eyebrow, { color: colors.primaryForeground }]}>دفتر تماس‌ها</Text>
+            <Text style={[styles.title, { color: colors.primaryForeground }]}>آمار و سوابق</Text>
+            <Text style={[styles.subtitle, { color: colors.primaryForeground }]}>
               عملکرد تماس‌های مشاوره‌ی شما
             </Text>
           </View>
-          <RefreshButton
-            refreshing={refreshing}
-            onPress={() => void refreshAll()}
-            colors={colors}
-          />
+          <View pointerEvents="none" style={[styles.heroRing, { borderColor: colors.primaryForeground }]} />
         </View>
 
+        <View style={styles.periodIntro}>
+          <View style={styles.periodTitleCopy}>
+            <Text style={[styles.periodTitle, { color: colors.foreground }]}>بازه‌ی گزارش</Text>
+            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>برای تغییر، یک بازه را انتخاب کنید</Text>
+          </View>
+          <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+        </View>
         <View
           accessibilityRole="tablist"
           style={[styles.periods, { backgroundColor: colors.muted }]}
@@ -288,25 +301,28 @@ export default function ConsultantCallActivityScreen() {
         </View>
 
         <View style={styles.sectionHeading}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-            خلاصه‌ی عملکرد
-          </Text>
-          <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
-            {days === 365 ? '۱۲ ماه گذشته' : `${days} روز گذشته`}
-          </Text>
+          <View style={styles.sectionTitleCopy}>
+            <Text style={[styles.sectionKicker, { color: colors.primary }]}>گزارش زنده</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>خلاصه‌ی عملکرد</Text>
+          </View>
+          <View style={[styles.periodStamp, { backgroundColor: colors.secondary }]}>
+            <Text style={[styles.periodStampText, { color: colors.secondaryForeground }]}>
+              {days === 365 ? '۱۲ ماه گذشته' : `${new Intl.NumberFormat('fa-IR').format(days)} روز گذشته`}
+            </Text>
+          </View>
         </View>
 
         {analytics.isPending ? (
-          <View
-            style={[
-              styles.stateCard,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
-          >
-            <ActivityIndicator color={colors.primary} />
-            <Text style={[styles.stateText, { color: colors.mutedForeground }]}>
-              در حال دریافت آمار تماس‌ها…
-            </Text>
+          <View style={[styles.analyticsSkeleton, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={styles.skeletonMetrics}>
+              {[0, 1, 2, 3].map((item) => (
+                <View key={item} style={[styles.skeletonMetric, { backgroundColor: colors.muted }]}>
+                  <View style={[styles.skeletonLine, styles.skeletonLineShort, { backgroundColor: colors.input }]} />
+                  <View style={[styles.skeletonLine, styles.skeletonLineWide, { backgroundColor: colors.input }]} />
+                </View>
+              ))}
+            </View>
+            <Text style={[styles.stateText, { color: colors.mutedForeground }]}>در حال دریافت آمار تماس‌ها…</Text>
           </View>
         ) : analytics.isError ? (
           <View
@@ -412,20 +428,29 @@ export default function ConsultantCallActivityScreen() {
         ) : null}
 
         <View style={[styles.sectionHeading, styles.historyHeading]}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-            تماس‌های اخیر
-          </Text>
-          <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
-            {recentHistory.length} تماس
-          </Text>
+          <View style={styles.sectionTitleCopy}>
+            <Text style={[styles.sectionKicker, { color: colors.primary }]}>دفترچه‌ی شخصی</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>تماس‌های اخیر</Text>
+          </View>
+          <View style={[styles.periodStamp, { backgroundColor: colors.muted }]}>
+            <Text style={[styles.periodStampText, { color: colors.mutedForeground }]}>
+              {new Intl.NumberFormat('fa-IR').format(recentHistory.length)} تماس
+            </Text>
+          </View>
         </View>
 
         {history.isPending ? (
-          <View style={styles.loadingHistory}>
-            <ActivityIndicator color={colors.primary} />
-            <Text style={[styles.stateText, { color: colors.mutedForeground }]}>
-              در حال دریافت سوابق…
-            </Text>
+          <View style={[styles.historySkeleton, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {[0, 1, 2].map((item) => (
+              <View key={item} style={[styles.skeletonHistoryRow, { borderBottomColor: colors.border }]}>
+                <View style={[styles.skeletonHistoryIcon, { backgroundColor: colors.muted }]} />
+                <View style={styles.skeletonHistoryText}>
+                  <View style={[styles.skeletonLine, styles.skeletonLineWide, { backgroundColor: colors.muted }]} />
+                  <View style={[styles.skeletonLine, styles.skeletonLineShort, { backgroundColor: colors.muted }]} />
+                </View>
+                <View style={[styles.skeletonHistoryMeta, { backgroundColor: colors.muted }]} />
+              </View>
+            ))}
           </View>
         ) : history.isError ? (
           <View
@@ -541,44 +566,49 @@ export default function ConsultantCallActivityScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { padding: 22, paddingTop: 18, paddingBottom: 28, gap: 8 },
+  content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 28, gap: 11 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  headerText: { alignItems: 'flex-end', flex: 1, gap: 4 },
-  eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1.6 },
-  title: { fontSize: 27, fontWeight: '700', writingDirection: 'rtl' },
-  subtitle: { fontSize: 12, writingDirection: 'rtl' },
+  hero: { minHeight: 171, borderRadius: 25, padding: 17, overflow: 'hidden', justifyContent: 'space-between', marginBottom: 4 },
+  heroTop: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
+  heroMark: { width: 35, height: 35, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  heroBrand: { flex: 1, fontSize: 9, fontWeight: '800', letterSpacing: 1.1 },
+  heroCopy: { alignItems: 'flex-end', gap: 3 },
+  heroRing: { position: 'absolute', left: -48, bottom: -88, width: 190, height: 190, borderRadius: 95, borderWidth: 1, opacity: 0.12 },
+  eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, writingDirection: 'rtl', opacity: 0.82 },
+  title: { fontSize: 25, fontWeight: '800', writingDirection: 'rtl' },
+  subtitle: { fontSize: 11, writingDirection: 'rtl', opacity: 0.82 },
   refreshButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
-    minWidth: 48,
-    marginLeft: 8,
+    minHeight: 46,
+    minWidth: 46,
     borderRadius: 17,
   },
-  periods: { flexDirection: 'row-reverse', gap: 7, marginBottom: 14, padding: 5, borderRadius: 20 },
+  periodIntro: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginTop: 2 },
+  periodTitleCopy: { flex: 1, alignItems: 'flex-end', gap: 2 },
+  periodTitle: { fontSize: 13, fontWeight: '800', writingDirection: 'rtl' },
+  periods: { flexDirection: 'row-reverse', gap: 6, marginBottom: 5, padding: 5, borderRadius: 16 },
   periodButton: {
     alignItems: 'center',
     borderWidth: 1,
     flex: 1,
     justifyContent: 'center',
-    minHeight: 43,
+    minHeight: 42,
     paddingHorizontal: 8,
   },
   periodLabel: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
   sectionHeading: {
-    alignItems: 'baseline',
+    alignItems: 'center',
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
-    marginTop: 6,
+    marginTop: 4,
   },
-  sectionTitle: { fontSize: 17, fontWeight: '700', writingDirection: 'rtl' },
+  sectionTitleCopy: { alignItems: 'flex-end', gap: 2 },
+  sectionKicker: { fontSize: 9, fontWeight: '800', writingDirection: 'rtl' },
+  sectionTitle: { fontSize: 17, fontWeight: '800', writingDirection: 'rtl' },
   sectionHint: { fontSize: 11, writingDirection: 'rtl' },
+  periodStamp: { borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
+  periodStampText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
   metricsGrid: {
     flexDirection: 'row-reverse',
     flexWrap: 'wrap',
@@ -589,6 +619,12 @@ const styles = StyleSheet.create({
     padding: 9,
     overflow: 'hidden',
   },
+  analyticsSkeleton: { minHeight: 188, borderWidth: 1, borderRadius: 21, padding: 13, gap: 14, marginTop: 5 },
+  skeletonMetrics: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 8 },
+  skeletonMetric: { flexBasis: '45%', flexGrow: 1, minHeight: 70, borderRadius: 13, padding: 11, justifyContent: 'space-between', alignItems: 'flex-end' },
+  skeletonLine: { height: 8, borderRadius: 5 },
+  skeletonLineShort: { width: '36%' },
+  skeletonLineWide: { width: '63%' },
   metricCard: {
     flexBasis: '46%',
     flexGrow: 1,
@@ -604,7 +640,7 @@ const styles = StyleSheet.create({
   },
   metricLabel: { flexShrink: 1, fontSize: 11, writingDirection: 'rtl' },
   metricValue: { fontSize: 23, fontWeight: '700', writingDirection: 'rtl' },
-  trendCard: { borderWidth: 1, borderRadius: 26, padding: 17, marginTop: 12, shadowColor: '#672334', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
+  trendCard: { borderWidth: 1, borderRadius: 21, padding: 15, marginTop: 5, shadowColor: '#5D2934', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
   trendHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 },
   trendTitle: { fontSize: 14, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
   trendCaption: { fontSize: 10, marginTop: 3, textAlign: 'right', writingDirection: 'rtl' },
@@ -622,8 +658,8 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     writingDirection: 'rtl',
   },
-  historyHeading: { marginTop: 23, marginBottom: 5 },
-  historyList: { marginTop: 6, borderWidth: 1, borderRadius: 26, overflow: 'hidden', shadowColor: '#672334', shadowOpacity: 0.035, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
+  historyHeading: { marginTop: 20, marginBottom: 3 },
+  historyList: { marginTop: 4, borderWidth: 1, borderRadius: 21, overflow: 'hidden', shadowColor: '#5D2934', shadowOpacity: 0.035, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
   historyRow: {
     alignItems: 'center',
     flexDirection: 'row-reverse',
@@ -666,7 +702,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     writingDirection: 'rtl',
   },
-  loadingHistory: { alignItems: 'center', gap: 10, paddingVertical: 25 },
+  historySkeleton: { borderWidth: 1, borderRadius: 21, paddingHorizontal: 12, overflow: 'hidden' },
+  skeletonHistoryRow: { minHeight: 65, flexDirection: 'row-reverse', alignItems: 'center', gap: 10, borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 10 },
+  skeletonHistoryIcon: { width: 35, height: 35, borderRadius: 12 },
+  skeletonHistoryText: { flex: 1, alignItems: 'flex-end', gap: 7 },
+  skeletonHistoryMeta: { width: 49, height: 18, borderRadius: 7 },
   retryButton: { marginTop: 4, paddingHorizontal: 17, paddingVertical: 10 },
   retryText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
   emptyIcon: {

@@ -31,7 +31,7 @@
       h1 { font-size: 24px; line-height: 1.25; margin: 0; }
       h2 { font-size: 17px; margin: 0; }
       p { margin: 0; font-size: 14px; line-height: 1.6; color: #555; }
-      .muted { font-size: 12px; color: #686868; }
+      .muted { font-size: 12px; line-height: 1.5; color: #686868; }
       .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
       .surface { background: #fff; border: 1px solid #c8c8c8; border-radius: 17px; padding: 16px; }
       .notice { background: #ececec; border: 1px solid #bcbcbc; border-radius: 13px; padding: 12px; }
@@ -52,6 +52,7 @@
       .filter { min-width: 48px; text-align: center; border: 1px solid #aaa; border-radius: 14px; padding: 8px 10px; font-size: 12px; }
       .filter.active { background: #777; color: white; }
       .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+      .timer { min-width: 60px; text-align: center; font-size: 20px; font-variant-numeric: tabular-nums; }
       .control { text-align: center; padding: 13px 4px; border: 1px solid #aaa; border-radius: 14px; font-size: 12px; }
       .control b { display: block; font-size: 19px; margin-bottom: 6px; }
       .caller { min-height: 200px; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; }
@@ -104,7 +105,7 @@
             <div class="stack"><div class="button">پذیرفتن تماس</div><div class="button secondary">رد کردن تماس</div></div>`
         },
         call: {
-          label: "تماس فعال", topAction: "گفتگو", noNav: true, html: `<div class="row"><span class="muted">در حال اتصال / متصل</span><strong>۰۰:۰۰</strong></div>
+          label: "تماس فعال", topAction: "گفتگو", noNav: true, html: `<div class="row"><span class="muted">در حال اتصال / متصل</span><strong class="timer">00:00</strong></div>
             <div class="caller"><div class="avatar">●</div><h1>نام مشتری</h1><p>تماس مشاوره</p></div>
             <div class="controls"><div class="control"><b>◉</b>میکروفون</div><div class="control"><b>◉</b>بلندگو</div><div class="control"><b>◉</b>ویدیو</div><div class="control"><b>◉</b>گفتگو</div></div>
             <div class="button danger">پایان تماس</div>`
@@ -119,13 +120,13 @@
         settings: {
           label: "تنظیمات", topAction: "", html: `<div><h1>حساب و دستگاه</h1><p>تنظیمات تماس مشاور</p></div>
             <div class="surface stack"><h2>حساب مشاور</h2><p>نام مشاور · نقش VOICE_CONSULTANT</p><p class="muted">نشست امن</p></div>
-            <div class="surface stack"><h2>آمادگی دریافت تماس</h2><div class="row"><span>سرویس تماس پس‌زمینه</span><span>وضعیت دستگاه</span></div><div class="row"><span>مجوز اعلان تماس</span><span>وضعیت دستگاه</span></div><div class="row"><span>مجوز تمام‌صفحه</span><span>وضعیت دستگاه</span></div><div class="row"><span>ثبت Push</span><span>وضعیت API</span></div></div>
+            <div class="surface stack"><h2>آمادگی دریافت تماس</h2><p class="muted">هر وضعیت از دستگاه و API خوانده می‌شود.</p><div class="row"><span>سرویس تماس پس‌زمینه</span><span>فعال / متوقف</span></div><div class="row"><span>مجوز اعلان تماس</span><span>مجاز / مسدود</span></div><div class="row"><span>مجوز تمام‌صفحه</span><span>مجاز / مسدود</span></div><div class="row"><span>کانال اعلان تماس</span><span>فعال / غیرفعال</span></div><div class="row"><span>ثبت Push</span><span>متصل / در دسترس نیست</span></div></div>
             <div class="button secondary">بررسی و رفع دسترسی مسدود</div><div class="button danger">خروج امن</div>`
         },
         chat: {
           label: "گفتگو", topAction: "بازگشت به تماس", noNav: true, html: `<div class="section-head"><div><h1>گفتگو</h1><p>مشاوره‌ی فعال</p></div></div>
             <div class="stack" style="flex:1;justify-content:center"><div class="surface stack"><h2>هنوز پیامی در این گفتگو نیست.</h2><p>پیام‌ها و فایل‌های این تماس در همین صفحه نمایش داده می‌شوند.</p></div></div>
-            <div class="row"><div class="field" style="flex:1">نوشتن پیام…</div><div class="button">ارسال</div></div>`
+            <div class="row"><div class="field" style="flex:1">نوشتن پیام…</div><div class="button secondary">پیوست</div><div class="button">ارسال</div></div>`
         }
       };
       const requested = new URLSearchParams(location.search).get("screen") || "queue";

@@ -35,9 +35,10 @@ Working visual concept: a carefully kept pet-care notebook, using warm paper as 
 
 - Preserve real loading, empty, error, unavailable-auth, and retry states. An empty history must say there is no data in the selected period; a failed load must offer retry rather than showing dashes as if they were a valid result.
 - Every pending request must be visually identified as pending and have its own existing accept/reject controls. Do not label a pending request merely “in queue” if it can be acted on.
-- Settings must name each capability and show its real state: foreground service, Android notification/full-screen permission, incoming-call channel, and push registration. A blocked item must lead to the existing permission-check/settings action.
+- Settings must name each capability and show its distinct real state: service running/stopped, notification/full-screen permission granted/blocked, call channel enabled/disabled, and push registered/unavailable. A blocked item must lead to the existing permission-check/settings action.
 - The active-call header must not imply that Back returns to the queue or ends a call. Show only an explicit route to in-call chat; ending remains a separate, clearly named action.
-- Chat must distinguish loading, failed, and truly empty conversations. Attachments open in-app; the composer stays available above the Android keyboard.
+- Chat must distinguish loading, failed, and truly empty conversations. Keep attach and send actions visible beside the keyboard-safe composer; attachments open in-app.
+- The active-call duration must use clearly legible tabular digits beside the connection state.
 
 ## Gray structure
 

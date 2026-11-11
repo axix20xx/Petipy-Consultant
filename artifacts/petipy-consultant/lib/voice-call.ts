@@ -11,6 +11,7 @@ import {
   parsePetCardShareMessage,
   type PetCard,
 } from '@/lib/pet-card-protocol';
+import { setSystemCallAudioRoute } from '@/lib/system-calling';
 import { Platform } from 'react-native';
 
 export type VoiceCallCallbacks = {
@@ -251,10 +252,27 @@ export class VoiceCallClient {
     if (Platform.OS === 'android') InCallManager.setMicrophoneMute(muted);
   }
 
-  setSpeaker(enabled: boolean) {
-    if (Platform.OS === 'android') {
-      InCallManager.setForceSpeakerphoneOn(enabled);
+  async setAudioRoute(
+    route: 'earpiece' | 'speaker',
+    callId: string,
+  ): Promise<boolean> {
+    if (Platform.OS !== 'android') return false;
+
+    const device = route === 'speaker' ? 'SPEAKER_PHONE' : 'EARPIECE';
+    let inCallRouteAvailable = false;
+    try {
+      const routeStatus = await InCallManager.chooseAudioRoute(device);
+      const availableDevices = JSON.parse(
+        routeStatus?.availableAudioDeviceList ?? '[]',
+      ) as unknown;
+      inCallRouteAvailable =
+        Array.isArray(availableDevices) && availableDevices.includes(device);
+    } catch {
+      // Telecom can still apply the route if InCallManager cannot.
     }
+
+    const telecomRouteApplied = await setSystemCallAudioRoute(callId, route);
+    return inCallRouteAvailable || telecomRouteApplied;
   }
 
   close(sendHangup = false) {

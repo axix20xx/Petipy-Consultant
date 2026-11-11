@@ -128,6 +128,23 @@ class PetipyFullScreenAccessModule(
   }
 
   @ReactMethod
+  fun setSystemCallAudioRoute(callId: String, route: String, promise: Promise) {
+    try {
+      if (!CALL_ID_PATTERN.matches(callId)) {
+        promise.reject("INVALID_CALL_ID", "The call ID is invalid.")
+        return
+      }
+      if (route != "earpiece" && route != "speaker") {
+        promise.reject("INVALID_AUDIO_ROUTE", "The audio route is invalid.")
+        return
+      }
+      promise.resolve(PetipyTelecomCallState.setAudioRoute(callId, route))
+    } catch (error: Exception) {
+      promise.reject("TELECOM_AUDIO_ROUTE_FAILED", error)
+    }
+  }
+
+  @ReactMethod
   fun endSystemCall(
     callId: String,
     reason: String,

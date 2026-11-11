@@ -110,6 +110,11 @@ internal object PetipyTelecomCallState {
     return true
   }
 
+  fun setAudioRoute(callId: String, route: String): Boolean {
+    val connection = connections[callId] ?: return false
+    return connection.selectAudioRoute(route)
+  }
+
   fun endCall(callId: String, reason: String): Boolean {
     clearTimeout(callId)
     pending.remove(callId)
@@ -269,6 +274,18 @@ internal class PetipyIncomingConnection(
 
   fun markActiveFromApp() {
     if (state != STATE_DISCONNECTED) setActive()
+  }
+
+  fun selectAudioRoute(route: String): Boolean {
+    if (state == STATE_DISCONNECTED) return false
+    val audioRoute =
+      when (route) {
+        "earpiece" -> android.telecom.CallAudioState.ROUTE_EARPIECE
+        "speaker" -> android.telecom.CallAudioState.ROUTE_SPEAKER
+        else -> return false
+      }
+    setAudioRoute(audioRoute)
+    return true
   }
 
   fun finishFromApp(reason: String) {

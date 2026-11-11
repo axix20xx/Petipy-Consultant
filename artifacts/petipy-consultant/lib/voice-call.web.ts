@@ -7,7 +7,9 @@ export class VoiceCallClient {
   }
 
   setMuted(_muted: boolean) {}
-  setSpeaker(_enabled: boolean) {}
+  async setAudioRoute(_route: 'earpiece' | 'speaker', _callId: string) {
+    return false;
+  }
   acknowledgePetCards() {
     return false;
   }

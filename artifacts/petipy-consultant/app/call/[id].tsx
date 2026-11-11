@@ -45,7 +45,11 @@ export default function ConsultantCallScreen() {
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const [muted, setMuted] = useState(false);
-  const [speaker, setSpeaker] = useState(false);
+  const [audioRoute, setAudioRoute] = useState<'earpiece' | 'speaker'>(
+    'earpiece',
+  );
+  const [routeChanging, setRouteChanging] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [joining, setJoining] = useState(false);
   const [ending, setEnding] = useState(false);
@@ -275,10 +279,27 @@ export default function ConsultantCallScreen() {
     setMuted(next);
   }
 
-  function toggleSpeaker() {
-    const next = !speaker;
-    clientRef.current?.setSpeaker(next);
-    setSpeaker(next);
+  async function selectAudioRoute(route: 'earpiece' | 'speaker') {
+    const client = clientRef.current;
+    if (!client || !callId || routeChanging || route === audioRoute) return;
+
+    setRouteChanging(true);
+    setRouteError(null);
+    try {
+      const changed = await client.setAudioRoute(route, callId);
+      if (!changed) {
+        throw new Error('مسیر صدای انتخاب‌شده در این تماس در دسترس نیست.');
+      }
+      setAudioRoute(route);
+    } catch (routeChangeError) {
+      setRouteError(
+        routeChangeError instanceof Error
+          ? routeChangeError.message
+          : 'تغییر مسیر صدا ممکن نشد. دوباره تلاش کنید.',
+      );
+    } finally {
+      setRouteChanging(false);
+    }
   }
 
   if (!token && !activeCall) return <Redirect href="/sign-in" />;
@@ -505,6 +526,35 @@ export default function ConsultantCallScreen() {
 
       <View style={styles.controls}>
         <Pressable
+          testID="call-earpiece"
+          accessibilityRole="button"
+          accessibilityLabel="انتقال صدا به گوشی"
+          accessibilityState={{ selected: audioRoute === 'earpiece' }}
+          onPress={() => void selectAudioRoute('earpiece')}
+          disabled={!matchingCall || routeChanging || Platform.OS === 'web'}
+          style={[
+            styles.control,
+            {
+              backgroundColor:
+                audioRoute === 'earpiece' ? colors.secondary : colors.card,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          {routeChanging && audioRoute === 'speaker' ? (
+            <ActivityIndicator color={colors.primary} />
+          ) : (
+            <Ionicons
+              name="phone-portrait-outline"
+              size={22}
+              color={colors.primary}
+            />
+          )}
+          <Text style={[styles.controlLabel, { color: colors.foreground }]}>
+            گوشی
+          </Text>
+        </Pressable>
+        <Pressable
           testID="call-mute"
           accessibilityRole="button"
           accessibilityLabel={muted ? 'روشن کردن میکروفون' : 'خاموش کردن میکروفون'}
@@ -527,19 +577,24 @@ export default function ConsultantCallScreen() {
         <Pressable
           testID="call-speaker"
           accessibilityRole="button"
-          accessibilityLabel={speaker ? 'خاموش کردن بلندگو' : 'روشن کردن بلندگو'}
-          onPress={toggleSpeaker}
-          disabled={!matchingCall || Platform.OS === 'web'}
+          accessibilityLabel="انتقال صدا به بلندگو"
+          accessibilityState={{ selected: audioRoute === 'speaker' }}
+          onPress={() => void selectAudioRoute('speaker')}
+          disabled={!matchingCall || routeChanging || Platform.OS === 'web'}
           style={[
             styles.control,
-            { backgroundColor: speaker ? colors.secondary : colors.card, borderColor: colors.border },
+            {
+              backgroundColor:
+                audioRoute === 'speaker' ? colors.secondary : colors.card,
+              borderColor: colors.border,
+            },
           ]}
         >
-          <Ionicons
-            name={speaker ? 'volume-high' : 'volume-medium-outline'}
-            size={23}
-            color={colors.primary}
-          />
+          {routeChanging && audioRoute === 'earpiece' ? (
+            <ActivityIndicator color={colors.primary} />
+          ) : (
+            <Ionicons name="volume-high" size={23} color={colors.primary} />
+          )}
           <Text style={[styles.controlLabel, { color: colors.foreground }]}>
             بلندگو
           </Text>
@@ -564,6 +619,14 @@ export default function ConsultantCallScreen() {
           )}
         </Pressable>
       </View>
+      {routeError ? (
+        <Text
+          accessibilityRole="alert"
+          style={[styles.routeError, { color: colors.destructive }]}
+        >
+          {routeError}
+        </Text>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -637,9 +700,10 @@ const styles = StyleSheet.create({
   settingsText: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
   rejoinButton: { minHeight: 44, flexDirection: 'row-reverse', gap: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, borderRadius: 15, marginTop: 8 },
   rejoinText: { fontWeight: '700', fontSize: 12, writingDirection: 'rtl' },
-  controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 16, paddingBottom: 10 },
-  control: { width: 78, minHeight: 78, borderRadius: 24, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 7 },
+  controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 9, paddingBottom: 10 },
+  control: { width: 68, minHeight: 72, borderRadius: 22, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 7 },
   controlLabel: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
   endButton: { width: 68, height: 68, borderRadius: 25, alignItems: 'center', justifyContent: 'center', marginHorizontal: 4 },
+  routeError: { textAlign: 'center', fontSize: 11, lineHeight: 16, writingDirection: 'rtl', marginTop: -4 },
   hangupIcon: { transform: [{ rotate: '135deg' }] },
 });

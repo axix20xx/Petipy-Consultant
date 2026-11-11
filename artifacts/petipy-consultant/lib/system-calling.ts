@@ -7,6 +7,10 @@ type TelecomCallModule = {
     expiresAtMillis?: number | null,
   ) => Promise<boolean>;
   markSystemCallActive?: (callId: string) => Promise<boolean>;
+  setSystemCallAudioRoute?: (
+    callId: string,
+    route: 'earpiece' | 'speaker',
+  ) => Promise<boolean>;
   endSystemCall?: (callId: string, reason: string) => Promise<boolean>;
   endAllSystemCalls?: (reason: string) => Promise<boolean>;
 };
@@ -57,6 +61,24 @@ export async function markSystemCallActive(callId: string) {
   }
   try {
     return Boolean(await nativeTelecom.markSystemCallActive(callId));
+  } catch {
+    return false;
+  }
+}
+
+export async function setSystemCallAudioRoute(
+  callId: string,
+  route: 'earpiece' | 'speaker',
+) {
+  if (
+    Platform.OS !== 'android' ||
+    !nativeTelecom?.setSystemCallAudioRoute ||
+    !CALL_ID_PATTERN.test(callId)
+  ) {
+    return false;
+  }
+  try {
+    return Boolean(await nativeTelecom.setSystemCallAudioRoute(callId, route));
   } catch {
     return false;
   }

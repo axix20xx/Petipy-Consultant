@@ -348,6 +348,7 @@ export default function ConsultantCallScreen() {
             ]}
           >
             <RemoteVideo
+              key={`${callId ?? 'call'}-${remoteStream.id}`}
               stream={remoteStream}
               label="تصویر زنده‌ی مشتری یا حیوان خانگی"
             />

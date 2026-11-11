@@ -1,8 +1,10 @@
 import InCallManager from 'react-native-incall-manager';
 import {
   mediaDevices,
+  MediaStream as WebRTCMediaStream,
   RTCPeerConnection,
   type MediaStream,
+  type MediaStreamTrack,
   type RTCIceCandidate,
 } from 'react-native-webrtc';
 import type { CallSession } from '@/lib/petipy-api';
@@ -61,11 +63,13 @@ export class VoiceCallClient {
   private callbacks: VoiceCallCallbacks | null = null;
   private closed = false;
   private petCardShareSequence = 0;
+  private remoteVideoStream: MediaStream | null = null;
 
   async start(session: CallSession, callbacks: VoiceCallCallbacks) {
     this.callbacks = callbacks;
     this.closed = false;
     this.petCardShareSequence = 0;
+    this.remoteVideoStream = null;
     callbacks.onStatus('در حال آماده‌سازی تماس امن…');
 
     if (
@@ -109,12 +113,38 @@ export class VoiceCallClient {
 
     this.peer.ontrack = (event) => {
       const trackEvent = event as unknown as {
-        track?: { kind?: string };
+        track?: MediaStreamTrack | null;
         streams?: MediaStream[];
       };
-      if (trackEvent.track?.kind !== 'video') return;
-      const remoteStream = trackEvent.streams?.[0];
-      if (remoteStream) callbacks.onRemoteVideo(remoteStream);
+      const videoTrack = trackEvent.track;
+      if (this.closed || videoTrack?.kind !== 'video') return;
+
+      // Some callers send a streamless video track. Build a renderer stream
+      // for it instead of silently dropping the track.
+      const remoteStream =
+        trackEvent.streams?.find((stream) =>
+          stream.getVideoTracks().some((track) => track.id === videoTrack.id),
+        ) ??
+        trackEvent.streams?.[0] ??
+        new WebRTCMediaStream([videoTrack]);
+      this.remoteVideoStream = remoteStream;
+      callbacks.onRemoteVideo(remoteStream);
+
+      videoTrack.onended = () => {
+        if (this.closed || this.remoteVideoStream !== remoteStream) return;
+        const hasLiveVideo = remoteStream
+          .getVideoTracks()
+          .some((track) => track.readyState === 'live');
+        if (!hasLiveVideo) {
+          this.remoteVideoStream = null;
+          callbacks.onRemoteVideo(null);
+        }
+      };
+      videoTrack.onunmute = () => {
+        if (!this.closed && this.remoteVideoStream === remoteStream) {
+          callbacks.onRemoteVideo(remoteStream);
+        }
+      };
     };
 
     this.peer.onconnectionstatechange = () => {
@@ -284,6 +314,7 @@ export class VoiceCallClient {
     this.peer = null;
     this.localStream?.getTracks().forEach((track) => track.stop());
     this.localStream = null;
+    this.remoteVideoStream = null;
     this.callbacks?.onRemoteVideo(null);
     this.pendingCandidates = [];
     this.petCardShareSequence = 0;

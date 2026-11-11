@@ -1,0 +1,74 @@
+[
+  {
+    "file": "signin.png",
+    "state": "signin",
+    "size": "390x844",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "queue.png",
+    "state": "queue",
+    "size": "390x844",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "incoming.png",
+    "state": "incoming",
+    "size": "390x844",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "call.png",
+    "state": "call",
+    "size": "390x844",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "history.png",
+    "state": "history",
+    "size": "390x844",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": [
+      {
+        "rule": "tightLeading",
+        "label": "多行正文行高过紧",
+        "count": 1,
+        "examples": [
+          "div.muted「هنگام بارگذاری، نشانگر ن」（1.20）"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "settings.png",
+    "state": "settings",
+    "size": "390x844",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "chat.png",
+    "state": "chat",
+    "size": "390x844",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  }
+]

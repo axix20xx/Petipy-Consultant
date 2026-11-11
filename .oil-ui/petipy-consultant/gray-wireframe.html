@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Petipy Consultant — Gray Structure</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: system-ui, sans-serif;
+        background: #e9e9e9;
+        color: #252525;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #e9e9e9; }
+      .phone {
+        width: min(100%, 400px);
+        min-height: 100vh;
+        margin: 0 auto;
+        background: #f8f8f8;
+        display: flex;
+        flex-direction: column;
+        border-inline: 1px solid #b8b8b8;
+      }
+      .statusbar { height: 28px; padding: 6px 18px; font-size: 12px; color: #555; }
+      header { padding: 14px 20px 16px; border-bottom: 1px solid #c9c9c9; }
+      .brand { display: flex; align-items: center; justify-content: space-between; }
+      .brand-name { font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+      .mark { width: 34px; height: 34px; border: 1px solid #777; border-radius: 12px; display: grid; place-items: center; font-size: 16px; }
+      main { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+      h1 { font-size: 24px; line-height: 1.25; margin: 0; }
+      h2 { font-size: 17px; margin: 0; }
+      p { margin: 0; font-size: 14px; line-height: 1.6; color: #555; }
+      .muted { font-size: 12px; color: #686868; }
+      .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      .surface { background: #fff; border: 1px solid #c8c8c8; border-radius: 17px; padding: 16px; }
+      .notice { background: #ececec; border: 1px solid #bcbcbc; border-radius: 13px; padding: 12px; }
+      .stack { display: flex; flex-direction: column; gap: 12px; }
+      .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .field { height: 48px; border: 1px solid #adadad; border-radius: 11px; padding: 12px; color: #666; font-size: 14px; background: #fafafa; }
+      .button { min-height: 48px; border-radius: 12px; background: #777; color: white; display: grid; place-items: center; font-weight: 700; font-size: 14px; padding: 10px 14px; }
+      .button.secondary { background: #e8e8e8; color: #333; border: 1px solid #aaa; }
+      .button.danger { background: #4b4b4b; }
+      .toggle { width: 46px; height: 26px; border-radius: 14px; border: 1px solid #777; background: #ccc; position: relative; }
+      .toggle::after { content: ""; position: absolute; inset-block-start: 3px; inset-inline-start: 3px; width: 18px; height: 18px; background: white; border: 1px solid #888; border-radius: 50%; }
+      .list { display: flex; flex-direction: column; gap: 10px; }
+      .request { display: flex; flex-direction: column; gap: 9px; }
+      .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .metric { min-height: 75px; display: flex; flex-direction: column; justify-content: space-between; }
+      .metric strong { font-size: 20px; }
+      .filters { display: flex; gap: 7px; overflow: hidden; }
+      .filter { min-width: 48px; text-align: center; border: 1px solid #aaa; border-radius: 14px; padding: 8px 10px; font-size: 12px; }
+      .filter.active { background: #777; color: white; }
+      .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+      .control { text-align: center; padding: 13px 4px; border: 1px solid #aaa; border-radius: 14px; font-size: 12px; }
+      .control b { display: block; font-size: 19px; margin-bottom: 6px; }
+      .caller { min-height: 200px; display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; }
+      .avatar { width: 92px; height: 92px; display: grid; place-items: center; border: 2px solid #777; border-radius: 50%; background: #ededed; font-size: 28px; }
+      .bottom-nav { height: 64px; border-top: 1px solid #bdbdbd; display: flex; align-items: center; justify-content: space-around; font-size: 12px; color: #555; background: #fafafa; }
+      .hidden { display: none !important; }
+      .auth main { justify-content: center; }
+      .auth footer { display: none; }
+      .auth header { border-bottom: 0; }
+      .chat-bubble { max-width: 84%; padding: 10px 12px; border: 1px solid #aaa; border-radius: 14px; background: #fff; font-size: 14px; }
+      .chat-bubble.self { margin-inline-start: auto; background: #e9e9e9; }
+    </style>
+  </head>
+  <body>
+    <div class="phone" id="phone">
+      <div class="statusbar">۹:۴۱　● ● ●</div>
+      <header>
+        <div class="brand">
+          <div class="row" style="justify-content:flex-start">
+            <div class="mark">پ</div>
+            <div><div class="brand-name">PETIPY · CONSULTANT</div><div class="muted" id="topLabel">پنل مشاور</div></div>
+          </div>
+          <div class="muted" id="topAction">خانه</div>
+        </div>
+      </header>
+      <main id="screen"></main>
+      <footer class="bottom-nav" id="nav">
+        <span>خانه</span><span>تاریخچه</span><span>تنظیمات</span>
+      </footer>
+    </div>
+    <script>
+      const screens = {
+        signin: {
+          label: "ورود مشاور", auth: true,
+          html: `<div class="caller"><div class="avatar">پ</div><h1>ورود مشاور</h1><p>ورود امن به فضای مشاوره‌ی Petipy</p></div>
+            <div class="surface stack"><div class="notice">ورود آزمایشی فقط در حالت توسعه‌ی احراز هویت فعال است.</div>
+              <div class="stack"><p>شماره موبایل حساب مشاور</p><div class="field">09xxxxxxxxx</div></div>
+              <div class="stack"><p>کد توسعه‌ای شش‌رقمی</p><div class="field">••••••</div></div>
+              <p class="muted">نشست و کد در گزارش‌ها ثبت نمی‌شوند.</p><div class="button">ورود امن به پنل</div></div>`
+        },
+        queue: {
+          label: "صف تماس", topAction: "●", html: `<div class="section-head"><div><h1>سلام، مشاور</h1><p>وضعیت شیفت و درخواست‌های تازه</p></div><div class="mark">●</div></div>
+            <div class="surface stack"><div class="row"><div><p class="muted">وضعیت دسترسی</p><h2>آماده‌ی دریافت تماس</h2></div><div class="toggle"></div></div><p>سرویس تماس در پس‌زمینه فعال است.</p></div>
+            <div class="section-head"><h2>درخواست‌های تماس</h2><span class="muted">تازه‌سازی</span></div>
+            <div class="list"><div class="surface request"><div class="row"><h2>درخواست جدید</h2><span class="muted">در انتظار</span></div><p>شناسه‌ی تماس · زمان درخواست</p><div class="row"><div class="button" style="flex:1">پذیرفتن تماس</div><div class="button secondary">رد کردن</div></div></div>
+            <p class="muted">هر درخواست در انتظار، پذیرش و رد جداگانه دارد.</p></div>`
+        },
+        incoming: {
+          label: "تماس ورودی", topAction: "", noNav: true, html: `<div class="caller"><p class="muted">درخواست تماس ورودی</p><div class="avatar">●</div><h1>نام مشتری</h1><p>تماس مشاوره‌ی Petipy</p><p class="muted">زمان باقی‌مانده برای پاسخ</p></div>
+            <div class="stack"><div class="button">پذیرفتن تماس</div><div class="button secondary">رد کردن تماس</div></div>`
+        },
+        call: {
+          label: "تماس فعال", topAction: "گفتگو", noNav: true, html: `<div class="row"><span class="muted">در حال اتصال / متصل</span><strong>۰۰:۰۰</strong></div>
+            <div class="caller"><div class="avatar">●</div><h1>نام مشتری</h1><p>تماس مشاوره</p></div>
+            <div class="controls"><div class="control"><b>◉</b>میکروفون</div><div class="control"><b>◉</b>بلندگو</div><div class="control"><b>◉</b>ویدیو</div><div class="control"><b>◉</b>گفتگو</div></div>
+            <div class="button danger">پایان تماس</div>`
+        },
+        history: {
+          label: "تاریخچه تماس", topAction: "تازه‌سازی", html: `<div class="section-head"><div><h1>گزارش تماس‌ها</h1><p>عملکرد شخصی مشاور</p></div><span class="muted">به‌روزرسانی</span></div>
+            <div class="filters"><span class="filter active">۷ روز</span><span class="filter">۳۰ روز</span><span class="filter">۹۰ روز</span><span class="filter">۳۶۵ روز</span></div>
+            <div class="metrics"><div class="surface metric"><span class="muted">دقایق پاسخ‌گویی</span><strong>—</strong></div><div class="surface metric"><span class="muted">کل تماس‌ها</span><strong>—</strong></div><div class="surface metric"><span class="muted">نرخ پاسخ</span><strong>—</strong></div><div class="surface metric"><span class="muted">از دست‌رفته</span><strong>—</strong></div></div>
+            <div class="surface stack"><h2>در این بازه تماسی ثبت نشده است</h2><p>با ثبت تماس، آمار و تاریخچه‌ی شخصی اینجا نمایش داده می‌شود.</p><div class="button secondary">تلاش دوباره</div></div>
+            <div class="muted">هنگام بارگذاری، نشانگر نمایش داده می‌شود؛ در خطا، پیام و دکمه‌ی تلاش دوباره باقی می‌ماند.</div>`
+        },
+        settings: {
+          label: "تنظیمات", topAction: "", html: `<div><h1>حساب و دستگاه</h1><p>تنظیمات تماس مشاور</p></div>
+            <div class="surface stack"><h2>حساب مشاور</h2><p>نام مشاور · نقش VOICE_CONSULTANT</p><p class="muted">نشست امن</p></div>
+            <div class="surface stack"><h2>آمادگی دریافت تماس</h2><div class="row"><span>سرویس تماس پس‌زمینه</span><span>وضعیت دستگاه</span></div><div class="row"><span>مجوز اعلان تماس</span><span>وضعیت دستگاه</span></div><div class="row"><span>مجوز تمام‌صفحه</span><span>وضعیت دستگاه</span></div><div class="row"><span>ثبت Push</span><span>وضعیت API</span></div></div>
+            <div class="button secondary">بررسی و رفع دسترسی مسدود</div><div class="button danger">خروج امن</div>`
+        },
+        chat: {
+          label: "گفتگو", topAction: "بازگشت به تماس", noNav: true, html: `<div class="section-head"><div><h1>گفتگو</h1><p>مشاوره‌ی فعال</p></div></div>
+            <div class="stack" style="flex:1;justify-content:center"><div class="surface stack"><h2>هنوز پیامی در این گفتگو نیست.</h2><p>پیام‌ها و فایل‌های این تماس در همین صفحه نمایش داده می‌شوند.</p></div></div>
+            <div class="row"><div class="field" style="flex:1">نوشتن پیام…</div><div class="button">ارسال</div></div>`
+        }
+      };
+      const requested = new URLSearchParams(location.search).get("screen") || "queue";
+      const screen = screens[requested] || screens.queue;
+      document.getElementById("screen").innerHTML = screen.html;
+      document.getElementById("topLabel").textContent = screen.label;
+      document.getElementById("topAction").textContent = screen.topAction ?? "";
+      document.getElementById("nav").classList.toggle("hidden", Boolean(screen.noNav || screen.auth));
+      document.getElementById("phone").classList.toggle("auth", Boolean(screen.auth));
+    </script>
+  </body>
+</html>

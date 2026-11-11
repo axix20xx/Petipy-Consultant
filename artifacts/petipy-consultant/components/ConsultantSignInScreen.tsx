@@ -82,20 +82,20 @@ export default function ConsultantSignInScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.hero}>
+        <View style={[styles.hero, { backgroundColor: colors.primary }]}>
           <View
             style={[
               styles.brandHalo,
-              { backgroundColor: colors.secondary },
+              { backgroundColor: colors.accent },
             ]}
           >
             <View
               style={[
                 styles.brandMark,
-                { backgroundColor: colors.primary },
+                { backgroundColor: colors.card },
               ]}
             >
-              <Ionicons name="paw" size={29} color={colors.primaryForeground} />
+              <Ionicons name="paw" size={29} color={colors.primary} />
             </View>
             <View
               style={[
@@ -106,21 +106,23 @@ export default function ConsultantSignInScreen() {
               <Ionicons name="sparkles" size={15} color={colors.warning} />
             </View>
           </View>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>
-            PETIPY  ·  CONSULTANT
-          </Text>
-          <Text style={[styles.title, { color: colors.foreground }]}>
-            سلام، خوش اومدی
-          </Text>
-          <Text style={[styles.heroCopy, { color: colors.mutedForeground }]}>
-            برای همراهی با دوست‌های پشمالو وارد شو
-          </Text>
+          <View style={styles.heroText}>
+            <Text style={[styles.eyebrow, { color: colors.primaryForeground }]}>
+              PETIPY  ·  CONSULTANT
+            </Text>
+            <Text style={[styles.title, { color: colors.primaryForeground }]}>
+              همراهِ مراقبت
+            </Text>
+            <Text style={[styles.heroCopy, { color: colors.primaryForeground }]}>
+              ورود به فضای مشاوره‌ی امن پتی‌پای
+            </Text>
+          </View>
         </View>
 
         <View
           style={[
             styles.card,
-            { backgroundColor: colors.card, borderColor: colors.input },
+            { backgroundColor: colors.card, borderColor: colors.border },
           ]}
         >
           <View style={styles.cardHeading}>
@@ -271,6 +273,7 @@ export default function ConsultantSignInScreen() {
                   accessibilityState={{ disabled: !canSubmit }}
                   disabled={!canSubmit}
                   onPress={() => void submit()}
+                  android_ripple={{ color: colors.secondary }}
                   style={[
                     styles.primaryButton,
                     { backgroundColor: colors.primary },
@@ -397,37 +400,48 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 22,
+    gap: 14,
   },
   hero: {
+    minHeight: 158,
+    flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 22,
+    gap: 14,
+    borderRadius: 27,
+    padding: 18,
+    overflow: 'hidden',
+    marginBottom: 1,
   },
   brandHalo: {
-    width: 84,
-    height: 84,
-    borderRadius: 30,
+    width: 72,
+    height: 72,
+    borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 7,
+    flexShrink: 0,
+  },
+  heroText: {
+    flex: 1,
+    alignItems: 'flex-end',
+    gap: 6,
   },
   card: {
     alignItems: 'stretch',
-    borderWidth: 1.5,
-    borderRadius: 28,
-    padding: 20,
-    gap: 16,
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 6,
+    borderWidth: 1,
+    borderRadius: 25,
+    padding: 18,
+    gap: 14,
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 9 },
+    elevation: 4,
   },
   brandMark: {
-    width: 60,
-    height: 60,
-    borderRadius: 22,
+    width: 53,
+    height: 53,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -442,21 +456,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   eyebrow: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 9,
+    fontWeight: '800',
     letterSpacing: 1.4,
-    textAlign: 'center',
+    textAlign: 'right',
+    alignSelf: 'flex-end',
   },
   title: {
-    fontSize: 29,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontSize: 23,
+    fontWeight: '800',
+    textAlign: 'right',
     writingDirection: 'rtl',
   },
   heroCopy: {
-    fontSize: 13,
-    lineHeight: 21,
-    textAlign: 'center',
+    fontSize: 11,
+    lineHeight: 18,
+    textAlign: 'right',
     writingDirection: 'rtl',
   },
   cardHeading: {
@@ -466,8 +481,8 @@ const styles = StyleSheet.create({
   },
   cardHeadingText: { flex: 1, gap: 4 },
   cardTitle: {
-    fontSize: 19,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
     textAlign: 'right',
     writingDirection: 'rtl',
   },
@@ -488,7 +503,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 10,
-    borderRadius: 17,
+    borderRadius: 15,
     padding: 13,
   },
   noticeText: {
@@ -507,12 +522,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   inputShell: {
-    minHeight: 54,
+    minHeight: 55,
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderRadius: 17,
+    borderRadius: 16,
     paddingHorizontal: 14,
   },
   input: {
@@ -574,7 +589,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 7,
-    marginTop: 18,
+    marginTop: 3,
   },
   footer: {
     fontSize: 10,

@@ -376,26 +376,31 @@ export default function ConsultantCallScreen() {
             </View>
           </View>
         )}
-        <Text style={[styles.kicker, { color: colors.primary }]}>
-          مشاور صوتی Petipy
-        </Text>
-        <Text style={[styles.name, { color: colors.foreground }]}>
-          {matchingCall?.displayName ?? 'تماس مشاوره'}
-        </Text>
-        <View style={styles.liveStatus}>
-          <View
-            style={[
-              styles.liveDot,
-              { backgroundColor: connected ? colors.success : colors.warning },
-            ]}
-          />
-          <Text style={[styles.status, { color: colors.mutedForeground }]}>
-            {status}
+        <View style={[styles.callInfo, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.callInfoTop}>
+            <Text style={[styles.kicker, { color: colors.primary }]}>مشاوره‌ی صوتی پتی‌پای</Text>
+            <View style={[styles.privateBadge, { backgroundColor: colors.secondary }]}>
+              <Ionicons name="shield-checkmark-outline" size={13} color={colors.primary} />
+              <Text style={[styles.privateBadgeText, { color: colors.secondaryForeground }]}>خصوصی</Text>
+            </View>
+          </View>
+          <Text style={[styles.name, { color: colors.foreground }]}>
+            {matchingCall?.displayName ?? 'تماس مشاوره'}
           </Text>
+          <View style={styles.liveStatus}>
+            <View
+              style={[
+                styles.liveDot,
+                { backgroundColor: connected ? colors.success : colors.warning },
+              ]}
+            />
+            <Text style={[styles.status, { color: colors.mutedForeground }]}>{status}</Text>
+          </View>
+          <View style={[styles.timerTrack, { backgroundColor: colors.muted }]}>
+            <Ionicons name="time-outline" size={15} color={colors.primary} />
+            <Text style={[styles.timer, { color: colors.foreground }]}>{formatDuration(elapsed)}</Text>
+          </View>
         </View>
-        <Text style={[styles.timer, { color: colors.foreground }]}>
-          {formatDuration(elapsed)}
-        </Text>
 
         {petCardBatches.length > 0 ? (
           <View
@@ -633,7 +638,7 @@ export default function ConsultantCallScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, paddingHorizontal: 24, paddingTop: 10, paddingBottom: 18 },
+  safe: { flex: 1, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 14 },
   topBar: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
@@ -653,18 +658,23 @@ const styles = StyleSheet.create({
   },
   chatButtonDisabled: { opacity: 0.45 },
   chatButtonText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 13 },
-  avatarOuter: { width: 120, height: 120, borderRadius: 44, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 5 },
-  avatarInner: { width: 102, height: 102, borderRadius: 37, alignItems: 'center', justifyContent: 'center' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 11 },
+  avatarOuter: { width: 116, height: 116, borderRadius: 42, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 5 },
+  avatarInner: { width: 98, height: 98, borderRadius: 35, alignItems: 'center', justifyContent: 'center' },
   videoStage: { width: '100%', height: '58%', minHeight: 220, maxHeight: 430, borderRadius: 26, borderWidth: 1, overflow: 'hidden', position: 'relative', marginBottom: 3 },
   videoBadge: { position: 'absolute', right: 12, bottom: 12, zIndex: 1, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 11, paddingVertical: 8, borderRadius: 14 },
   videoBadgeText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
-  kicker: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  name: { fontSize: 24, fontWeight: '700', writingDirection: 'rtl' },
+  callInfo: { width: '100%', borderWidth: 1, borderRadius: 23, paddingHorizontal: 16, paddingVertical: 14, alignItems: 'center', gap: 7 },
+  callInfoTop: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
+  privateBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 5 },
+  privateBadgeText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  kicker: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  name: { fontSize: 21, fontWeight: '800', writingDirection: 'rtl' },
   liveStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7 },
   liveDot: { width: 7, height: 7, borderRadius: 4 },
   status: { fontSize: 12, writingDirection: 'rtl' },
-  timer: { fontSize: 33, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  timerTrack: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7, borderRadius: 12, paddingHorizontal: 11, paddingVertical: 6, marginTop: 1 },
+  timer: { fontSize: 20, fontWeight: '700', fontVariant: ['tabular-nums'] },
   petCardsPanel: {
     width: '100%',
     maxHeight: 190,
@@ -701,8 +711,8 @@ const styles = StyleSheet.create({
   settingsText: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
   rejoinButton: { minHeight: 44, flexDirection: 'row-reverse', gap: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, borderRadius: 15, marginTop: 8 },
   rejoinText: { fontWeight: '700', fontSize: 12, writingDirection: 'rtl' },
-  controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 9, paddingBottom: 10 },
-  control: { width: 68, minHeight: 72, borderRadius: 22, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 7 },
+  controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 7, paddingBottom: 8 },
+  control: { width: 66, minHeight: 70, borderRadius: 21, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 7 },
   controlLabel: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
   endButton: { width: 68, height: 68, borderRadius: 25, alignItems: 'center', justifyContent: 'center', marginHorizontal: 4 },
   routeError: { textAlign: 'center', fontSize: 11, lineHeight: 16, writingDirection: 'rtl', marginTop: -4 },

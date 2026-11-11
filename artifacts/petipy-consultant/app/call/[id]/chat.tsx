@@ -232,6 +232,7 @@ export default function VoiceCallChatScreen() {
         <View
           style={[
             styles.bubble,
+            mine ? styles.bubbleMine : styles.bubbleTheirs,
             {
               backgroundColor: mine ? colors.primary : colors.card,
               borderColor: mine ? colors.primary : colors.input,
@@ -303,7 +304,7 @@ export default function VoiceCallChatScreen() {
       style={[styles.safe, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      <View style={[styles.header, { borderBottomColor: colors.input }]}>
+      <View style={[styles.header, { borderBottomColor: colors.input, backgroundColor: colors.card }]}>
         <Pressable
           testID="voice-chat-back"
           accessibilityRole="button"
@@ -485,12 +486,13 @@ export default function VoiceCallChatScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 66,
+    minHeight: 72,
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 12,
-    paddingHorizontal: 17,
+    paddingHorizontal: 18,
     borderBottomWidth: StyleSheet.hairlineWidth,
+    backgroundColor: 'transparent',
   },
   iconButton: {
     width: 40,
@@ -516,11 +518,13 @@ const styles = StyleSheet.create({
   bubble: {
     maxWidth: '88%',
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 22,
     paddingHorizontal: 13,
-    paddingVertical: 10,
-    gap: 7,
+    paddingVertical: 11,
+    gap: 8,
   },
+  bubbleMine: { borderBottomLeftRadius: 6 },
+  bubbleTheirs: { borderBottomRightRadius: 6 },
   messageText: {
     fontSize: 14,
     lineHeight: 22,
@@ -615,7 +619,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     padding: 7,
     borderWidth: 1,
-    borderRadius: 21,
+    borderRadius: 20,
   },
   composerIcon: {
     width: 42,

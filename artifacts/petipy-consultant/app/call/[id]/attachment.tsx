@@ -133,7 +133,7 @@ export default function VoiceCallAttachmentScreen() {
           accessibilityRole="button"
           accessibilityLabel="بازگشت به گفت‌وگو"
           onPress={() => router.back()}
-          style={styles.iconButton}
+          style={[styles.iconButton, { backgroundColor: colors.secondary }]}
         >
           <Ionicons name="arrow-forward" size={21} color={colors.foreground} />
         </Pressable>
@@ -235,7 +235,7 @@ export default function VoiceCallAttachmentScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 60,
+    minHeight: 66,
     flexDirection: 'row-reverse',
     alignItems: 'center',
     paddingHorizontal: 14,
@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
   iconButton: {
     width: 40,
     height: 40,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },

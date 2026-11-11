@@ -3,6 +3,7 @@ import {
   getCallHistory,
   getConsultantCallAnalytics,
   type CallHistoryEntry,
+  type ConsultantCallAnalytics,
   type ConsultantAnalyticsDays,
 } from '@/lib/petipy-api';
 import { useConsultantSession } from '@/providers/consultant-session';
@@ -60,6 +61,30 @@ function formatDate(value?: string) {
   }).format(date);
 }
 
+function getTrendBuckets(daily: ConsultantCallAnalytics['daily'], days: ConsultantAnalyticsDays) {
+  const sorted = [...daily].sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+  if (days === 7 || days === 30) {
+    return sorted.slice(-days).map((item) => ({
+      label: new Intl.DateTimeFormat('fa-IR', { day: 'numeric', ...(days === 7 ? { weekday: 'short' as const } : {}) }).format(new Date(item.date)),
+      calls: item.calls,
+    }));
+  }
+  const bucketCount = days === 90 ? 13 : 12;
+  const buckets = Array.from({ length: bucketCount }, (_, index) => ({
+    label: days === 90 ? `ه${index + 1}` : `ماه ${new Intl.NumberFormat('fa-IR').format(index + 1)}`,
+    calls: 0,
+  }));
+  const start = Date.now() - days * 24 * 60 * 60 * 1000;
+  for (const item of sorted) {
+    const date = Date.parse(item.date);
+    if (!Number.isFinite(date) || date < start) continue;
+    const elapsedDays = Math.floor((date - start) / (24 * 60 * 60 * 1000));
+    const index = Math.min(bucketCount - 1, Math.floor((elapsedDays / days) * bucketCount));
+    buckets[index].calls += item.calls;
+  }
+  return buckets;
+}
+
 function getHistoryStatus(entry: CallHistoryEntry) {
   switch (entry.status) {
     case 'completed':
@@ -99,9 +124,9 @@ function MetricCard({
       style={[
         styles.metricCard,
         {
-          backgroundColor: colors.card,
-          borderColor: colors.border,
-          borderRadius: colors.radius,
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
+          borderRadius: 0,
         },
       ]}
     >
@@ -313,7 +338,36 @@ export default function ConsultantCallActivityScreen() {
           </View>
         ) : analytics.data ? (
           <>
-            <View style={styles.metricsGrid}>
+            <View style={[styles.trendCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={styles.trendHeader}>
+                <View>
+                  <Text style={[styles.trendTitle, { color: colors.foreground }]}>روند تماس‌ها</Text>
+                  <Text style={[styles.trendCaption, { color: colors.mutedForeground }]}>بر پایه‌ی آمار ثبت‌شده‌ی سرور</Text>
+                </View>
+                <View style={[styles.trendBadge, { backgroundColor: colors.secondary }]}>
+                  <Ionicons name="stats-chart-outline" size={15} color={colors.primary} />
+                  <Text style={[styles.trendBadgeText, { color: colors.secondaryForeground }]}>{days === 365 ? 'ماهانه' : days === 90 ? 'هفتگی' : 'روزانه'}</Text>
+                </View>
+              </View>
+              {(() => {
+                const buckets = getTrendBuckets(analytics.data.daily, days);
+                const peak = Math.max(1, ...buckets.map((bucket) => bucket.calls));
+                return (
+                  <View style={styles.chart}>
+                    {buckets.map((bucket, index) => (
+                      <View key={`${bucket.label}-${index}`} style={styles.chartColumn}>
+                        <Text style={[styles.chartValue, { color: colors.mutedForeground }]}>{bucket.calls ? new Intl.NumberFormat('fa-IR').format(bucket.calls) : ''}</Text>
+                        <View style={[styles.chartTrack, { backgroundColor: colors.muted }]}>
+                          <View style={[styles.chartBar, { backgroundColor: bucket.calls ? colors.primary : colors.input, height: `${Math.max(bucket.calls ? 10 : 4, (bucket.calls / peak) * 100)}%` }]} />
+                        </View>
+                        <Text numberOfLines={1} style={[styles.chartLabel, { color: colors.mutedForeground }]}>{bucket.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                );
+              })()}
+            </View>
+            <View style={[styles.metricsGrid, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <MetricCard
                 icon="time-outline"
                 label="دقایق پاسخ‌گویی"
@@ -397,30 +451,24 @@ export default function ConsultantCallActivityScreen() {
             </Pressable>
           </View>
         ) : recentHistory.length > 0 ? (
-          <View style={styles.historyList}>
-            {recentHistory.map((entry) => (
+          <View style={[styles.historyList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {recentHistory.map((entry, index) => (
               <View
                 key={entry.id}
                 style={[
                   styles.historyRow,
                   {
-                    backgroundColor: colors.card,
-                    borderColor: colors.border,
-                    borderRadius: colors.radius,
+                    borderBottomColor: colors.border,
+                    borderBottomWidth: index === recentHistory.length - 1 ? 0 : StyleSheet.hairlineWidth,
                   },
                 ]}
                 testID={`call-history-${entry.id}`}
               >
-                <View
-                  style={[
-                    styles.historyIcon,
-                    { backgroundColor: colors.secondary },
-                  ]}
-                >
+                <View style={[styles.historyIcon, { backgroundColor: colors.secondary }]}>
                   <Ionicons
-                    name="call-outline"
+                    name={entry.status === 'completed' ? 'checkmark' : 'call-outline'}
                     size={19}
-                    color={colors.primary}
+                    color={entry.status === 'completed' ? colors.success : colors.primary}
                   />
                 </View>
                 <View style={styles.historyMain}>
@@ -439,11 +487,9 @@ export default function ConsultantCallActivityScreen() {
                   </Text>
                 </View>
                 <View style={styles.historyMeta}>
-                  <Text
-                    style={[styles.duration, { color: colors.foreground }]}
-                  >
-                    {formatDuration(entry.durationSeconds)}
-                  </Text>
+                  <View style={[styles.durationBadge, { backgroundColor: colors.muted }]}>
+                    <Text style={[styles.duration, { color: colors.foreground }]}>{formatDuration(entry.durationSeconds)}</Text>
+                  </View>
                   <Text
                     style={[
                       styles.historyStatus,
@@ -458,9 +504,7 @@ export default function ConsultantCallActivityScreen() {
                               : colors.mutedForeground,
                       },
                     ]}
-                  >
-                    {getHistoryStatus(entry)}
-                  </Text>
+                  >{getHistoryStatus(entry)}</Text>
                 </View>
               </View>
             ))}
@@ -536,16 +580,19 @@ const styles = StyleSheet.create({
   metricsGrid: {
     flexDirection: 'row-reverse',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 0,
     marginTop: 10,
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 6,
+    overflow: 'hidden',
   },
   metricCard: {
-    borderWidth: 1,
     flexBasis: '47%',
     flexGrow: 1,
-    gap: 12,
-    minHeight: 104,
-    padding: 14,
+    gap: 8,
+    minHeight: 88,
+    padding: 12,
   },
   metricHeading: {
     alignItems: 'center',
@@ -554,6 +601,18 @@ const styles = StyleSheet.create({
   },
   metricLabel: { flexShrink: 1, fontSize: 11, writingDirection: 'rtl' },
   metricValue: { fontSize: 23, fontWeight: '700', writingDirection: 'rtl' },
+  trendCard: { borderWidth: 1, borderRadius: 23, padding: 15, marginTop: 12 },
+  trendHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 },
+  trendTitle: { fontSize: 14, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
+  trendCaption: { fontSize: 10, marginTop: 3, textAlign: 'right', writingDirection: 'rtl' },
+  trendBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 12 },
+  trendBadgeText: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
+  chart: { height: 132, flexDirection: 'row-reverse', alignItems: 'stretch', justifyContent: 'space-between', gap: 4 },
+  chartColumn: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 5, minWidth: 0 },
+  chartValue: { height: 13, fontSize: 8, fontWeight: '600' },
+  chartTrack: { width: '70%', flex: 1, justifyContent: 'flex-end', overflow: 'hidden', borderRadius: 7 },
+  chartBar: { width: '100%', minHeight: 3, borderRadius: 7 },
+  chartLabel: { maxWidth: '100%', height: 15, fontSize: 8, textAlign: 'center', writingDirection: 'rtl' },
   emptyHint: {
     fontSize: 12,
     marginTop: 9,
@@ -561,28 +620,28 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   historyHeading: { marginTop: 23, marginBottom: 5 },
-  historyList: { gap: 10, marginTop: 6 },
+  historyList: { marginTop: 6, borderWidth: 1, borderRadius: 22, overflow: 'hidden' },
   historyRow: {
     alignItems: 'center',
-    borderWidth: 1,
     flexDirection: 'row-reverse',
-    gap: 10,
-    minHeight: 76,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
+    gap: 11,
+    minHeight: 72,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
   },
   historyIcon: {
     alignItems: 'center',
-    borderRadius: 15,
-    height: 42,
+    borderRadius: 13,
+    height: 38,
     justifyContent: 'center',
-    width: 42,
+    width: 38,
   },
   historyMain: { alignItems: 'flex-end', flex: 1, gap: 5 },
   historyTitle: { fontSize: 13, fontWeight: '700', writingDirection: 'rtl' },
   historyDate: { fontSize: 10, writingDirection: 'rtl' },
-  historyMeta: { alignItems: 'flex-end', gap: 5 },
-  duration: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
+  historyMeta: { alignItems: 'flex-end', gap: 4 },
+  durationBadge: { borderRadius: 9, paddingHorizontal: 7, paddingVertical: 4 },
+  duration: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
   historyStatus: { fontSize: 10, writingDirection: 'rtl' },
   stateCard: {
     alignItems: 'center',

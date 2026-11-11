@@ -1,6 +1,7 @@
 import BackgroundService from 'react-native-background-actions';
 import { PermissionsAndroid, Platform } from 'react-native';
 import { getIncomingCalls, PetipyApiError } from '@/lib/petipy-api';
+import colors from '@/constants/colors';
 import {
   cancelIncomingCallNotification,
   clearIncomingCallNotifications,
@@ -21,6 +22,10 @@ const POLL_INTERVAL_MS = 5_000;
 type ActiveCallState = 'connecting' | 'connected' | 'reconnecting';
 type ActiveCallNotice = { callId: string; state: ActiveCallState } | null;
 let activeCallNotice: ActiveCallNotice = null;
+
+export function isAvailabilityServiceRunning() {
+  return Platform.OS === 'android' && BackgroundService.isRunning();
+}
 
 function getAvailabilityNotification(pendingCount: number) {
   if (activeCallNotice?.state === 'connected') {
@@ -240,7 +245,7 @@ export async function startAvailabilityService(
     taskTitle: 'پتی پای؛ آماده‌ی تماس',
     taskDesc: 'در انتظار درخواست مشاوره',
     taskIcon: { name: 'ic_launcher', type: 'mipmap' },
-    color: '#6b3fe1',
+    color: colors.light.primary,
     linkingURI: 'petipy-consultant:///',
     foregroundServiceType: ['microphone'],
     parameters: { sessionToken, tokenExpiresAt },

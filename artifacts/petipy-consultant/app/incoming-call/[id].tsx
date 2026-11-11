@@ -222,21 +222,25 @@ export default function IncomingCallScreen() {
     >
       <View style={styles.content}>
         <View style={styles.callDetails}>
-          <Text style={[styles.brand, { color: colors.primary }]}>
-            PETIPY CONSULTANT
-          </Text>
+          <View style={styles.brandLine}>
+            <View style={[styles.brandMark, { backgroundColor: colors.secondary }]}>
+              <Ionicons name="paw" size={16} color={colors.primary} />
+            </View>
+            <Text style={[styles.brand, { color: colors.mutedForeground }]}>PETIPY CONSULTANT</Text>
+            <View style={[styles.liveChip, { backgroundColor: colors.accent }]}>
+              <View style={[styles.liveDot, { backgroundColor: colors.warning }]} />
+              <Text style={[styles.liveChipText, { color: colors.accentForeground }]}>تماس تازه</Text>
+            </View>
+          </View>
           <View
             style={[
-              styles.avatar,
-              { backgroundColor: colors.secondary, borderColor: colors.border },
+              styles.avatarHalo,
+              { backgroundColor: colors.secondary },
             ]}
           >
-            <Ionicons
-              name="person"
-              size={42}
-              color={colors.primary}
-              accessible={false}
-            />
+            <View style={[styles.avatar, { backgroundColor: colors.card, borderColor: colors.card }]}>
+              <Ionicons name="paw" size={42} color={colors.primary} accessible={false} />
+            </View>
           </View>
           <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>
             تماس ورودی مشاوره
@@ -403,36 +407,44 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 28,
+    paddingHorizontal: 22,
+    paddingTop: 24,
+    paddingBottom: 20,
   },
   callDetails: {
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
+    paddingBottom: 10,
   },
+  brandLine: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', gap: 7, marginBottom: 24 },
+  brandMark: { width: 31, height: 31, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   brand: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 2,
-    marginBottom: 32,
+    flex: 1,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textAlign: 'left',
   },
+  liveChip: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 12, paddingHorizontal: 9, paddingVertical: 7 },
+  liveDot: { width: 6, height: 6, borderRadius: 3 },
+  liveChipText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  avatarHalo: { alignItems: 'center', justifyContent: 'center', width: 122, height: 122, borderRadius: 44, marginBottom: 24 },
   avatar: {
     alignItems: 'center',
-    borderRadius: 56,
+    borderRadius: 36,
     borderWidth: 1,
-    height: 112,
+    height: 94,
     justifyContent: 'center',
-    marginBottom: 28,
-    width: 112,
+    width: 94,
   },
   eyebrow: {
     fontSize: 15,
     fontWeight: '600',
   },
   callerName: {
-    fontSize: 30,
-    fontWeight: '700',
+    fontSize: 27,
+    fontWeight: '800',
     marginTop: 8,
     textAlign: 'center',
   },
@@ -448,6 +460,7 @@ const styles = StyleSheet.create({
   statusCard: {
     alignItems: 'center',
     borderWidth: 1,
+    borderRadius: 22,
     gap: 10,
     marginTop: 28,
     maxWidth: 340,
@@ -473,7 +486,7 @@ const styles = StyleSheet.create({
   },
   callActions: {
     flexDirection: 'row',
-    gap: 56,
+    gap: 42,
     justifyContent: 'center',
   },
   actionOption: {
@@ -487,9 +500,9 @@ const styles = StyleSheet.create({
   acceptButton: {
     alignItems: 'center',
     borderRadius: 36,
-    height: 72,
+    height: 70,
     justifyContent: 'center',
-    width: 72,
+    width: 70,
   },
   disabledButton: {
     opacity: 0.65,

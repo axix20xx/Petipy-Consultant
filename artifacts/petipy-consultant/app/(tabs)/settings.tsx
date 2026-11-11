@@ -134,6 +134,12 @@ export default function SettingsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.brandLine}>
+          <View style={[styles.brandMark, { backgroundColor: colors.secondary }]}>
+            <Ionicons name="paw" size={17} color={colors.primary} />
+          </View>
+          <Text style={[styles.brandLabel, { color: colors.mutedForeground }]}>PETIPY  /  مشاوران</Text>
+        </View>
         <Text style={[styles.eyebrow, { color: colors.primary }]}>ACCOUNT & CALLS</Text>
         <Text style={[styles.title, { color: colors.foreground }]}>تنظیمات</Text>
         <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
@@ -147,9 +153,18 @@ export default function SettingsScreen() {
           </View>
           {isConnected ? (
             <>
-              <Text style={[styles.profileName, { color: colors.foreground }]}>
-                {profile?.displayName ?? 'مشاور Petipy'}
-              </Text>
+              <View style={styles.profilePanel}>
+                <View style={[styles.profileMark, { backgroundColor: colors.secondary }]}>
+                  <Ionicons name="person-outline" size={22} color={colors.primary} />
+                </View>
+                <View style={styles.profileCopy}>
+                  <Text style={[styles.profileName, { color: colors.foreground }]}>{profile?.displayName ?? 'مشاور Petipy'}</Text>
+                  <View style={[styles.profileStatus, { backgroundColor: colors.secondary }]}>
+                    <View style={[styles.profileDot, { backgroundColor: colors.success }]} />
+                    <Text style={[styles.profileStatusText, { color: colors.secondaryForeground }]}>حساب تأییدشده</Text>
+                  </View>
+                </View>
+              </View>
               <Text style={[styles.body, { color: colors.mutedForeground }]}>
                 حساب فعال از API مشاور تأیید شد. API نقش و دسترسی VOICE_CONSULTANT را بررسی می‌کند.
               </Text>
@@ -384,15 +399,24 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { padding: 22, paddingTop: 18, paddingBottom: 28, gap: 14 },
+  content: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 30, gap: 15 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  eyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1.6, textAlign: 'right' },
-  title: { fontSize: 28, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
-  subtitle: { fontSize: 13, textAlign: 'right', writingDirection: 'rtl', marginBottom: 2 },
-  card: { borderRadius: 22, borderWidth: 1.5, padding: 17, gap: 12 },
+  brandLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginBottom: 2 },
+  brandMark: { width: 32, height: 32, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  brandLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.1, writingDirection: 'rtl' },
+  eyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.8, textAlign: 'right' },
+  title: { fontSize: 29, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  subtitle: { fontSize: 12, textAlign: 'right', writingDirection: 'rtl', marginBottom: 4 },
+  card: { borderRadius: 24, borderWidth: 1, padding: 17, gap: 12, shadowOpacity: 0.035, shadowRadius: 12, elevation: 1 },
   cardHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   cardTitle: { fontSize: 15, fontWeight: '700', writingDirection: 'rtl' },
   profileName: { fontSize: 17, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
+  profilePanel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18, backgroundColor: 'transparent' },
+  profileMark: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  profileCopy: { flex: 1, alignItems: 'flex-end', gap: 6 },
+  profileStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 8, paddingVertical: 4 },
+  profileDot: { width: 6, height: 6, borderRadius: 3 },
+  profileStatusText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
   body: { textAlign: 'right', fontSize: 12, lineHeight: 21, writingDirection: 'rtl' },
   authNotice: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 8, borderRadius: 13, padding: 11 },
   authNoticeText: { flex: 1, fontSize: 10, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
@@ -403,7 +427,7 @@ const styles = StyleSheet.create({
   badgeDot: { width: 7, height: 7, borderRadius: 4 },
   badgeText: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
   infoRow: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 11, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  rowIcon: { width: 35, height: 35, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  rowIcon: { width: 38, height: 38, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   rowCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
   rowTitle: { fontSize: 13, fontWeight: '600', textAlign: 'right', writingDirection: 'rtl' },
   rowDetail: { fontSize: 11, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl' },

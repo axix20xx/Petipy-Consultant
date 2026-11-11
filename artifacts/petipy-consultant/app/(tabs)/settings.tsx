@@ -153,7 +153,7 @@ export default function SettingsScreen() {
           </View>
           {isConnected ? (
             <>
-              <View style={styles.profilePanel}>
+                <View style={[styles.profilePanel, { borderColor: colors.border }]}>
                 <View style={[styles.profileMark, { backgroundColor: colors.secondary }]}>
                   <Ionicons name="person-outline" size={22} color={colors.primary} />
                 </View>
@@ -399,19 +399,19 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 30, gap: 15 },
+  content: { paddingHorizontal: 18, paddingTop: 22, paddingBottom: 34, gap: 17 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  brandLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginBottom: 2 },
-  brandMark: { width: 32, height: 32, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  brandLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9, marginBottom: 5 },
+  brandMark: { width: 36, height: 36, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   brandLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.1, writingDirection: 'rtl' },
   eyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.8, textAlign: 'right' },
-  title: { fontSize: 29, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
-  subtitle: { fontSize: 12, textAlign: 'right', writingDirection: 'rtl', marginBottom: 4 },
-  card: { borderRadius: 24, borderWidth: 1, padding: 17, gap: 12, shadowOpacity: 0.035, shadowRadius: 12, elevation: 1 },
+  title: { fontSize: 32, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  subtitle: { fontSize: 13, textAlign: 'right', writingDirection: 'rtl', marginBottom: 6 },
+  card: { borderRadius: 27, borderWidth: 1, padding: 18, gap: 14, shadowColor: '#672334', shadowOpacity: 0.045, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
   cardHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   cardTitle: { fontSize: 15, fontWeight: '700', writingDirection: 'rtl' },
   profileName: { fontSize: 17, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
-  profilePanel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18, backgroundColor: 'transparent' },
+  profilePanel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14, padding: 14, borderRadius: 20, backgroundColor: 'transparent', borderWidth: 1 },
   profileMark: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   profileCopy: { flex: 1, alignItems: 'flex-end', gap: 6 },
   profileStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 8, paddingVertical: 4 },
@@ -421,13 +421,13 @@ const styles = StyleSheet.create({
   authNotice: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 8, borderRadius: 13, padding: 11 },
   authNoticeText: { flex: 1, fontSize: 10, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
   error: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
-  secondaryButton: { minHeight: 42, borderRadius: 14, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 14, alignSelf: 'flex-end' },
+  secondaryButton: { minHeight: 48, borderRadius: 16, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 16, alignSelf: 'flex-end' },
   secondaryButtonText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
   statusBadge: { alignSelf: 'flex-end', flexDirection: 'row-reverse', alignItems: 'center', gap: 7, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20 },
   badgeDot: { width: 7, height: 7, borderRadius: 4 },
   badgeText: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
-  infoRow: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 11, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  rowIcon: { width: 38, height: 38, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  infoRow: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 12, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  rowIcon: { width: 40, height: 40, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   rowCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
   rowTitle: { fontSize: 13, fontWeight: '600', textAlign: 'right', writingDirection: 'rtl' },
   rowDetail: { fontSize: 11, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl' },

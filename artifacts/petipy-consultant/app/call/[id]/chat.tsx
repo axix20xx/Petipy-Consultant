@@ -304,7 +304,7 @@ export default function VoiceCallChatScreen() {
       style={[styles.safe, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      <View style={[styles.header, { borderBottomColor: colors.input, backgroundColor: colors.card }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
         <Pressable
           testID="voice-chat-back"
           accessibilityRole="button"
@@ -486,18 +486,18 @@ export default function VoiceCallChatScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 72,
+    minHeight: 78,
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 12,
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
     backgroundColor: 'transparent',
   },
   iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 15,
+    width: 46,
+    height: 46,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -508,19 +508,19 @@ const styles = StyleSheet.create({
   messageList: {
     flexGrow: 1,
     justifyContent: 'flex-start',
-    paddingHorizontal: 15,
-    paddingVertical: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
     gap: 10,
   },
   messageRow: { width: '100%', marginVertical: 5 },
   messageMine: { alignItems: 'flex-end' },
   messageTheirs: { alignItems: 'flex-start' },
   bubble: {
-    maxWidth: '88%',
+    maxWidth: '89%',
     borderWidth: 1,
-    borderRadius: 22,
-    paddingHorizontal: 13,
-    paddingVertical: 11,
+    borderRadius: 24,
+    paddingHorizontal: 15,
+    paddingVertical: 13,
     gap: 8,
   },
   bubbleMine: { borderBottomLeftRadius: 6 },
@@ -616,22 +616,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 9,
     marginHorizontal: 12,
-    marginBottom: 8,
+    marginBottom: 10,
     padding: 7,
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 23,
   },
   composerIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 15,
+    width: 46,
+    height: 46,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
   textInput: {
     flex: 1,
     maxHeight: 110,
-    minHeight: 42,
+    minHeight: 46,
     paddingTop: 11,
     paddingBottom: 8,
     paddingHorizontal: 3,
@@ -640,9 +640,9 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   sendButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 15,
+    width: 46,
+    height: 46,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },

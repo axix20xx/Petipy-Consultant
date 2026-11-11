@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "skills": {
+    "oil-ui": {
+      "source": "https://github.replit.internal/oil-oil/oil-ui.git",
+      "sourceUrl": "https://github.replit.internal/oil-oil/oil-ui.git",
+      "sourceType": "git",
+      "skillPath": "SKILL.md",
+      "computedHash": "3c05428efd5b421b89950d8fc63e10ac11fa6deada0e72dfc4f46514c72391be",
+      "installMode": "copy"
+    }
+  }
+}

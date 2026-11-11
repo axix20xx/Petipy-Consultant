@@ -407,9 +407,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: 22,
-    paddingTop: 24,
-    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 18,
   },
   callDetails: {
     alignItems: 'center',
@@ -417,8 +417,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingBottom: 10,
   },
-  brandLine: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', gap: 7, marginBottom: 24 },
-  brandMark: { width: 31, height: 31, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  brandLine: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginBottom: 17 },
+  brandMark: { width: 36, height: 36, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   brand: {
     flex: 1,
     fontSize: 9,
@@ -429,21 +429,21 @@ const styles = StyleSheet.create({
   liveChip: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 12, paddingHorizontal: 9, paddingVertical: 7 },
   liveDot: { width: 6, height: 6, borderRadius: 3 },
   liveChipText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
-  avatarHalo: { alignItems: 'center', justifyContent: 'center', width: 122, height: 122, borderRadius: 44, marginBottom: 24 },
+  avatarHalo: { alignItems: 'center', justifyContent: 'center', width: 142, height: 142, borderRadius: 50, marginBottom: 20, borderWidth: 1, borderColor: '#E7D5D0' },
   avatar: {
     alignItems: 'center',
     borderRadius: 36,
     borderWidth: 1,
-    height: 94,
+    height: 108,
     justifyContent: 'center',
-    width: 94,
+    width: 108,
   },
   eyebrow: {
     fontSize: 15,
     fontWeight: '600',
   },
   callerName: {
-    fontSize: 27,
+    fontSize: 30,
     fontWeight: '800',
     marginTop: 8,
     textAlign: 'center',
@@ -462,10 +462,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 22,
     gap: 10,
-    marginTop: 28,
+    marginTop: 22,
     maxWidth: 340,
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 17,
     width: '100%',
   },
   statusText: {
@@ -482,11 +482,11 @@ const styles = StyleSheet.create({
   actions: {
     alignItems: 'center',
     gap: 14,
-    paddingBottom: 12,
+    paddingBottom: 5,
   },
   callActions: {
     flexDirection: 'row',
-    gap: 42,
+    gap: 48,
     justifyContent: 'center',
   },
   actionOption: {
@@ -500,9 +500,9 @@ const styles = StyleSheet.create({
   acceptButton: {
     alignItems: 'center',
     borderRadius: 36,
-    height: 70,
+    height: 76,
     justifyContent: 'center',
-    width: 70,
+    width: 76,
   },
   disabledButton: {
     opacity: 0.65,
@@ -516,7 +516,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginTop: 4,
-    padding: 8,
+    minHeight: 44,
+    paddingHorizontal: 12,
   },
   linkText: {
     fontSize: 14,

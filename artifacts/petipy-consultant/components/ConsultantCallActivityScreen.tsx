@@ -124,9 +124,9 @@ function MetricCard({
       style={[
         styles.metricCard,
         {
-          backgroundColor: 'transparent',
-          borderColor: 'transparent',
-          borderRadius: 0,
+          backgroundColor: colors.background,
+          borderColor: colors.border,
+          borderRadius: 17,
         },
       ]}
     >
@@ -161,6 +161,7 @@ function RefreshButton({
       hitSlop={12}
       testID="refresh-call-activity"
       style={styles.refreshButton}
+    android_ripple={{ color: colors.accent, borderless: true }}
     >
       {refreshing ? (
         <ActivityIndicator size="small" color={colors.primary} />
@@ -248,7 +249,7 @@ export default function ConsultantCallActivityScreen() {
 
         <View
           accessibilityRole="tablist"
-          style={styles.periods}
+          style={[styles.periods, { backgroundColor: colors.muted }]}
           testID="analytics-period-filter"
         >
           {PERIODS.map((period) => {
@@ -555,17 +556,18 @@ const styles = StyleSheet.create({
   refreshButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 44,
-    minWidth: 44,
+    minHeight: 48,
+    minWidth: 48,
     marginLeft: 8,
+    borderRadius: 17,
   },
-  periods: { flexDirection: 'row-reverse', gap: 8, marginBottom: 12 },
+  periods: { flexDirection: 'row-reverse', gap: 7, marginBottom: 14, padding: 5, borderRadius: 20 },
   periodButton: {
     alignItems: 'center',
     borderWidth: 1,
     flex: 1,
     justifyContent: 'center',
-    minHeight: 40,
+    minHeight: 43,
     paddingHorizontal: 8,
   },
   periodLabel: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
@@ -584,15 +586,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderWidth: 1,
     borderRadius: 22,
-    padding: 6,
+    padding: 9,
     overflow: 'hidden',
   },
   metricCard: {
-    flexBasis: '47%',
+    flexBasis: '46%',
     flexGrow: 1,
-    gap: 8,
-    minHeight: 88,
+    gap: 9,
+    minHeight: 94,
     padding: 12,
+    borderWidth: 1,
   },
   metricHeading: {
     alignItems: 'center',
@@ -601,13 +604,13 @@ const styles = StyleSheet.create({
   },
   metricLabel: { flexShrink: 1, fontSize: 11, writingDirection: 'rtl' },
   metricValue: { fontSize: 23, fontWeight: '700', writingDirection: 'rtl' },
-  trendCard: { borderWidth: 1, borderRadius: 23, padding: 15, marginTop: 12 },
+  trendCard: { borderWidth: 1, borderRadius: 26, padding: 17, marginTop: 12, shadowColor: '#672334', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
   trendHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 },
   trendTitle: { fontSize: 14, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
   trendCaption: { fontSize: 10, marginTop: 3, textAlign: 'right', writingDirection: 'rtl' },
   trendBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 12 },
   trendBadgeText: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
-  chart: { height: 132, flexDirection: 'row-reverse', alignItems: 'stretch', justifyContent: 'space-between', gap: 4 },
+  chart: { height: 142, flexDirection: 'row-reverse', alignItems: 'stretch', justifyContent: 'space-between', gap: 4, paddingTop: 5 },
   chartColumn: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 5, minWidth: 0 },
   chartValue: { height: 13, fontSize: 8, fontWeight: '600' },
   chartTrack: { width: '70%', flex: 1, justifyContent: 'flex-end', overflow: 'hidden', borderRadius: 7 },
@@ -620,7 +623,7 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   historyHeading: { marginTop: 23, marginBottom: 5 },
-  historyList: { marginTop: 6, borderWidth: 1, borderRadius: 22, overflow: 'hidden' },
+  historyList: { marginTop: 6, borderWidth: 1, borderRadius: 26, overflow: 'hidden', shadowColor: '#672334', shadowOpacity: 0.035, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
   historyRow: {
     alignItems: 'center',
     flexDirection: 'row-reverse',

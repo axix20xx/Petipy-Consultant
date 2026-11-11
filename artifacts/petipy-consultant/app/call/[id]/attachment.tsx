@@ -127,7 +127,7 @@ export default function VoiceCallAttachmentScreen() {
       style={[styles.safe, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      <View style={[styles.header, { borderBottomColor: colors.input }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
         <Pressable
           testID="attachment-preview-back"
           accessibilityRole="button"
@@ -235,17 +235,17 @@ export default function VoiceCallAttachmentScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 66,
+    minHeight: 72,
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     gap: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
+    width: 46,
+    height: 46,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },

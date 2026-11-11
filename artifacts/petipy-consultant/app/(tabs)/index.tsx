@@ -308,10 +308,20 @@ export default function ConsultantHome() {
         }
       >
         <View style={[styles.header, { backgroundColor: colors.primary }]}>
-          <View style={styles.headerText}>
+          <View style={styles.headerMasthead}>
+            <View
+              style={[
+                styles.avatar,
+                { backgroundColor: colors.card, borderColor: colors.accent },
+              ]}
+            >
+              <Ionicons name="paw" size={23} color={colors.primary} />
+            </View>
             <Text style={[styles.eyebrow, { color: colors.primaryForeground }]}>
-              PETIPY CONSULTANT
+              PETIPY  /  مشاوران
             </Text>
+          </View>
+          <View style={styles.headerText}>
             <Text style={[styles.greeting, { color: colors.primaryForeground }]}>
               سلام، {profile?.displayName ?? 'مشاور'}
             </Text>
@@ -319,13 +329,26 @@ export default function ConsultantHome() {
               امروز، یک گفت‌وگوی خوب از شما شروع می‌شود
             </Text>
           </View>
-          <View
-            style={[
-              styles.avatar,
-              { backgroundColor: colors.card, borderColor: colors.card },
-            ]}
-          >
-            <Ionicons name="paw" size={23} color={colors.primary} />
+          <View style={[styles.headerRule, { backgroundColor: colors.primaryForeground }]} />
+          <View style={styles.headerFoot}>
+            <View style={styles.headerStat}>
+              <Text style={[styles.headerStatValue, { color: colors.primaryForeground }]}>
+                {history.isLoading ? '—' : todayCount}
+              </Text>
+              <Text style={[styles.headerStatLabel, { color: colors.primaryForeground }]}>
+                تماس امروز
+              </Text>
+            </View>
+            <View style={[styles.headerStatDivider, { backgroundColor: colors.primaryForeground }]} />
+            <View style={styles.headerStat}>
+              <Text style={[styles.headerStatValue, { color: colors.primaryForeground }]}>
+                {history.isLoading ? '—' : `${Math.floor(todayDuration / 60)} دقیقه`}
+              </Text>
+              <Text style={[styles.headerStatLabel, { color: colors.primaryForeground }]}>
+                زمان گفت‌وگو
+              </Text>
+            </View>
+            <Ionicons name="heart-outline" size={19} color={colors.primaryForeground} />
           </View>
         </View>
 
@@ -412,38 +435,22 @@ export default function ConsultantHome() {
           </Pressable>
         ) : null}
 
-        <View style={[styles.summaryRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.summaryMetric}>
-            <Text style={[styles.summaryNumber, { color: colors.foreground }]}>
-              {history.isLoading ? '—' : todayCount}
+        <View style={[styles.queueSectionHeading, { borderBottomColor: colors.border }]}>
+          <View style={styles.queueHeadingMark}>
+            <Text style={[styles.queueIndex, { color: colors.primary }]}>۰۱</Text>
+            <View style={[styles.queueHeadingRule, { backgroundColor: colors.primary }]} />
+          </View>
+          <View style={styles.queueHeadingCopy}>
+            <Text style={[styles.sectionHeading, { color: colors.foreground }]}>
+              صف تماس‌های ورودی
             </Text>
-            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>
-              تماس امروز
+            <Text style={[styles.sectionTrailing, { color: colors.mutedForeground }]}>
+              تازه‌سازی هر ۵ ثانیه
             </Text>
           </View>
-          <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
-          <View style={styles.summaryMetric}>
-            <Text style={[styles.summaryNumber, { color: colors.foreground }]}>
-              {history.isLoading
-                ? '—'
-                : `${Math.floor(todayDuration / 60)} دقیقه`}
-            </Text>
-            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>
-              زمان گفتگو
-            </Text>
+          <View style={[styles.queueCount, { backgroundColor: colors.secondary }]}>
+            <Ionicons name="call-outline" size={15} color={colors.primary} />
           </View>
-          <View style={[styles.summaryMark, { backgroundColor: colors.accent }]}>
-            <Ionicons name="pulse-outline" size={19} color={colors.accentForeground} />
-          </View>
-        </View>
-
-        <View style={styles.sectionTitle}>
-          <Text style={[styles.sectionHeading, { color: colors.foreground }]}>
-            صف تماس‌های ورودی
-          </Text>
-          <Text style={[styles.sectionTrailing, { color: colors.mutedForeground }]}>
-            تازه‌سازی هر ۵ ثانیه
-          </Text>
         </View>
 
         {!isConnected ? (
@@ -609,17 +616,24 @@ export default function ConsultantHome() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { paddingHorizontal: 18, paddingTop: 14, paddingBottom: 28, gap: 16 },
+  content: { paddingHorizontal: 18, paddingTop: 18, paddingBottom: 30, gap: 17 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  header: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: 1, borderRadius: 26, paddingHorizontal: 17, paddingVertical: 18, minHeight: 132, overflow: 'hidden' },
-  headerText: { alignItems: 'flex-end', flex: 1, gap: 3 },
-  eyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.8, marginBottom: 4 },
-  greeting: { fontSize: 24, fontWeight: '800', writingDirection: 'rtl' },
-  subtitle: { fontSize: 11, marginTop: 3, textAlign: 'right', writingDirection: 'rtl', opacity: 0.86 },
-  avatar: { width: 50, height: 50, borderRadius: 19, borderWidth: 1, alignItems: 'center', justifyContent: 'center', marginLeft: 14 },
+  header: { flexDirection: 'column', alignItems: 'stretch', marginBottom: 2, borderRadius: 30, paddingHorizontal: 20, paddingVertical: 19, minHeight: 218, overflow: 'hidden', shadowColor: '#672334', shadowOpacity: 0.15, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
+  headerMasthead: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
+  headerText: { alignItems: 'flex-end', gap: 5, marginTop: 16 },
+  eyebrow: { fontSize: 9, fontWeight: '800', letterSpacing: 1.5 },
+  greeting: { fontSize: 27, fontWeight: '800', writingDirection: 'rtl' },
+  subtitle: { fontSize: 11, marginTop: 2, textAlign: 'right', writingDirection: 'rtl', opacity: 0.86 },
+  avatar: { width: 43, height: 43, borderRadius: 16, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
+  headerRule: { height: 1, width: '100%', opacity: 0.2, marginTop: 15 },
+  headerFoot: { flexDirection: 'row-reverse', alignItems: 'center', gap: 13, paddingTop: 12 },
+  headerStat: { alignItems: 'flex-end', gap: 2, minWidth: 78 },
+  headerStatValue: { fontSize: 15, fontWeight: '800', writingDirection: 'rtl' },
+  headerStatLabel: { fontSize: 9, writingDirection: 'rtl', opacity: 0.78 },
+  headerStatDivider: { width: 1, height: 27, opacity: 0.3 },
   connectionNotice: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, borderRadius: 15, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12 },
   noticeText: { flex: 1, textAlign: 'right', lineHeight: 21, fontSize: 12, writingDirection: 'rtl' },
-  availabilityCard: { borderRadius: 21, borderWidth: 1, padding: 15, flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
+  availabilityCard: { borderRadius: 24, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 17, flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', shadowColor: '#672334', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
   readiness: { minHeight: 42, borderRadius: 14, paddingHorizontal: 11, flexDirection: 'row-reverse', alignItems: 'center', gap: 7, marginTop: -12 },
   readinessText: { flex: 1, fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl' },
   availabilityCopy: { flexDirection: 'row-reverse', alignItems: 'center', flex: 1, gap: 11 },
@@ -627,30 +641,35 @@ const styles = StyleSheet.create({
   availabilityText: { alignItems: 'flex-end', gap: 5 },
   cardTitle: { fontSize: 15, fontWeight: '700', writingDirection: 'rtl' },
   bodyText: { fontSize: 11, textAlign: 'right', writingDirection: 'rtl' },
-  summaryRow: { minHeight: 86, flexDirection: 'row-reverse', alignItems: 'center', gap: 13, borderRadius: 20, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12 },
+  summaryRow: { minHeight: 99, flexDirection: 'row-reverse', alignItems: 'center', gap: 13, borderRadius: 25, borderWidth: 1, paddingHorizontal: 17, paddingVertical: 14, borderLeftWidth: 4 },
   summaryMetric: { flex: 1, alignItems: 'flex-end', gap: 3 },
   summaryDivider: { height: 38, width: StyleSheet.hairlineWidth },
   summaryMark: { height: 37, width: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  summaryNumber: { fontSize: 21, fontWeight: '800', alignSelf: 'flex-end' },
+  summaryNumber: { fontSize: 24, fontWeight: '800', alignSelf: 'flex-end' },
   summaryLabel: { fontSize: 10, writingDirection: 'rtl' },
-  sectionTitle: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 },
-  sectionHeading: { fontSize: 17, fontWeight: '700', writingDirection: 'rtl' },
+  queueSectionHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, borderBottomWidth: 1, paddingBottom: 12, marginTop: 3 },
+  queueHeadingMark: { alignItems: 'center', gap: 5 },
+  queueIndex: { fontSize: 10, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  queueHeadingRule: { height: 2, width: 24, borderRadius: 2 },
+  queueHeadingCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
+  queueCount: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  sectionHeading: { fontSize: 19, fontWeight: '800', writingDirection: 'rtl' },
   sectionTrailing: { fontSize: 11, writingDirection: 'rtl' },
-  emptyCard: { borderRadius: 22, borderWidth: 1, paddingHorizontal: 22, paddingVertical: 25, alignItems: 'center' },
+  emptyCard: { borderRadius: 26, borderWidth: 1, paddingHorizontal: 22, paddingVertical: 28, alignItems: 'center' },
   emptyIcon: { width: 56, height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   emptyTitle: { fontSize: 15, fontWeight: '700', marginBottom: 7, writingDirection: 'rtl' },
   emptyDescription: { fontSize: 12, lineHeight: 20, textAlign: 'center', writingDirection: 'rtl' },
   loading: { paddingVertical: 30, alignItems: 'center', gap: 10 },
   queueList: { gap: 12 },
-  callCard: { borderRadius: 22, borderWidth: 1, padding: 14, gap: 12 },
+  callCard: { borderRadius: 25, borderWidth: 1, padding: 16, gap: 14, shadowColor: '#672334', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
   callHeader: { flexDirection: 'row-reverse', alignItems: 'center', gap: 11 },
   callIcon: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   callCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
   callSubject: { maxWidth: '100%', fontSize: 10, writingDirection: 'rtl', textAlign: 'right' },
   callActions: { flexDirection: 'row-reverse', gap: 10 },
-  acceptButton: { flex: 1, minHeight: 46, borderRadius: 15, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  acceptButton: { flex: 1, minHeight: 50, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8 },
   acceptText: { fontSize: 13, fontWeight: '700', writingDirection: 'rtl' },
-  rejectButton: { width: 90, minHeight: 46, borderRadius: 15, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 5 },
+  rejectButton: { width: 92, minHeight: 50, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 5 },
   rejectText: { fontSize: 13, fontWeight: '600', writingDirection: 'rtl' },
   missingAction: { fontSize: 10, textAlign: 'right', writingDirection: 'rtl' },
   retryButton: { paddingHorizontal: 18, paddingVertical: 10, borderRadius: 14, marginTop: 7 },

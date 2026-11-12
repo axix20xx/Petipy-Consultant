@@ -305,33 +305,40 @@ export default function VoiceCallChatScreen() {
       edges={['top', 'bottom']}
     >
       <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
-        <Pressable
-          testID="voice-chat-back"
-          accessibilityRole="button"
-          accessibilityLabel="بازگشت به تماس"
-          onPress={() => router.back()}
-          style={({ pressed }) => [styles.iconButton, { backgroundColor: colors.secondary, opacity: pressed ? 0.74 : 1 }]}
-        >
-          <Ionicons name="arrow-forward" size={20} color={colors.primary} />
-        </Pressable>
-        <View style={[styles.chatSeal, { backgroundColor: colors.primary }]}>
-          <Ionicons name="chatbubbles-outline" size={17} color={colors.primaryForeground} />
+        <View style={styles.headerMain}>
+          <Pressable
+            testID="voice-chat-back"
+            accessibilityRole="button"
+            accessibilityLabel="بازگشت به تماس"
+            onPress={() => router.back()}
+            style={({ pressed }) => [styles.iconButton, { backgroundColor: colors.secondary, opacity: pressed ? 0.74 : 1 }]}
+          >
+            <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+          </Pressable>
+          <View style={styles.chatSeal}>
+            <Ionicons name="chatbubbles-outline" size={20} color={colors.primary} />
+          </View>
+          <View style={styles.headerText}>
+            <Text style={[styles.title, { color: colors.foreground }]}>گفت‌وگو</Text>
+            <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>همراهِ تماس</Text>
+          </View>
+          <Pressable
+            testID="voice-chat-refresh"
+            accessibilityRole="button"
+            accessibilityLabel="تازه‌سازی پیام‌ها"
+            onPress={() => void loadMessages()}
+            disabled={loading}
+            style={({ pressed }) => [styles.iconButton, { backgroundColor: colors.secondary, opacity: loading ? 0.55 : pressed ? 0.74 : 1 }]}
+          >
+            {loading ? <ActivityIndicator size="small" color={colors.primary} /> : <Ionicons name="refresh" size={19} color={colors.primary} />}
+          </Pressable>
         </View>
-        <View style={styles.headerText}>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>همراهِ تماس</Text>
-          <Text style={[styles.title, { color: colors.foreground }]}>گفت‌وگو</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>پیام‌ها و فایل‌های همین تماس</Text>
+        <View style={[styles.contextRail, { backgroundColor: colors.background }]}>
+          <Ionicons name="lock-closed-outline" size={13} color={colors.success} />
+          <Text style={[styles.contextRailText, { color: colors.mutedForeground }]}>پیام‌ها و فایل‌های همین تماس</Text>
+          <View style={styles.contextRailSpacer} />
+          <Text style={[styles.contextRailLabel, { color: colors.secondaryForeground }]}>خصوصی</Text>
         </View>
-        <Pressable
-          testID="voice-chat-refresh"
-          accessibilityRole="button"
-          accessibilityLabel="تازه‌سازی پیام‌ها"
-          onPress={() => void loadMessages()}
-          disabled={loading}
-          style={({ pressed }) => [styles.iconButton, { backgroundColor: colors.secondary, opacity: loading ? 0.55 : pressed ? 0.74 : 1 }]}
-        >
-          {loading ? <ActivityIndicator size="small" color={colors.primary} /> : <Ionicons name="refresh" size={19} color={colors.primary} />}
-        </Pressable>
       </View>
 
       <KeyboardAvoidingView
@@ -435,16 +442,6 @@ export default function VoiceCallChatScreen() {
             { backgroundColor: colors.card, borderColor: colors.input },
           ]}
         >
-          <Pressable
-            testID="voice-chat-pick-file"
-            accessibilityRole="button"
-            accessibilityLabel="افزودن عکس یا فایل PDF"
-            onPress={() => void chooseFiles()}
-            disabled={sending}
-                  style={({ pressed }) => [styles.composerIcon, { backgroundColor: colors.secondary, opacity: pressed ? 0.76 : 1 }]}
-          >
-            <Ionicons name="attach" size={22} color={colors.primary} />
-          </Pressable>
           <TextInput
             testID="voice-chat-input"
             accessibilityLabel="متن پیام"
@@ -458,23 +455,40 @@ export default function VoiceCallChatScreen() {
             textAlign="right"
             style={[styles.textInput, { color: colors.foreground }]}
           />
-          <Pressable
-            testID="voice-chat-send"
-            accessibilityRole="button"
-            accessibilityLabel="ارسال پیام"
-            disabled={sending || (!draft.trim() && files.length === 0)}
-            onPress={() => void submitMessage()}
-            style={({ pressed }) => [
-              styles.sendButton,
-              { backgroundColor: colors.primary, opacity: sending || (!draft.trim() && files.length === 0) ? 0.48 : pressed ? 0.82 : 1 },
-            ]}
-          >
-            {sending ? (
-              <ActivityIndicator size="small" color={colors.primaryForeground} />
-            ) : (
-              <Ionicons name="send" size={17} color={colors.primaryForeground} />
-            )}
-          </Pressable>
+          <View style={[styles.composerActions, { borderTopColor: colors.border }]}>
+            <Pressable
+              testID="voice-chat-pick-file"
+              accessibilityRole="button"
+              accessibilityLabel="افزودن عکس یا فایل PDF"
+              onPress={() => void chooseFiles()}
+              disabled={sending}
+              style={({ pressed }) => [styles.attachAction, { backgroundColor: colors.secondary, opacity: sending ? 0.5 : pressed ? 0.76 : 1 }]}
+            >
+              <Ionicons name="attach" size={19} color={colors.primary} />
+              <Text style={[styles.attachActionText, { color: colors.secondaryForeground }]}>افزودن پیوست</Text>
+            </Pressable>
+            <View style={styles.composerActionSpacer} />
+            <Pressable
+              testID="voice-chat-send"
+              accessibilityRole="button"
+              accessibilityLabel="ارسال پیام"
+              disabled={sending || (!draft.trim() && files.length === 0)}
+              onPress={() => void submitMessage()}
+              style={({ pressed }) => [
+                styles.sendButton,
+                { backgroundColor: colors.primary, opacity: sending || (!draft.trim() && files.length === 0) ? 0.48 : pressed ? 0.82 : 1 },
+              ]}
+            >
+              {sending ? (
+                <ActivityIndicator size="small" color={colors.primaryForeground} />
+              ) : (
+                <>
+                  <Ionicons name="send" size={16} color={colors.primaryForeground} />
+                  <Text style={[styles.sendLabel, { color: colors.primaryForeground }]}>ارسال</Text>
+                </>
+              )}
+            </Pressable>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -484,14 +498,14 @@ export default function VoiceCallChatScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 84,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 9,
-    paddingHorizontal: 13,
-    paddingVertical: 8,
+    minHeight: 116,
+    paddingHorizontal: 14,
+    paddingTop: 8,
+    paddingBottom: 9,
+    gap: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
+  headerMain: { minHeight: 48, flexDirection: 'row-reverse', alignItems: 'center', gap: 10 },
   iconButton: {
     width: 46,
     height: 46,
@@ -499,11 +513,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chatSeal: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  chatSeal: { width: 37, height: 37, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   headerText: { flex: 1, alignItems: 'flex-end', gap: 1 },
-  eyebrow: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
-  title: { fontSize: 16, fontWeight: '800', writingDirection: 'rtl' },
+  title: { fontSize: 17, fontWeight: '800', writingDirection: 'rtl' },
   subtitle: { fontSize: 9, writingDirection: 'rtl' },
+  contextRail: { minHeight: 32, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, borderRadius: 10 },
+  contextRailText: { fontSize: 9, writingDirection: 'rtl' },
+  contextRailSpacer: { flex: 1 },
+  contextRailLabel: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
   keyboardView: { flex: 1 },
   messageList: {
     flexGrow: 1,
@@ -518,7 +535,7 @@ const styles = StyleSheet.create({
   bubble: {
     maxWidth: '88%',
     borderWidth: 1,
-    borderRadius: 21,
+    borderRadius: 18,
     paddingHorizontal: 15,
     paddingVertical: 13,
     gap: 8,
@@ -614,27 +631,26 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   composer: {
-    minHeight: 62,
-    flexDirection: 'row-reverse',
-    alignItems: 'flex-end',
-    gap: 9,
+    minHeight: 112,
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: 6,
     marginHorizontal: 12,
-    marginBottom: 9,
-    padding: 7,
+    marginBottom: 8,
+    paddingHorizontal: 11,
+    paddingTop: 5,
+    paddingBottom: 8,
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 18,
   },
-  composerIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  composerActions: { minHeight: 44, flexDirection: 'row-reverse', alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 7 },
+  attachAction: { minHeight: 36, flexDirection: 'row-reverse', alignItems: 'center', gap: 5, paddingHorizontal: 10, borderRadius: 11 },
+  attachActionText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  composerActionSpacer: { flex: 1 },
   textInput: {
-    flex: 1,
+    width: '100%',
     maxHeight: 110,
-    minHeight: 46,
+    minHeight: 52,
     paddingTop: 11,
     paddingBottom: 8,
     paddingHorizontal: 3,
@@ -643,10 +659,14 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   sendButton: {
-    width: 46,
-    height: 46,
-    borderRadius: 17,
+    minWidth: 82,
+    height: 38,
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    borderRadius: 12,
   },
+  sendLabel: { fontSize: 11, fontWeight: '800', writingDirection: 'rtl' },
 });

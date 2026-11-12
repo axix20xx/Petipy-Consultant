@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   retryText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
-  previewFrame: { flex: 1, margin: 12, borderWidth: 1, borderRadius: 20, overflow: 'hidden', position: 'relative' },
+  previewFrame: { flex: 1, margin: 12, borderWidth: 1, borderRadius: 17, overflow: 'hidden', position: 'relative' },
   image: { flex: 1, width: '100%', padding: 10 },
   pdf: { flex: 1, width: '100%' },
   previewCaption: { position: 'absolute', top: 11, left: 11, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 12, paddingHorizontal: 9, paddingVertical: 7 },

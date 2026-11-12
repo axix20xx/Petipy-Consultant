@@ -6,7 +6,12 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "petipy-consultant",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F8F7FC",
+      "image": "./assets/images/icon.png",
+      "resizeMode": "contain"
+    },
     "ios": {
       "supportsTablet": false,
       "infoPlist": {

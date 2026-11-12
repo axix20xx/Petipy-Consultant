@@ -28,6 +28,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+function formatExpiryTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'نامشخص';
+  return new Intl.DateTimeFormat('fa-IR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
 export default function IncomingCallScreen() {
   const colors = useColors();
   const router = useRouter();
@@ -233,26 +242,48 @@ export default function IncomingCallScreen() {
         </View>
 
         <View style={[styles.callerCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.callerHeading}>
-            <Text style={[styles.eyebrow, { color: colors.primary }]}>تماس ورودی مشاوره</Text>
-            <View style={[styles.avatarHalo, { backgroundColor: colors.secondary, borderColor: colors.accent }]}>
-              <View style={[styles.avatar, { backgroundColor: colors.card }]}>
-                <Ionicons name="paw" size={37} color={colors.primary} accessible={false} />
-              </View>
+          <View style={styles.requestTopline}>
+            <Text style={[styles.eyebrow, { color: colors.primary }]}>درخواست مشاوره</Text>
+            <View style={[styles.requestState, { backgroundColor: colors.secondary }]}>
+              <View style={[styles.liveDot, { backgroundColor: colors.warning }]} />
+              <Text style={[styles.requestStateText, { color: colors.secondaryForeground }]}>در انتظار پاسخ</Text>
             </View>
           </View>
-          <Text style={[styles.callerName, { color: colors.foreground }]}>
-            {call?.callerName || 'درخواست تماس جدید'}
-          </Text>
-          {call?.petName ? (
-            <View style={[styles.petContext, { backgroundColor: colors.secondary }]}>
-              <Ionicons name="paw-outline" size={15} color={colors.secondaryForeground} />
-              <Text style={[styles.petName, { color: colors.secondaryForeground }]}>درباره‌ی {call.petName}</Text>
+          <View style={styles.callerIdentity}>
+            <View style={[styles.avatarHalo, { backgroundColor: colors.secondary, borderColor: colors.accent }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.card }]}>
+                <Ionicons name="paw" size={31} color={colors.primary} accessible={false} />
+              </View>
             </View>
-          ) : null}
-          {call?.subject ? (
-            <Text style={[styles.subject, { color: colors.mutedForeground }]}>{call.subject}</Text>
-          ) : null}
+            <View style={styles.identityCopy}>
+              <Text style={[styles.identityLabel, { color: colors.mutedForeground }]}>تماس‌گیرنده</Text>
+              <Text style={[styles.callerName, { color: colors.foreground }]}>
+                {call?.callerName || 'درخواست تماس جدید'}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.requestContext}>
+            {call?.petName ? (
+              <View style={[styles.petContext, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="paw-outline" size={15} color={colors.secondaryForeground} />
+                <Text style={[styles.petName, { color: colors.secondaryForeground }]}>درباره‌ی {call.petName}</Text>
+              </View>
+            ) : null}
+            {call?.subject ? (
+              <View style={[styles.subjectBlock, { backgroundColor: colors.background }]}>
+                <Text style={[styles.subjectLabel, { color: colors.mutedForeground }]}>موضوع درخواست</Text>
+                <Text style={[styles.subject, { color: colors.foreground }]}>{call.subject}</Text>
+              </View>
+            ) : null}
+            {call?.expiresAt ? (
+              <View style={styles.expiryLine}>
+                <Ionicons name="time-outline" size={15} color={colors.warning} />
+                <Text style={[styles.expiryText, { color: colors.mutedForeground }]}>
+                  مهلت پاسخ تا {formatExpiryTime(call.expiresAt)}
+                </Text>
+              </View>
+            ) : null}
+          </View>
           <View style={[styles.statusCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
             <View style={[styles.statusIcon, { backgroundColor: isLoading ? colors.secondary : queue.isError ? colors.accent : colors.card }]}>
               {isLoading ? (
@@ -272,7 +303,7 @@ export default function IncomingCallScreen() {
               ) : isUnavailable ? (
                 <Text style={[styles.statusText, { color: colors.mutedForeground }]}>این درخواست دیگر فعال نیست یا منقضی شده است.</Text>
               ) : (
-                <Text style={[styles.statusText, { color: colors.mutedForeground }]}>برای پاسخ به تماس، گزینه‌ی ruby را انتخاب کنید.</Text>
+                <Text style={[styles.statusText, { color: colors.mutedForeground }]}>برای پاسخ‌گویی، دکمه‌ی پاسخ را بزنید.</Text>
               )}
             </View>
             {queue.isError ? (
@@ -345,7 +376,7 @@ export default function IncomingCallScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   loadingContainer: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-  page: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 14, paddingBottom: 12 },
+  page: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 10, paddingBottom: 12 },
   brandLine: { minHeight: 43, flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   brandMark: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   brandCopy: { flex: 1, alignItems: 'flex-end', gap: 1 },
@@ -354,15 +385,25 @@ const styles = StyleSheet.create({
   liveChip: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 11, paddingHorizontal: 10, paddingVertical: 7 },
   liveDot: { width: 6, height: 6, borderRadius: 3 },
   liveChipText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  callerCard: { width: '100%', maxWidth: 460, alignSelf: 'center', borderWidth: 1, borderRadius: 25, padding: 19, gap: 11, shadowColor: '#5D2934', shadowOpacity: 0.07, shadowRadius: 18, shadowOffset: { width: 0, height: 7 }, elevation: 2 },
-  callerHeading: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
+  callerCard: { width: '100%', maxWidth: 460, alignSelf: 'center', borderWidth: 1, borderRadius: 21, padding: 16, gap: 14, elevation: 1 },
+  requestTopline: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
+  requestState: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
+  requestStateText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  callerIdentity: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12 },
+  identityCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
+  identityLabel: { fontSize: 10, writingDirection: 'rtl' },
   eyebrow: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
-  avatarHalo: { alignItems: 'center', justifyContent: 'center', width: 66, height: 66, borderRadius: 24, borderWidth: 1 },
-  avatar: { alignItems: 'center', borderRadius: 18, width: 52, height: 52, justifyContent: 'center' },
-  callerName: { fontSize: 26, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
-  petContext: { alignSelf: 'flex-end', flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 11, paddingHorizontal: 9, paddingVertical: 6 },
+  avatarHalo: { alignItems: 'center', justifyContent: 'center', width: 58, height: 58, borderRadius: 20, borderWidth: 1 },
+  avatar: { alignItems: 'center', borderRadius: 15, width: 46, height: 46, justifyContent: 'center' },
+  callerName: { fontSize: 21, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  requestContext: { alignItems: 'flex-end', gap: 9 },
+  petContext: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
   petName: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
+  subjectBlock: { width: '100%', borderRadius: 12, padding: 10, gap: 4 },
+  subjectLabel: { fontSize: 9, textAlign: 'right', writingDirection: 'rtl' },
   subject: { fontSize: 12, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl' },
+  expiryLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
+  expiryText: { fontSize: 10, writingDirection: 'rtl' },
   statusCard: { flexDirection: 'row-reverse', alignItems: 'center', borderWidth: 1, borderRadius: 16, gap: 10, marginTop: 4, padding: 11 },
   statusIcon: { width: 37, height: 37, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   statusCopy: { flex: 1, alignItems: 'flex-end', gap: 3 },
@@ -375,7 +416,7 @@ const styles = StyleSheet.create({
   callActions: { width: '100%', flexDirection: 'row-reverse', gap: 10 },
   rejectButton: { flex: 0.78, minHeight: 58, borderWidth: 1, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7 },
   rejectLabel: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  acceptButton: { flex: 1.22, minHeight: 58, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, shadowColor: '#5D2934', shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
+  acceptButton: { flex: 1.22, minHeight: 58, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, elevation: 3 },
   acceptLabel: { fontSize: 13, fontWeight: '800', writingDirection: 'rtl' },
   backButton: { alignItems: 'center', flexDirection: 'row-reverse', gap: 8, minHeight: 43, paddingHorizontal: 12 },
   linkText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },

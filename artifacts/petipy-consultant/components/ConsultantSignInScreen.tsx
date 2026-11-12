@@ -84,19 +84,17 @@ export default function ConsultantSignInScreen() {
           </View>
         </View>
 
-        <View style={[styles.welcomePanel, { backgroundColor: colors.primary }]}>
-          <View style={[styles.panelSeal, { backgroundColor: colors.accent }]}>
-            <Ionicons name="paw" size={32} color={colors.primaryForeground} />
+        <View style={styles.signInIntro}>
+          <View style={[styles.panelSeal, { backgroundColor: colors.secondary }]}>
+            <Ionicons name="paw" size={26} color={colors.primary} />
           </View>
           <View style={styles.panelCopy}>
-            <Text style={[styles.panelKicker, { color: colors.primaryForeground }]}>PETIPY  /  CONSULTANT</Text>
-            <Text style={[styles.title, { color: colors.primaryForeground }]}>سلام، همراهِ مراقبت</Text>
-            <Text style={[styles.heroCopy, { color: colors.primaryForeground }]}>
-              به فضای امن پاسخ‌گویی مشاوران پتی‌پای خوش آمدید.
+            <Text style={[styles.panelKicker, { color: colors.primary }]}>میز مشاوره‌ی پتی‌پای</Text>
+            <Text style={[styles.title, { color: colors.foreground }]}>ورود مشاور</Text>
+            <Text style={[styles.heroCopy, { color: colors.mutedForeground }]}>
+              پاسخ‌گویی امن برای حساب فعال مشاور صوتی
             </Text>
           </View>
-          <View pointerEvents="none" style={[styles.panelDisc, { borderColor: colors.primaryForeground }]} />
-          <View pointerEvents="none" style={[styles.panelDiscSmall, { borderColor: colors.primaryForeground }]} />
         </View>
 
         <View style={styles.formIntro}>
@@ -264,7 +262,7 @@ export default function ConsultantSignInScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  scrollContent: { flexGrow: 1, paddingHorizontal: 22, paddingTop: 14, paddingBottom: 24, gap: 21 },
+  scrollContent: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24, gap: 17 },
   pageTop: { minHeight: 45, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
   brandLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   miniMark: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
@@ -273,12 +271,12 @@ const styles = StyleSheet.create({
   brandSub: { fontSize: 10, writingDirection: 'rtl' },
   securePill: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 8 },
   secureLabel: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  welcomePanel: { minHeight: 205, borderRadius: 27, padding: 22, overflow: 'hidden', justifyContent: 'space-between' },
-  panelSeal: { width: 58, height: 58, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  panelCopy: { alignItems: 'flex-end', gap: 7, zIndex: 1 },
+  signInIntro: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14, paddingVertical: 8 },
+  panelSeal: { width: 52, height: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  panelCopy: { alignItems: 'flex-end', gap: 5, flex: 1 },
   panelKicker: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, opacity: 0.78 },
-  title: { fontSize: 24, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
-  heroCopy: { maxWidth: 270, fontSize: 12, lineHeight: 20, textAlign: 'right', writingDirection: 'rtl', opacity: 0.86 },
+  title: { fontSize: 23, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  heroCopy: { maxWidth: 270, fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
   panelDisc: { position: 'absolute', width: 158, height: 158, borderWidth: 1, borderRadius: 80, opacity: 0.11, top: -67, left: -35 },
   panelDiscSmall: { position: 'absolute', width: 100, height: 100, borderWidth: 1, borderRadius: 50, opacity: 0.1, top: -38, left: -7 },
   formIntro: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 1 },
@@ -287,7 +285,7 @@ const styles = StyleSheet.create({
   body: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
   roleTag: { borderRadius: 9, paddingHorizontal: 8, paddingVertical: 6 },
   roleTagText: { fontSize: 8, fontWeight: '700', letterSpacing: 0.3 },
-  formCard: { borderRadius: 25, borderWidth: 1, padding: 17, gap: 17, shadowColor: '#5D2934', shadowOpacity: 0.07, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 2 },
+  formCard: { borderRadius: 20, borderWidth: 1, padding: 16, gap: 16, elevation: 1 },
   devNotice: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, borderRadius: 15, paddingHorizontal: 12, paddingVertical: 11 },
   noticeIcon: { width: 31, height: 31, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   noticeText: { flex: 1, fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },

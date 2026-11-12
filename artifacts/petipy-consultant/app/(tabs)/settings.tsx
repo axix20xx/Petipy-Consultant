@@ -168,21 +168,14 @@ export default function SettingsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.pageHero, { backgroundColor: colors.primary }]}>
-          <View style={styles.heroTop}>
-            <View style={[styles.brandMark, { backgroundColor: colors.primaryForeground }]}>
-              <Ionicons name="paw" size={18} color={colors.primary} />
-            </View>
-            <Text style={[styles.brandLabel, { color: colors.primaryForeground }]}>PETIPY  /  مشاوران</Text>
+        <View style={styles.settingsTop}>
+          <View style={styles.settingsHeading}>
+            <Text style={[styles.settingsEyebrow, { color: colors.primary }]}>حساب و دستگاه</Text>
+            <Text style={[styles.settingsTitle, { color: colors.foreground }]}>تنظیمات</Text>
           </View>
-          <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: colors.primaryForeground }]}>حساب و دستگاه</Text>
-            <Text style={[styles.title, { color: colors.primaryForeground }]}>تنظیمات</Text>
-            <Text style={[styles.subtitle, { color: colors.primaryForeground }]}>
-              وضعیت واقعی نشست و آمادگی تماس شما
-            </Text>
+          <View style={[styles.settingsMark, { backgroundColor: colors.secondary }]}>
+            <Ionicons name="settings-outline" size={20} color={colors.primary} />
           </View>
-          <View style={[styles.heroOrnament, { borderColor: colors.primaryForeground }]} pointerEvents="none" />
         </View>
 
         <View style={styles.sectionHeader}>
@@ -505,9 +498,13 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 34, gap: 13 },
+  content: { paddingHorizontal: 18, paddingTop: 10, paddingBottom: 30, gap: 13 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  pageHero: { minHeight: 190, borderRadius: 26, padding: 19, overflow: 'hidden', justifyContent: 'space-between', marginBottom: 3 },
+  settingsTop: { minHeight: 66, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 },
+  settingsHeading: { alignItems: 'flex-end', gap: 2 },
+  settingsEyebrow: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  settingsTitle: { fontSize: 23, fontWeight: '800', writingDirection: 'rtl' },
+  settingsMark: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   heroTop: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   brandMark: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   brandLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.1, writingDirection: 'rtl' },
@@ -519,9 +516,9 @@ const styles = StyleSheet.create({
   sectionHeader: { alignItems: 'flex-end', gap: 3, marginTop: 5 },
   sectionKicker: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6, writingDirection: 'rtl' },
   sectionTitle: { fontSize: 18, fontWeight: '800', writingDirection: 'rtl' },
-  card: { borderRadius: 22, borderWidth: 1, padding: 16, gap: 14, shadowColor: '#5D2934', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
+  card: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 14, elevation: 0 },
   accountCard: { borderRadius: 22, borderWidth: 1, padding: 16, gap: 13 },
-  capabilityPanel: { borderRadius: 22, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 7, shadowColor: '#5D2934', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
+  capabilityPanel: { borderRadius: 18, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 7, elevation: 0 },
   serviceSummary: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9, borderRadius: 16, padding: 11, marginVertical: 7 },
   serviceSummaryIcon: { width: 39, height: 39, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   serviceSummaryCopy: { flex: 1, alignItems: 'flex-end', gap: 3 },

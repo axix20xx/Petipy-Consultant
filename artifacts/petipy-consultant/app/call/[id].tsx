@@ -340,6 +340,30 @@ export default function ConsultantCallScreen() {
         contentContainerStyle={styles.mainContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={[styles.callInfo, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.callInfoTop}>
+            <View style={styles.callTitleBlock}>
+              <Text style={[styles.kicker, { color: colors.primary }]}>مشاوره‌ی صوتی پتی‌پای</Text>
+              <Text style={[styles.name, { color: colors.foreground }]}>{matchingCall?.displayName ?? 'تماس مشاوره'}</Text>
+            </View>
+            <View style={[styles.privateBadge, { backgroundColor: colors.secondary }]}>
+              <Ionicons name="shield-checkmark-outline" size={13} color={colors.primary} />
+              <Text style={[styles.privateBadgeText, { color: colors.secondaryForeground }]}>خصوصی</Text>
+            </View>
+          </View>
+          <View style={[styles.sessionStatusRow, { borderTopColor: colors.border }]}>
+            <View style={styles.liveStatus}>
+              <View style={[styles.liveDot, { backgroundColor: connected ? colors.success : colors.warning }]} />
+              <Text style={[styles.status, { color: colors.mutedForeground }]}>{status}</Text>
+            </View>
+            <View style={[styles.timerTrack, { backgroundColor: colors.muted }]}>
+              <Ionicons name="time-outline" size={16} color={colors.primary} />
+              <Text style={[styles.timerLabel, { color: colors.mutedForeground }]}>مدت تماس</Text>
+              <Text style={[styles.timer, { color: colors.foreground }]}>{formatDuration(elapsed)}</Text>
+            </View>
+          </View>
+        </View>
+
         {hasRemoteVideo && remoteStream ? (
           <View style={[styles.videoStage, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <RemoteVideo
@@ -354,7 +378,7 @@ export default function ConsultantCallScreen() {
             </View>
           </View>
         ) : (
-          <View style={styles.voiceStage}>
+          <View style={[styles.voiceStage, { borderColor: colors.border, backgroundColor: colors.secondary }]}>
             <View style={[styles.avatarOuter, { backgroundColor: colors.secondary, borderColor: connected ? colors.success : colors.accent }]}>
               <View style={[styles.avatarInner, { backgroundColor: colors.card }]}>
                 <Ionicons name="paw" size={38} color={colors.primary} />
@@ -366,27 +390,6 @@ export default function ConsultantCallScreen() {
             </View>
           </View>
         )}
-
-        <View style={[styles.callInfo, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.callInfoTop}>
-            <Text style={[styles.kicker, { color: colors.primary }]}>مشاوره‌ی صوتی پتی‌پای</Text>
-            <View style={[styles.privateBadge, { backgroundColor: colors.secondary }]}>
-              <Ionicons name="shield-checkmark-outline" size={13} color={colors.primary} />
-              <Text style={[styles.privateBadgeText, { color: colors.secondaryForeground }]}>خصوصی</Text>
-            </View>
-          </View>
-          <Text style={[styles.name, { color: colors.foreground }]}>{matchingCall?.displayName ?? 'تماس مشاوره'}</Text>
-          <View style={styles.liveStatus}>
-            <View style={[styles.liveDot, { backgroundColor: connected ? colors.success : colors.warning }]} />
-            <Text style={[styles.status, { color: colors.mutedForeground }]}>{status}</Text>
-          </View>
-          <View style={[styles.timerTrack, { backgroundColor: colors.muted }]}>
-            <Ionicons name="time-outline" size={17} color={colors.primary} />
-            <Text style={[styles.timerLabel, { color: colors.mutedForeground }]}>مدت تماس</Text>
-            <View style={styles.timerSpacer} />
-            <Text style={[styles.timer, { color: colors.foreground }]}>{formatDuration(elapsed)}</Text>
-          </View>
-        </View>
 
         {petCardBatches.length > 0 ? (
           <View
@@ -533,28 +536,30 @@ const styles = StyleSheet.create({
   chatButton: { minHeight: 46, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7, paddingHorizontal: 13, borderRadius: 14 },
   chatButtonText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   mainScroll: { flex: 1 },
-  mainContent: { alignItems: 'center', justifyContent: 'center', gap: 11, paddingVertical: 6 },
-  voiceStage: { alignItems: 'center', gap: 9, marginVertical: 2 },
-  avatarOuter: { width: 106, height: 106, borderRadius: 38, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  avatarInner: { width: 82, height: 82, borderRadius: 29, alignItems: 'center', justifyContent: 'center' },
+  mainContent: { alignItems: 'stretch', justifyContent: 'flex-start', gap: 12, paddingVertical: 8 },
+  voiceStage: { alignItems: 'center', justifyContent: 'center', gap: 9, minHeight: 255, marginVertical: 1, borderRadius: 26, borderWidth: 1 },
+  avatarOuter: { width: 124, height: 124, borderRadius: 43, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  avatarInner: { width: 98, height: 98, borderRadius: 34, alignItems: 'center', justifyContent: 'center' },
   audioOnlyBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 5 },
   audioOnlyText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
-  videoStage: { width: '100%', height: 250, maxHeight: 330, borderRadius: 24, borderWidth: 1, overflow: 'hidden', position: 'relative' },
+  videoStage: { width: '100%', height: 300, maxHeight: 360, borderRadius: 25, borderWidth: 1, overflow: 'hidden', position: 'relative' },
   videoBadge: { position: 'absolute', right: 11, bottom: 11, zIndex: 1, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 12 },
   videoBadgeText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
   liveDot: { width: 7, height: 7, borderRadius: 4 },
-  callInfo: { width: '100%', borderWidth: 1, borderRadius: 21, paddingHorizontal: 15, paddingVertical: 13, alignItems: 'center', gap: 7, shadowColor: '#5D2934', shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
+  callInfo: { width: '100%', borderWidth: 1, borderRadius: 19, paddingHorizontal: 14, paddingVertical: 12, gap: 10, elevation: 0 },
   callInfoTop: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
+  callTitleBlock: { alignItems: 'flex-end', gap: 3 },
+  sessionStatusRow: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 9 },
   privateBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, borderRadius: 9, paddingHorizontal: 7, paddingVertical: 5 },
   privateBadgeText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
   kicker: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  name: { fontSize: 21, fontWeight: '800', textAlign: 'center', writingDirection: 'rtl' },
+  name: { fontSize: 17, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
   liveStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7 },
   status: { fontSize: 11, textAlign: 'right', writingDirection: 'rtl' },
-  timerTrack: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', gap: 8, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginTop: 1 },
+  timerTrack: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 11, paddingHorizontal: 9, paddingVertical: 6 },
   timerLabel: { fontSize: 10, writingDirection: 'rtl' },
   timerSpacer: { flex: 1 },
-  timer: { fontSize: 21, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  timer: { fontSize: 16, fontWeight: '800', fontVariant: ['tabular-nums'] },
   petCardsPanel: { width: '100%', maxHeight: 174, borderWidth: 1, borderRadius: 18, padding: 10, gap: 8 },
   petCardsHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7 },
   petHeadingIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
@@ -576,7 +581,7 @@ const styles = StyleSheet.create({
   settingsText: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
   rejoinButton: { minHeight: 44, width: '100%', flexDirection: 'row-reverse', gap: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, borderRadius: 14 },
   rejoinText: { fontWeight: '700', fontSize: 11, writingDirection: 'rtl' },
-  controlDock: { borderWidth: 1, borderRadius: 20, padding: 8, marginTop: 5, shadowColor: '#5D2934', shadowOpacity: 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  controlDock: { borderWidth: 1, borderRadius: 18, padding: 8, marginTop: 5, elevation: 2 },
   controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 6 },
   control: { flex: 1, minWidth: 0, minHeight: 67, borderRadius: 15, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 5 },
   controlLabel: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },

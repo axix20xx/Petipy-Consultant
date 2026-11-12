@@ -231,26 +231,12 @@ export default function ConsultantCallActivityScreen() {
           />
         }
       >
-        <View style={[styles.hero, { backgroundColor: colors.primary }]}>
-          <View style={styles.heroTop}>
-            <View style={[styles.heroMark, { backgroundColor: colors.primaryForeground }]}>
-              <Ionicons name="paw" size={17} color={colors.primary} />
-            </View>
-            <Text style={[styles.heroBrand, { color: colors.primaryForeground }]}>PETIPY  /  CONSULTANT</Text>
-            <RefreshButton
-              refreshing={refreshing}
-              onPress={() => void refreshAll()}
-              colors={colors}
-            />
+        <View style={styles.historyTop}>
+          <View style={styles.historyTopCopy}>
+            <Text style={[styles.historyEyebrow, { color: colors.primary }]}>دفتر تماس‌ها</Text>
+            <Text style={[styles.historyPageTitle, { color: colors.foreground }]}>آمار و سوابق</Text>
           </View>
-          <View style={styles.heroCopy}>
-            <Text style={[styles.eyebrow, { color: colors.primaryForeground }]}>دفتر تماس‌ها</Text>
-            <Text style={[styles.title, { color: colors.primaryForeground }]}>آمار و سوابق</Text>
-            <Text style={[styles.subtitle, { color: colors.primaryForeground }]}>
-              عملکرد تماس‌های مشاوره‌ی شما
-            </Text>
-          </View>
-          <View pointerEvents="none" style={[styles.heroRing, { borderColor: colors.primaryForeground }]} />
+          <RefreshButton refreshing={refreshing} onPress={() => void refreshAll()} colors={colors} />
         </View>
 
         <View style={styles.periodIntro}>
@@ -355,35 +341,6 @@ export default function ConsultantCallActivityScreen() {
           </View>
         ) : analytics.data ? (
           <>
-            <View style={[styles.trendCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={styles.trendHeader}>
-                <View>
-                  <Text style={[styles.trendTitle, { color: colors.foreground }]}>روند تماس‌ها</Text>
-                  <Text style={[styles.trendCaption, { color: colors.mutedForeground }]}>بر پایه‌ی آمار ثبت‌شده‌ی سرور</Text>
-                </View>
-                <View style={[styles.trendBadge, { backgroundColor: colors.secondary }]}>
-                  <Ionicons name="stats-chart-outline" size={15} color={colors.primary} />
-                  <Text style={[styles.trendBadgeText, { color: colors.secondaryForeground }]}>{days === 365 ? 'ماهانه' : days === 90 ? 'هفتگی' : 'روزانه'}</Text>
-                </View>
-              </View>
-              {(() => {
-                const buckets = getTrendBuckets(analytics.data.daily, days);
-                const peak = Math.max(1, ...buckets.map((bucket) => bucket.calls));
-                return (
-                  <View style={styles.chart}>
-                    {buckets.map((bucket, index) => (
-                      <View key={`${bucket.label}-${index}`} style={styles.chartColumn}>
-                        <Text style={[styles.chartValue, { color: colors.mutedForeground }]}>{bucket.calls ? new Intl.NumberFormat('fa-IR').format(bucket.calls) : ''}</Text>
-                        <View style={[styles.chartTrack, { backgroundColor: colors.muted }]}>
-                          <View style={[styles.chartBar, { backgroundColor: bucket.calls ? colors.primary : colors.input, height: `${Math.max(bucket.calls ? 10 : 4, (bucket.calls / peak) * 100)}%` }]} />
-                        </View>
-                        <Text numberOfLines={1} style={[styles.chartLabel, { color: colors.mutedForeground }]}>{bucket.label}</Text>
-                      </View>
-                    ))}
-                  </View>
-                );
-              })()}
-            </View>
             <View style={[styles.metricsGrid, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <MetricCard
                 icon="time-outline"
@@ -415,6 +372,35 @@ export default function ConsultantCallActivityScreen() {
                 color={colors.destructive}
                 colors={colors}
               />
+            </View>
+            <View style={[styles.trendCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={styles.trendHeader}>
+                <View>
+                  <Text style={[styles.trendTitle, { color: colors.foreground }]}>روند تماس‌ها</Text>
+                  <Text style={[styles.trendCaption, { color: colors.mutedForeground }]}>بر پایه‌ی آمار ثبت‌شده‌ی سرور</Text>
+                </View>
+                <View style={[styles.trendBadge, { backgroundColor: colors.secondary }]}>
+                  <Ionicons name="stats-chart-outline" size={15} color={colors.primary} />
+                  <Text style={[styles.trendBadgeText, { color: colors.secondaryForeground }]}>{days === 365 ? 'ماهانه' : days === 90 ? 'هفتگی' : 'روزانه'}</Text>
+                </View>
+              </View>
+              {(() => {
+                const buckets = getTrendBuckets(analytics.data.daily, days);
+                const peak = Math.max(1, ...buckets.map((bucket) => bucket.calls));
+                return (
+                  <View style={styles.chart}>
+                    {buckets.map((bucket, index) => (
+                      <View key={`${bucket.label}-${index}`} style={styles.chartColumn}>
+                        <Text style={[styles.chartValue, { color: colors.mutedForeground }]}>{bucket.calls ? new Intl.NumberFormat('fa-IR').format(bucket.calls) : ''}</Text>
+                        <View style={[styles.chartTrack, { backgroundColor: colors.muted }]}>
+                          <View style={[styles.chartBar, { backgroundColor: bucket.calls ? colors.primary : colors.input, height: `${Math.max(bucket.calls ? 10 : 4, (bucket.calls / peak) * 100)}%` }]} />
+                        </View>
+                        <Text numberOfLines={1} style={[styles.chartLabel, { color: colors.mutedForeground }]}>{bucket.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                );
+              })()}
             </View>
             {analytics.data.totalCalls === 0 ? (
               <Text
@@ -566,9 +552,13 @@ export default function ConsultantCallActivityScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 28, gap: 11 },
+  content: { paddingHorizontal: 18, paddingTop: 10, paddingBottom: 26, gap: 11 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  hero: { minHeight: 171, borderRadius: 25, padding: 17, overflow: 'hidden', justifyContent: 'space-between', marginBottom: 4 },
+  historyTop: { minHeight: 54, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 },
+  historyTopCopy: { alignItems: 'flex-end', gap: 2 },
+  historyEyebrow: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  historyPageTitle: { fontSize: 22, fontWeight: '800', writingDirection: 'rtl' },
+  hero: { minHeight: 80, borderRadius: 18, padding: 14, overflow: 'hidden', justifyContent: 'space-between', marginBottom: 4 },
   heroTop: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
   heroMark: { width: 35, height: 35, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   heroBrand: { flex: 1, fontSize: 9, fontWeight: '800', letterSpacing: 1.1 },
@@ -640,7 +630,7 @@ const styles = StyleSheet.create({
   },
   metricLabel: { flexShrink: 1, fontSize: 11, writingDirection: 'rtl' },
   metricValue: { fontSize: 23, fontWeight: '700', writingDirection: 'rtl' },
-  trendCard: { borderWidth: 1, borderRadius: 21, padding: 15, marginTop: 5, shadowColor: '#5D2934', shadowOpacity: 0.04, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
+  trendCard: { borderWidth: 1, borderRadius: 17, padding: 14, marginTop: 5, elevation: 0 },
   trendHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 },
   trendTitle: { fontSize: 14, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
   trendCaption: { fontSize: 10, marginTop: 3, textAlign: 'right', writingDirection: 'rtl' },
@@ -659,7 +649,7 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   historyHeading: { marginTop: 20, marginBottom: 3 },
-  historyList: { marginTop: 4, borderWidth: 1, borderRadius: 21, overflow: 'hidden', shadowColor: '#5D2934', shadowOpacity: 0.035, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 1 },
+  historyList: { marginTop: 4, borderWidth: 1, borderRadius: 17, overflow: 'hidden', elevation: 0 },
   historyRow: {
     alignItems: 'center',
     flexDirection: 'row-reverse',

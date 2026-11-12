@@ -190,7 +190,7 @@ export default function VoiceCallAttachmentWebScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 72,
+    minHeight: 68,
     flexDirection: 'row-reverse',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -219,6 +219,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 28,
     gap: 14,
+    margin: 18,
+    borderRadius: 20,
   },
   stateText: {
     fontSize: 12,

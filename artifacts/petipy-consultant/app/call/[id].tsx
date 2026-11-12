@@ -44,6 +44,7 @@ export default function ConsultantCallScreen() {
   const [status, setStatus] = useState('در حال آماده‌سازی تماس…');
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
+  const [hasConnectedOnce, setHasConnectedOnce] = useState(false);
   const [muted, setMuted] = useState(false);
   const [audioRoute, setAudioRoute] = useState<'earpiece' | 'speaker'>(
     'earpiece',
@@ -64,6 +65,9 @@ export default function ConsultantCallScreen() {
   const hasRemoteVideo =
     remoteStream?.getVideoTracks().some((track) => track.readyState === 'live') ??
     false;
+  const sharedPetNames = petCardBatches
+    .flatMap((batch) => batch.pets.map((pet) => pet.name))
+    .join('، ');
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
@@ -80,6 +84,7 @@ export default function ConsultantCallScreen() {
     let isMounted = true;
     setError(null);
     setConnected(false);
+    setHasConnectedOnce(false);
     setElapsed(0);
     setRemoteStream(null);
     setPetCardBatches([]);
@@ -101,6 +106,7 @@ export default function ConsultantCallScreen() {
           if (!isMounted) return;
           connectedAtRef.current ??= Date.now();
           setConnected(true);
+          setHasConnectedOnce(true);
           setError(null);
           setStatus('تماس برقرار است');
           setAvailabilityCallState(callId ?? null, 'connected');
@@ -352,14 +358,18 @@ export default function ConsultantCallScreen() {
             </View>
           </View>
           <View style={[styles.sessionStatusRow, { borderTopColor: colors.border }]}>
-            <View style={styles.liveStatus}>
+            <View style={[styles.liveStatus, { backgroundColor: connected ? colors.secondary : colors.accent }]}>
               <View style={[styles.liveDot, { backgroundColor: connected ? colors.success : colors.warning }]} />
-              <Text style={[styles.status, { color: colors.mutedForeground }]}>{status}</Text>
+              <Text style={[styles.status, { color: connected ? colors.success : colors.accentForeground }]}>{status}</Text>
             </View>
             <View style={[styles.timerTrack, { backgroundColor: colors.muted }]}>
               <Ionicons name="time-outline" size={16} color={colors.primary} />
-              <Text style={[styles.timerLabel, { color: colors.mutedForeground }]}>مدت تماس</Text>
-              <Text style={[styles.timer, { color: colors.foreground }]}>{formatDuration(elapsed)}</Text>
+              <Text style={[styles.timerLabel, { color: colors.mutedForeground }]}>
+                {hasConnectedOnce || elapsed > 0 ? 'مدت تماس' : 'پس از اتصال'}
+              </Text>
+              <Text style={[styles.timer, { color: colors.foreground }]}>
+                {hasConnectedOnce || elapsed > 0 ? formatDuration(elapsed) : '—:—'}
+              </Text>
             </View>
           </View>
         </View>
@@ -381,13 +391,37 @@ export default function ConsultantCallScreen() {
           <View style={[styles.voiceStage, { borderColor: colors.border, backgroundColor: colors.secondary }]}>
             <View style={[styles.avatarOuter, { backgroundColor: colors.secondary, borderColor: connected ? colors.success : colors.accent }]}>
               <View style={[styles.avatarInner, { backgroundColor: colors.card }]}>
-                <Ionicons name="paw" size={38} color={colors.primary} />
+                <Text style={[styles.presenceInitial, { color: colors.primary }]}>
+                  {matchingCall?.displayName?.trim().slice(0, 1) || 'پ'}
+                </Text>
               </View>
             </View>
             <View style={[styles.audioOnlyBadge, { backgroundColor: colors.secondary }]}>
               <Ionicons name="mic-outline" size={14} color={colors.secondaryForeground} />
               <Text style={[styles.audioOnlyText, { color: colors.secondaryForeground }]}>تماس صوتی</Text>
             </View>
+            <Text style={[styles.presenceName, { color: colors.foreground }]} numberOfLines={1}>
+              {matchingCall?.displayName ?? 'تماس مشاوره'}
+            </Text>
+            <Text style={[styles.presenceState, { color: colors.mutedForeground }]} numberOfLines={1}>
+              {connected ? 'تماس صوتی برقرار است' : status}
+            </Text>
+            <View style={styles.voiceWave} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              {[10, 18, 25, 15, 22, 12, 19, 9, 16].map((height, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.voiceWaveBar,
+                    { height, backgroundColor: index === 4 ? colors.primary : colors.accent },
+                  ]}
+                />
+              ))}
+            </View>
+            {sharedPetNames ? (
+              <Text style={[styles.presencePet, { color: colors.mutedForeground }]} numberOfLines={1}>
+                برای {sharedPetNames}
+              </Text>
+            ) : null}
           </View>
         )}
 
@@ -537,11 +571,17 @@ const styles = StyleSheet.create({
   chatButtonText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   mainScroll: { flex: 1 },
   mainContent: { alignItems: 'stretch', justifyContent: 'flex-start', gap: 12, paddingVertical: 8 },
-  voiceStage: { alignItems: 'center', justifyContent: 'center', gap: 9, minHeight: 255, marginVertical: 1, borderRadius: 26, borderWidth: 1 },
+  voiceStage: { alignItems: 'center', justifyContent: 'center', gap: 9, minHeight: 255, marginVertical: 1, borderRadius: 26, borderWidth: 1, paddingHorizontal: 18, paddingVertical: 16 },
   avatarOuter: { width: 124, height: 124, borderRadius: 43, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   avatarInner: { width: 98, height: 98, borderRadius: 34, alignItems: 'center', justifyContent: 'center' },
+  presenceInitial: { fontSize: 48, fontWeight: '700', writingDirection: 'rtl' },
   audioOnlyBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 5 },
   audioOnlyText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  presenceName: { maxWidth: '90%', fontSize: 18, fontWeight: '800', writingDirection: 'rtl' },
+  presenceState: { maxWidth: '100%', fontSize: 11, textAlign: 'center', writingDirection: 'rtl' },
+  voiceWave: { height: 27, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 2 },
+  voiceWaveBar: { width: 3, borderRadius: 2 },
+  presencePet: { maxWidth: '100%', fontSize: 10, textAlign: 'center', writingDirection: 'rtl' },
   videoStage: { width: '100%', height: 300, maxHeight: 360, borderRadius: 25, borderWidth: 1, overflow: 'hidden', position: 'relative' },
   videoBadge: { position: 'absolute', right: 11, bottom: 11, zIndex: 1, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 12 },
   videoBadgeText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
@@ -554,12 +594,12 @@ const styles = StyleSheet.create({
   privateBadgeText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
   kicker: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
   name: { fontSize: 17, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
-  liveStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7 },
-  status: { fontSize: 11, textAlign: 'right', writingDirection: 'rtl' },
-  timerTrack: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 11, paddingHorizontal: 9, paddingVertical: 6 },
-  timerLabel: { fontSize: 10, writingDirection: 'rtl' },
+  liveStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7, borderRadius: 11, paddingHorizontal: 9, paddingVertical: 7 },
+  status: { maxWidth: 190, fontSize: 12, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
+  timerTrack: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 7 },
+  timerLabel: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
   timerSpacer: { flex: 1 },
-  timer: { fontSize: 16, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  timer: { fontSize: 21, fontWeight: '800', fontVariant: ['tabular-nums'] },
   petCardsPanel: { width: '100%', maxHeight: 174, borderWidth: 1, borderRadius: 18, padding: 10, gap: 8 },
   petCardsHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7 },
   petHeadingIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },

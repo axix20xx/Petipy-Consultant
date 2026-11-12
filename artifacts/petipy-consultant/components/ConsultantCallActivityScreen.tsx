@@ -112,21 +112,23 @@ function MetricCard({
   value,
   color,
   colors,
+  compact = false,
 }: {
   icon: 'time-outline' | 'call-outline' | 'checkmark-circle-outline' | 'close-circle-outline';
   label: string;
   value: string;
   color: string;
   colors: ReturnType<typeof useColors>;
+  compact?: boolean;
 }) {
   return (
     <View
       style={[
-        styles.metricCard,
+        compact ? styles.metricCompact : styles.metricCard,
         {
-          backgroundColor: colors.background,
+          backgroundColor: compact ? colors.card : colors.background,
           borderColor: colors.border,
-          borderRadius: 17,
+          borderRadius: compact ? 0 : 17,
         },
       ]}
     >
@@ -341,22 +343,36 @@ export default function ConsultantCallActivityScreen() {
           </View>
         ) : analytics.data ? (
           <>
-            <View style={[styles.metricsGrid, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.answeredHero, { backgroundColor: colors.primary }]}>
+              <View style={styles.answeredHeroTop}>
+                <View style={[styles.answeredPeriod, { backgroundColor: colors.primaryForeground }]}>
+                  <Text style={[styles.answeredPeriodText, { color: colors.primary }]}>
+                    {days === 365 ? '۱۲ ماه گذشته' : `${new Intl.NumberFormat('fa-IR').format(days)} روز گذشته`}
+                  </Text>
+                </View>
+                <View style={styles.answeredTitleCopy}>
+                  <Text style={[styles.answeredLabel, { color: colors.primaryForeground }]}>دقایق پاسخ‌گویی</Text>
+                  <Text style={[styles.answeredCaption, { color: colors.primaryForeground }]}>بر پایه‌ی زمان گفت‌وگوی ثبت‌شده در سرور</Text>
+                </View>
+              </View>
+              <View style={styles.answeredValueLine}>
+                <Text style={[styles.answeredValue, { color: colors.primaryForeground }]}>
+                  {formatAnsweredMinutes(analytics.data.totalSpokenSeconds)}
+                </Text>
+              </View>
+            </View>
+            <View style={[styles.metricsStrip, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <MetricCard
-                icon="time-outline"
-                label="دقایق پاسخ‌گویی"
-                value={formatAnsweredMinutes(analytics.data.totalSpokenSeconds)}
-                color={colors.primary}
-                colors={colors}
-              />
-              <MetricCard
+                compact
                 icon="call-outline"
                 label="کل تماس‌ها"
                 value={String(analytics.data.totalCalls)}
-                color={colors.warning}
+                color={colors.primary}
                 colors={colors}
               />
+              <View style={[styles.metricDivider, { backgroundColor: colors.border }]} />
               <MetricCard
+                compact
                 icon="checkmark-circle-outline"
                 label="نرخ پاسخ‌گویی"
                 value={`${new Intl.NumberFormat('fa-IR', {
@@ -365,9 +381,11 @@ export default function ConsultantCallActivityScreen() {
                 color={colors.success}
                 colors={colors}
               />
+              <View style={[styles.metricDivider, { backgroundColor: colors.border }]} />
               <MetricCard
+                compact
                 icon="close-circle-outline"
-                label="تماس‌های بی‌پاسخ"
+                label="بی‌پاسخ"
                 value={String(analytics.data.missedCalls)}
                 color={colors.destructive}
                 colors={colors}
@@ -463,19 +481,21 @@ export default function ConsultantCallActivityScreen() {
             </Pressable>
           </View>
         ) : recentHistory.length > 0 ? (
-          <View style={[styles.historyList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.historyList}>
+            <View style={[styles.timelineRail, { backgroundColor: colors.border }]} />
             {recentHistory.map((entry, index) => (
               <View
                 key={entry.id}
                 style={[
                   styles.historyRow,
                   {
-                    borderBottomColor: colors.border,
                     borderBottomWidth: index === recentHistory.length - 1 ? 0 : StyleSheet.hairlineWidth,
+                    borderBottomColor: colors.border,
                   },
                 ]}
                 testID={`call-history-${entry.id}`}
               >
+                <View style={[styles.timelineDot, { backgroundColor: entry.status === 'completed' ? colors.success : colors.warning, borderColor: colors.background }]} />
                 <View style={[styles.historyIcon, { backgroundColor: colors.secondary }]}>
                   <Ionicons
                     name={entry.status === 'completed' ? 'checkmark' : 'call-outline'}
@@ -599,16 +619,24 @@ const styles = StyleSheet.create({
   sectionHint: { fontSize: 11, writingDirection: 'rtl' },
   periodStamp: { borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
   periodStampText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
-  metricsGrid: {
+  answeredHero: { minHeight: 156, borderRadius: 23, padding: 18, gap: 14, overflow: 'hidden' },
+  answeredHeroTop: { flexDirection: 'row-reverse', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
+  answeredTitleCopy: { flex: 1, alignItems: 'flex-end', gap: 5 },
+  answeredLabel: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
+  answeredCaption: { maxWidth: 230, fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl', opacity: 0.84 },
+  answeredPeriod: { borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
+  answeredPeriodText: { fontSize: 10, fontWeight: '800', writingDirection: 'rtl' },
+  answeredValueLine: { flexDirection: 'row-reverse', alignItems: 'baseline', marginTop: 'auto' },
+  answeredValue: { fontSize: 35, fontWeight: '800', writingDirection: 'rtl' },
+  metricsStrip: {
     flexDirection: 'row-reverse',
-    flexWrap: 'wrap',
-    gap: 0,
-    marginTop: 10,
     borderWidth: 1,
-    borderRadius: 22,
-    padding: 9,
-    overflow: 'hidden',
+    borderRadius: 17,
+    paddingVertical: 11,
+    paddingHorizontal: 6,
+    alignItems: 'stretch',
   },
+  metricDivider: { width: StyleSheet.hairlineWidth, alignSelf: 'stretch', marginVertical: 2 },
   analyticsSkeleton: { minHeight: 188, borderWidth: 1, borderRadius: 21, padding: 13, gap: 14, marginTop: 5 },
   skeletonMetrics: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 8 },
   skeletonMetric: { flexBasis: '45%', flexGrow: 1, minHeight: 70, borderRadius: 13, padding: 11, justifyContent: 'space-between', alignItems: 'flex-end' },
@@ -623,6 +651,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
   },
+  metricCompact: { flex: 1, minWidth: 0, alignItems: 'flex-end', justifyContent: 'space-between', gap: 7, paddingHorizontal: 8 },
   metricHeading: {
     alignItems: 'center',
     flexDirection: 'row-reverse',
@@ -638,10 +667,10 @@ const styles = StyleSheet.create({
   trendBadgeText: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
   chart: { height: 142, flexDirection: 'row-reverse', alignItems: 'stretch', justifyContent: 'space-between', gap: 4, paddingTop: 5 },
   chartColumn: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 5, minWidth: 0 },
-  chartValue: { height: 13, fontSize: 8, fontWeight: '600' },
+  chartValue: { height: 13, fontSize: 9, fontWeight: '600' },
   chartTrack: { width: '70%', flex: 1, justifyContent: 'flex-end', overflow: 'hidden', borderRadius: 7 },
   chartBar: { width: '100%', minHeight: 3, borderRadius: 7 },
-  chartLabel: { maxWidth: '100%', height: 15, fontSize: 8, textAlign: 'center', writingDirection: 'rtl' },
+  chartLabel: { maxWidth: '100%', height: 15, fontSize: 9, textAlign: 'center', writingDirection: 'rtl' },
   emptyHint: {
     fontSize: 12,
     marginTop: 9,
@@ -649,13 +678,16 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   historyHeading: { marginTop: 20, marginBottom: 3 },
-  historyList: { marginTop: 4, borderWidth: 1, borderRadius: 17, overflow: 'hidden', elevation: 0 },
+  historyList: { marginTop: 4, position: 'relative', paddingRight: 17 },
+  timelineRail: { position: 'absolute', right: 17, top: 8, bottom: 14, width: 1 },
+  timelineDot: { position: 'absolute', right: 0, top: 18, width: 9, height: 9, borderWidth: 2, borderRadius: 5 },
   historyRow: {
+    position: 'relative',
     alignItems: 'center',
     flexDirection: 'row-reverse',
     gap: 11,
-    minHeight: 72,
-    paddingHorizontal: 13,
+    minHeight: 69,
+    paddingHorizontal: 3,
     paddingVertical: 10,
   },
   historyIcon: {

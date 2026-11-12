@@ -8,15 +8,17 @@ The redesign is for a narrow portrait phone, including the user's Samsung Galaxy
 
 ## User direction
 
-The user explicitly rejected the previous dark, pink-heavy screen and asked for a complete structural redesign, not a color-only pass. Use a bright white-and-purple light theme throughout, with a cute, polished Petipy character. Do not use the previous ivory/ruby or dark appearance.
+The user explicitly rejected the existing screen structure and said the previous redesign still looked unchanged. This is a full re-think of the interface, not another pass over the same layout. Use the supplied real-device screenshot as the baseline. Do not preserve its greeting/header → oversized availability panel → stack of request cards → footer composition.
+
+Use a bright white-and-purple light theme throughout, with a cute but polished Petipy personality. Do not use the previous ivory/ruby or dark, pink-heavy appearance. The user wants the whole app—including its screen structure, controls, and content hierarchy—taken to a visibly higher level.
 
 ## North star
 
-**A bright, reassuring call desk that makes the consultant's current availability and next call action obvious at a glance.**
+**A warm, confident consultant workspace that feels made for pet care and makes an incoming call unmistakably urgent without turning the rest of the app into a generic admin dashboard.**
 
 ## Structure to rethink
 
-- Replace the existing greeting + large saturated availability panel + generic queue-card stack. Do not preserve that composition with new colors.
+- Replace the existing home-screen composition, not just its colors or order. The user must recognize a different app structure on the next APK.
 - Rework the home, history, settings, sign-in, incoming-call, active-call, and in-call chat surfaces as one coherent product.
 - Keep navigation and the first meaningful content close to the top; avoid a tall decorative hero that pushes the call queue below the fold.
 - Give every screen one clear primary action and keep loading, empty, error, and unavailable-auth states designed with the same care.

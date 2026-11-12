@@ -160,27 +160,39 @@ export default function VoiceCallAttachmentWebScreen() {
             </Pressable>
           </View>
         ) : preview?.attachment.contentType.startsWith('image/') ? (
-          <Image
-            testID="attachment-image-preview"
-            source={{ uri: preview.url }}
-            resizeMode="contain"
-            style={styles.image}
-            onError={() => setError('بارگذاری تصویر ناموفق بود. دوباره تلاش کنید.')}
-            accessibilityLabel={preview.attachment.fileName}
-          />
+          <View style={[styles.previewFrame, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Image
+              testID="attachment-image-preview"
+              source={{ uri: preview.url }}
+              resizeMode="contain"
+              style={styles.image}
+              onError={() => setError('بارگذاری تصویر ناموفق بود. دوباره تلاش کنید.')}
+              accessibilityLabel={preview.attachment.fileName}
+            />
+            <View style={[styles.previewCaption, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Ionicons name="shield-checkmark-outline" size={15} color={colors.success} />
+              <Text style={[styles.previewCaptionText, { color: colors.mutedForeground }]}>پیش‌نمایش امن درون برنامه</Text>
+            </View>
+          </View>
         ) : preview?.attachment.contentType === 'application/pdf' ? (
-          createElement(Iframe, {
-            testID: 'attachment-pdf-preview',
-            src: preview.url,
-            title: preview.attachment.fileName,
-            referrerPolicy: 'no-referrer',
-            style: {
-              width: '100%',
-              height: '100%',
-              border: 'none',
-              backgroundColor: colors.background,
-            },
-          })
+          <View style={[styles.previewFrame, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {createElement(Iframe, {
+              testID: 'attachment-pdf-preview',
+              src: preview.url,
+              title: preview.attachment.fileName,
+              referrerPolicy: 'no-referrer',
+              style: {
+                width: '100%',
+                height: '100%',
+                border: 'none',
+                backgroundColor: colors.background,
+              },
+            })}
+            <View style={[styles.previewCaption, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Ionicons name="shield-checkmark-outline" size={15} color={colors.success} />
+              <Text style={[styles.previewCaptionText, { color: colors.mutedForeground }]}>پیش‌نمایش امن درون برنامه</Text>
+            </View>
+          </View>
         ) : null}
       </View>
     </SafeAreaView>
@@ -241,5 +253,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   retryText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  image: { flex: 1, width: '100%' },
+  previewFrame: { flex: 1, margin: 15, borderWidth: 1, borderRadius: 23, overflow: 'hidden', position: 'relative' },
+  image: { flex: 1, width: '100%', padding: 10 },
+  previewCaption: { position: 'absolute', top: 11, right: 11, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8 },
+  previewCaptionText: { fontSize: 10, writingDirection: 'rtl' },
 });

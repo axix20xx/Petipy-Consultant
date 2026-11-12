@@ -7,4 +7,4 @@ For Petipy Consultant redesigns, the user wants the app's screen structures reth
 
 **Why:** The user explicitly rejected a prior palette-led update, saying they wanted the whole UI structure changed.
 
-**How to apply:** Make visible hierarchy and composition changes across the relevant routes, force the light palette on Android, and check real screenshots before describing a redesign as complete.
+**How to apply:** Integrate the new hierarchy into the real Expo routes, not just a prototype; force the light palette on Android and compare actual screen screenshots before packaging.

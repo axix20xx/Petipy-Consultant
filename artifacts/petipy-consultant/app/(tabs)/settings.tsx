@@ -200,22 +200,6 @@ export default function SettingsScreen() {
               <Text style={[styles.body, { color: colors.mutedForeground }]}>
                 حساب فعال از API مشاور تأیید شد. API نقش و دسترسی VOICE_CONSULTANT را بررسی می‌کند.
               </Text>
-              <Pressable
-                testID="sign-out"
-                accessibilityRole="button"
-                onPress={() => void signOut()}
-                disabled={signingOut}
-                style={[styles.secondaryButton, { backgroundColor: colors.secondary }]}
-              >
-                {signingOut ? (
-                  <ActivityIndicator color={colors.primary} />
-                ) : (
-                  <Ionicons name="log-out-outline" size={18} color={colors.primary} />
-                )}
-                <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>
-                  خروج امن
-                </Text>
-              </Pressable>
             </>
           ) : (
             <>
@@ -491,6 +475,34 @@ export default function SettingsScreen() {
             </Text>
           </View>
         </View>
+
+        {isConnected ? (
+          <View style={styles.secureSessionSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionKicker, { color: colors.primary }]}>نشست امن</Text>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>مدیریت حساب</Text>
+            </View>
+            <Pressable
+              testID="sign-out"
+              accessibilityRole="button"
+              onPress={() => void signOut()}
+              disabled={signingOut}
+              style={({ pressed }) => [
+                styles.signOutButton,
+                { backgroundColor: colors.card, borderColor: colors.border, opacity: signingOut ? 0.7 : pressed ? 0.82 : 1 },
+              ]}
+            >
+              {signingOut ? (
+                <ActivityIndicator color={colors.destructive} />
+              ) : (
+                <Ionicons name="log-out-outline" size={18} color={colors.destructive} />
+              )}
+              <Text style={[styles.signOutText, { color: colors.destructive }]}>خروج امن</Text>
+              <View style={styles.signOutSpacer} />
+              <Ionicons name="chevron-back" size={16} color={colors.mutedForeground} />
+            </Pressable>
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -517,8 +529,8 @@ const styles = StyleSheet.create({
   sectionKicker: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6, writingDirection: 'rtl' },
   sectionTitle: { fontSize: 18, fontWeight: '800', writingDirection: 'rtl' },
   card: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 14, elevation: 0 },
-  accountCard: { borderRadius: 22, borderWidth: 1, padding: 16, gap: 13 },
-  capabilityPanel: { borderRadius: 18, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 7, elevation: 0 },
+  accountCard: { borderRadius: 20, borderWidth: 1, padding: 13, gap: 10 },
+  capabilityPanel: { borderRadius: 20, borderWidth: 1, paddingHorizontal: 13, paddingVertical: 5, elevation: 0 },
   serviceSummary: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9, borderRadius: 16, padding: 11, marginVertical: 7 },
   serviceSummaryIcon: { width: 39, height: 39, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   serviceSummaryCopy: { flex: 1, alignItems: 'flex-end', gap: 3 },
@@ -540,6 +552,10 @@ const styles = StyleSheet.create({
   error: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
   secondaryButton: { minHeight: 48, borderRadius: 16, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 16, alignSelf: 'flex-end' },
   secondaryButtonText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
+  secureSessionSection: { gap: 8, marginTop: 4 },
+  signOutButton: { minHeight: 52, flexDirection: 'row-reverse', alignItems: 'center', gap: 9, paddingHorizontal: 14, borderRadius: 15, borderWidth: 1 },
+  signOutText: { fontSize: 12, fontWeight: '800', writingDirection: 'rtl' },
+  signOutSpacer: { flex: 1 },
   statusBadge: { alignSelf: 'flex-end', flexDirection: 'row-reverse', alignItems: 'center', gap: 7, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20 },
   badgeDot: { width: 7, height: 7, borderRadius: 4 },
   badgeText: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
@@ -548,9 +564,9 @@ const styles = StyleSheet.create({
   rowCopy: { flex: 1, alignItems: 'flex-end', gap: 5 },
   rowTitleLine: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   rowStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 7, paddingVertical: 5 },
-  rowStatusText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  rowStatusText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   rowTitle: { flexShrink: 1, fontSize: 12, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
-  rowDetail: { fontSize: 11, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl' },
+  rowDetail: { fontSize: 12, lineHeight: 20, textAlign: 'right', writingDirection: 'rtl' },
   footnote: { fontSize: 11, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl', marginTop: 1 },
 });

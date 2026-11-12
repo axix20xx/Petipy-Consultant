@@ -306,15 +306,6 @@ export default function VoiceCallChatScreen() {
     >
       <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
         <View style={styles.headerMain}>
-          <Pressable
-            testID="voice-chat-back"
-            accessibilityRole="button"
-            accessibilityLabel="بازگشت به تماس"
-            onPress={() => router.back()}
-            style={({ pressed }) => [styles.iconButton, { backgroundColor: colors.secondary, opacity: pressed ? 0.74 : 1 }]}
-          >
-            <Ionicons name="arrow-forward" size={20} color={colors.primary} />
-          </Pressable>
           <View style={styles.chatSeal}>
             <Ionicons name="chatbubbles-outline" size={20} color={colors.primary} />
           </View>
@@ -339,6 +330,19 @@ export default function VoiceCallChatScreen() {
           <View style={styles.contextRailSpacer} />
           <Text style={[styles.contextRailLabel, { color: colors.secondaryForeground }]}>خصوصی</Text>
         </View>
+        <Pressable
+          testID="voice-chat-back"
+          accessibilityRole="button"
+          accessibilityLabel="بازگشت به تماس"
+          onPress={() => router.back()}
+          style={({ pressed }) => [
+            styles.backToCallButton,
+            { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.76 : 1 },
+          ]}
+        >
+          <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+          <Text style={[styles.backToCallText, { color: colors.primary }]}>بازگشت به تماس</Text>
+        </Pressable>
       </View>
 
       <KeyboardAvoidingView
@@ -516,11 +520,13 @@ const styles = StyleSheet.create({
   chatSeal: { width: 37, height: 37, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   headerText: { flex: 1, alignItems: 'flex-end', gap: 1 },
   title: { fontSize: 17, fontWeight: '800', writingDirection: 'rtl' },
-  subtitle: { fontSize: 9, writingDirection: 'rtl' },
-  contextRail: { minHeight: 32, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, borderRadius: 10 },
-  contextRailText: { fontSize: 9, writingDirection: 'rtl' },
+  subtitle: { fontSize: 10, writingDirection: 'rtl' },
+  contextRail: { minHeight: 34, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, borderRadius: 10 },
+  contextRailText: { fontSize: 10, writingDirection: 'rtl' },
   contextRailSpacer: { flex: 1 },
-  contextRailLabel: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  contextRailLabel: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  backToCallButton: { minHeight: 41, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7, borderWidth: 1, borderRadius: 12 },
+  backToCallText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   keyboardView: { flex: 1 },
   messageList: {
     flexGrow: 1,
@@ -550,7 +556,7 @@ const styles = StyleSheet.create({
   },
   messageTime: {
     alignSelf: 'flex-start',
-    fontSize: 9,
+    fontSize: 10,
     writingDirection: 'rtl',
     marginTop: 2,
   },

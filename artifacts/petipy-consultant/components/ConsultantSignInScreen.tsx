@@ -85,24 +85,18 @@ export default function ConsultantSignInScreen() {
         </View>
 
         <View style={styles.signInIntro}>
-          <View style={[styles.panelSeal, { backgroundColor: colors.secondary }]}>
-            <Ionicons name="paw" size={26} color={colors.primary} />
-          </View>
           <View style={styles.panelCopy}>
-            <Text style={[styles.panelKicker, { color: colors.primary }]}>میز مشاوره‌ی پتی‌پای</Text>
-            <Text style={[styles.title, { color: colors.foreground }]}>ورود مشاور</Text>
+            <Text style={[styles.panelKicker, { color: colors.primary }]}>فضای اختصاصی متخصصان حیوانات خانگی</Text>
+            <Text style={[styles.title, { color: colors.foreground }]}>به میز مشاوره{'\n'}خوش آمدید.</Text>
             <Text style={[styles.heroCopy, { color: colors.mutedForeground }]}>
-              پاسخ‌گویی امن برای حساب فعال مشاور صوتی
+              ورود فقط برای حساب فعال مشاور صوتی پتی‌پای امکان‌پذیر است.
             </Text>
           </View>
         </View>
 
         <View style={styles.formIntro}>
           <View style={styles.formIntroText}>
-            <Text style={[styles.formTitle, { color: colors.foreground }]}>ورود مشاور</Text>
-            <Text style={[styles.body, { color: colors.mutedForeground }]}>
-              دسترسی فقط برای حساب فعال مشاور صوتی
-            </Text>
+            <Text style={[styles.formTitle, { color: colors.foreground }]}>مشخصات حساب مشاور</Text>
           </View>
           <View style={[styles.roleTag, { backgroundColor: colors.muted }]}>
             <Text style={[styles.roleTagText, { color: colors.mutedForeground }]}>VOICE_CONSULTANT</Text>
@@ -110,13 +104,13 @@ export default function ConsultantSignInScreen() {
         </View>
 
         {devAuthAvailable ? (
-          <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.devNotice, { backgroundColor: colors.secondary }]}>
+          <View style={styles.formCard}>
+            <View style={[styles.devNotice, { backgroundColor: colors.secondary, borderRightColor: colors.primary }]}>
               <View style={[styles.noticeIcon, { backgroundColor: colors.card }]}>
                 <Ionicons name="flask-outline" size={17} color={colors.secondaryForeground} />
               </View>
               <Text style={[styles.noticeText, { color: colors.secondaryForeground }]}>
-                ورود آزمایشی فقط برای توسعه است. توکن فعلی ۲ ساعت اعتبار دارد و زمان انقضا را سرور تعیین می‌کند.
+                ورود آزمایشی توسعه‌ای است؛ این کد فقط در صورت فعال‌بودن احراز هویت توسعه روی سرور پذیرفته می‌شود. توکن فعلی ۲ ساعت اعتبار دارد و انقضا را سرور تعیین می‌کند.
               </Text>
             </View>
 
@@ -262,7 +256,7 @@ export default function ConsultantSignInScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  scrollContent: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24, gap: 17 },
+  scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24, gap: 19 },
   pageTop: { minHeight: 45, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
   brandLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   miniMark: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
@@ -271,22 +265,21 @@ const styles = StyleSheet.create({
   brandSub: { fontSize: 10, writingDirection: 'rtl' },
   securePill: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 8 },
   secureLabel: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  signInIntro: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14, paddingVertical: 8 },
-  panelSeal: { width: 52, height: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  panelCopy: { alignItems: 'flex-end', gap: 5, flex: 1 },
-  panelKicker: { fontSize: 9, fontWeight: '800', letterSpacing: 1.2, opacity: 0.78 },
-  title: { fontSize: 23, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
-  heroCopy: { maxWidth: 270, fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
+  signInIntro: { paddingTop: 25, paddingBottom: 4 },
+  panelCopy: { alignItems: 'flex-end', gap: 8, width: '100%' },
+  panelKicker: { fontSize: 11, fontWeight: '800', writingDirection: 'rtl' },
+  title: { fontSize: 30, lineHeight: 42, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  heroCopy: { maxWidth: 300, fontSize: 12, lineHeight: 21, textAlign: 'right', writingDirection: 'rtl' },
   panelDisc: { position: 'absolute', width: 158, height: 158, borderWidth: 1, borderRadius: 80, opacity: 0.11, top: -67, left: -35 },
   panelDiscSmall: { position: 'absolute', width: 100, height: 100, borderWidth: 1, borderRadius: 50, opacity: 0.1, top: -38, left: -7 },
-  formIntro: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 1 },
+  formIntro: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 4, marginBottom: -7 },
   formIntroText: { alignItems: 'flex-end', gap: 4 },
-  formTitle: { fontSize: 19, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  formTitle: { fontSize: 15, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
   body: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
   roleTag: { borderRadius: 9, paddingHorizontal: 8, paddingVertical: 6 },
-  roleTagText: { fontSize: 8, fontWeight: '700', letterSpacing: 0.3 },
-  formCard: { borderRadius: 20, borderWidth: 1, padding: 16, gap: 16, elevation: 1 },
-  devNotice: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, borderRadius: 15, paddingHorizontal: 12, paddingVertical: 11 },
+  roleTagText: { fontSize: 9, fontWeight: '700', letterSpacing: 0.3 },
+  formCard: { gap: 15 },
+  devNotice: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 10, borderRightWidth: 3, borderRadius: 13, paddingHorizontal: 12, paddingVertical: 11 },
   noticeIcon: { width: 31, height: 31, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   noticeText: { flex: 1, fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
   form: { gap: 15 },

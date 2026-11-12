@@ -1,0 +1,16 @@
+export const petipyTokens = {
+  background: '#F8F7FC',
+  surface: '#FFFFFF',
+  surfaceSoft: '#F2EEFB',
+  surfaceQuiet: '#FAF9FD',
+  ink: '#302747',
+  inkSoft: '#777287',
+  violet: '#6946C6',
+  violetDeep: '#4E329E',
+  violetPale: '#EEE9FB',
+  line: '#E6E2EF',
+  success: '#39856A',
+  warning: '#A97832',
+  danger: '#C84B62',
+  white: '#FFFFFF',
+} as const;

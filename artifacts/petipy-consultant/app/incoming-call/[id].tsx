@@ -37,6 +37,19 @@ function formatExpiryTime(value: string) {
   }).format(date);
 }
 
+function formatRemainingTime(value: string, now: number) {
+  const expiresAt = Date.parse(value);
+  if (!Number.isFinite(expiresAt)) return 'نامشخص';
+  const remainingSeconds = Math.max(0, Math.ceil((expiresAt - now) / 1000));
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+  const number = new Intl.NumberFormat('fa-IR', {
+    minimumIntegerDigits: 2,
+    useGrouping: false,
+  });
+  return `${number.format(minutes)}:${number.format(seconds)}`;
+}
+
 export default function IncomingCallScreen() {
   const colors = useColors();
   const router = useRouter();
@@ -57,6 +70,12 @@ export default function IncomingCallScreen() {
   const [accepting, setAccepting] = useState(false);
   const [rejecting, setRejecting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const queue = useQuery({
     queryKey: ['petipy', 'incoming-requests'],
@@ -244,11 +263,23 @@ export default function IncomingCallScreen() {
         <View style={[styles.callerCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.requestTopline}>
             <Text style={[styles.eyebrow, { color: colors.primary }]}>درخواست مشاوره</Text>
-            <View style={[styles.requestState, { backgroundColor: colors.secondary }]}>
+            <View style={[styles.requestState, { backgroundColor: colors.accent }]}>
               <View style={[styles.liveDot, { backgroundColor: colors.warning }]} />
-              <Text style={[styles.requestStateText, { color: colors.secondaryForeground }]}>در انتظار پاسخ</Text>
+              <Text style={[styles.requestStateText, { color: colors.accentForeground }]}>در انتظار پاسخ</Text>
             </View>
           </View>
+          {call?.expiresAt ? (
+            <View style={[styles.deadlineCard, { backgroundColor: colors.primary }]}>
+              <View style={[styles.deadlineIcon, { backgroundColor: colors.primaryForeground }]}>
+                <Ionicons name="time-outline" size={22} color={colors.primary} />
+              </View>
+              <View style={styles.deadlineCopy}>
+                <Text style={[styles.deadlineLabel, { color: colors.primaryForeground }]}>زمان باقی‌مانده</Text>
+                <Text style={[styles.deadlineTime, { color: colors.primaryForeground }]}>{formatRemainingTime(call.expiresAt, now)}</Text>
+              </View>
+              <Text style={[styles.deadlineNote, { color: colors.primaryForeground }]}>مهلت تا ساعت {formatExpiryTime(call.expiresAt)}</Text>
+            </View>
+          ) : null}
           <View style={styles.callerIdentity}>
             <View style={[styles.avatarHalo, { backgroundColor: colors.secondary, borderColor: colors.accent }]}>
               <View style={[styles.avatar, { backgroundColor: colors.card }]}>
@@ -273,14 +304,6 @@ export default function IncomingCallScreen() {
               <View style={[styles.subjectBlock, { backgroundColor: colors.background }]}>
                 <Text style={[styles.subjectLabel, { color: colors.mutedForeground }]}>موضوع درخواست</Text>
                 <Text style={[styles.subject, { color: colors.foreground }]}>{call.subject}</Text>
-              </View>
-            ) : null}
-            {call?.expiresAt ? (
-              <View style={styles.expiryLine}>
-                <Ionicons name="time-outline" size={15} color={colors.warning} />
-                <Text style={[styles.expiryText, { color: colors.mutedForeground }]}>
-                  مهلت پاسخ تا {formatExpiryTime(call.expiresAt)}
-                </Text>
               </View>
             ) : null}
           </View>
@@ -335,7 +358,7 @@ export default function IncomingCallScreen() {
                 onPress={() => void rejectCall()}
                 style={({ pressed }) => [
                   styles.rejectButton,
-                  { backgroundColor: colors.secondary, borderColor: colors.border, opacity: accepting || rejecting ? 0.55 : pressed ? 0.82 : 1 },
+                  { backgroundColor: colors.card, borderColor: colors.border, opacity: accepting || rejecting ? 0.55 : pressed ? 0.82 : 1 },
                 ]}
                 testID="incoming-call-reject"
               >
@@ -389,6 +412,12 @@ const styles = StyleSheet.create({
   requestTopline: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
   requestState: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
   requestStateText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  deadlineCard: { minHeight: 86, flexDirection: 'row-reverse', alignItems: 'center', gap: 11, borderRadius: 17, paddingHorizontal: 13, paddingVertical: 11 },
+  deadlineIcon: { width: 44, height: 44, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  deadlineCopy: { alignItems: 'flex-end', gap: 2 },
+  deadlineLabel: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl', opacity: 0.85 },
+  deadlineTime: { fontSize: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  deadlineNote: { flex: 1, fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl', opacity: 0.88 },
   callerIdentity: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12 },
   identityCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
   identityLabel: { fontSize: 10, writingDirection: 'rtl' },
@@ -402,8 +431,6 @@ const styles = StyleSheet.create({
   subjectBlock: { width: '100%', borderRadius: 12, padding: 10, gap: 4 },
   subjectLabel: { fontSize: 9, textAlign: 'right', writingDirection: 'rtl' },
   subject: { fontSize: 12, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl' },
-  expiryLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
-  expiryText: { fontSize: 10, writingDirection: 'rtl' },
   statusCard: { flexDirection: 'row-reverse', alignItems: 'center', borderWidth: 1, borderRadius: 16, gap: 10, marginTop: 4, padding: 11 },
   statusIcon: { width: 37, height: 37, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   statusCopy: { flex: 1, alignItems: 'flex-end', gap: 3 },

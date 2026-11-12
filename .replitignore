@@ -4,6 +4,7 @@
 # No need to store the pnpm store twice.
 .local
 /generated-artifacts/
+/artifacts/petipy-consultant/android/app/build/
 /.android-sdk/
 /.gradle-cache/
 /.gradle/

@@ -126,3 +126,17 @@ mtime_ms = 1794461330462
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/2b7d25eb-68a4-4eee-b8df-3a8748529bfe/0231a9e0-5c8f-4e1a-a07d-6d6f486e1956"
 storage_version_token = "1794461365698945"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "g1LBJ0nldJ_GbJIl53Wjn"
+uri = "file://generated-artifacts/Petipy-Consultant-1.0.7-arm64.apk"
+type = "unspecified"
+title = "Petipy Consultant 1.0.7 APK"
+description = "ARM64 sideload build for the Samsung Flip3 (package com.petipy.consultant). Signed with the app debug key; not a Play Store release."
+logical_id = "1c242658-fd8b-466a-bda4-a50199e295d5"
+content_hash = "sha256:eecd8f19c84983f8c7e85c7a5b3409c419f68a9d7de5763e6e7768802e322f6a"
+size = 59784079
+mtime_ms = 1794495064639
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/1c242658-fd8b-466a-bda4-a50199e295d5/dcb30427-c382-4c84-8587-d986c7d024f4"
+storage_version_token = "1794495286761675"
+content_type = "application/octet-stream"

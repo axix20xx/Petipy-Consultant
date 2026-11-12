@@ -24,7 +24,9 @@ import { listenForForegroundIncomingPush } from '@/lib/push-notifications';
 import { useConsultantSession } from '@/providers/consultant-session';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync().catch((error) => {
+  if (__DEV__) console.warn('Could not hold the splash screen open.', error);
+});
 I18nManager.allowRTL(true);
 
 const queryClient = new QueryClient();
@@ -119,7 +121,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
+      void SplashScreen.hideAsync().catch((error) => {
+        if (__DEV__) console.warn('Could not hide the splash screen.', error);
+      });
     }
   }, [fontsLoaded, fontError]);
 

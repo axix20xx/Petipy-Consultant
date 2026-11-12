@@ -103,14 +103,14 @@ content_type = "application/octet-stream"
 id = "lHXpUTTF34AIOHi__wnVi"
 uri = "file://artifacts/petipy-consultant/android/app/build/outputs/apk/release/app-release.apk"
 type = "unspecified"
-title = "Petipy Consultant 1.0.4 crash-test APK"
-description = "Arm64 sideload APK built without R8 minification. Signature and package checks passed. Launch fix is not confirmed until tested on the phone."
+title = "Petipy Consultant Android APK 1.0.6"
+description = "Sideloadable arm64 APK for Android 7+ (package com.petipy.consultant). Signed with the existing debug certificate for test installation."
 logical_id = "09abe92b-974c-44fa-a6ab-395cfc4615ee"
-content_hash = "sha256:2655b9fe7098e8ef3c4e267b8572144c5cf17f78195735447e5d3d09b8a2d174"
-size = 67844896
-mtime_ms = 1794422828730
-storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/09abe92b-974c-44fa-a6ab-395cfc4615ee/281e9388-d3dd-4891-b8a7-86ed2f65e8fe"
-storage_version_token = "1794422860880588"
+content_hash = "sha256:9bdf7be6196ad0788e0b6ba5bf22d5df4c56a695b4458bc5ebe21b29d4619945"
+size = 67869860
+mtime_ms = 1794463168033
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/09abe92b-974c-44fa-a6ab-395cfc4615ee/01511dde-3bfd-4eb2-aa6e-5084cf242e18"
+storage_version_token = "1794463213340406"
 content_type = "application/octet-stream"
 
 [[outputs]]

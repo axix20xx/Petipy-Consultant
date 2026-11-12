@@ -3,3 +3,4 @@
 - [Petipy Android builds](petipy-android-build.md) — Expo 58 needs API 37, Build Tools 37, and NDK 27; keep SDK/Gradle caches in workspace storage and build with one worker.
 - [Petipy background call alerts](petipy-consultant-background-alerts.md) — self-managed Telecom plus CallStyle; full-screen remains OS-gated, and channel settings need versioned IDs to reset.
 - [Petipy call media contracts](petipy-consultant-media.md) — use real API contracts; receive customer video only; gate connected status on WebRTC state.
+- [Petipy consultant UI direction](petipy-consultant-ui.md) — the user wants a white-purple light theme and materially new screen structures, not a palette-only restyle.

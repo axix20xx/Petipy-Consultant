@@ -11,11 +11,11 @@ For the incoming call screen, use an Android full-screen notification intent wit
 
 **Why:** Android documents this unlocked-versus-locked behavior for full-screen intents; a minimized app on an unlocked phone is expected to show heads-up, not launch an activity.
 
-The user wants consultant calls to arrive even after explicitly force-stopping the app. Ordinary Android apps cannot receive FCM or restart their service after force-stop until the person opens the app again; do not claim a mobile-only workaround exists. If this remains a product requirement, discuss a separate server-side fallback such as a phone-call escalation, which would not be an in-app call.
+The user chose app-only best-effort call delivery and declined a regular phone/SIP fallback. They still want calls while force-stopped, but ordinary Android apps cannot receive FCM or restart their service after force-stop until the person opens the app again; do not claim a mobile-only workaround exists or add external telephony unless the user changes direction.
 
-**Why:** The user selected calls after force-stop as the intended meaning of “call-only.”
+**Why:** The user chose “App-only best effort” when offered a server-side phone/SIP fallback.
 
-**How to apply:** Explain the OS boundary plainly. Offer reliable best-effort delivery while the app is backgrounded, and only propose non-app call routing if the user accepts that tradeoff.
+**How to apply:** Explain the OS boundary plainly and optimize delivery while the app is backgrounded, without adding a non-app phone-call path.
 
 Incoming-call ringing must stop when a request expires, is accepted, or otherwise leaves the authenticated API queue. The user reported that ringing continued after no answer or call completion.
 

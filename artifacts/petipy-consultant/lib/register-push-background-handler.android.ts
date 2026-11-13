@@ -8,11 +8,11 @@ try {
     messaging.getMessaging(),
     pushNotifications.handleBackgroundIncomingMessage,
   );
-} catch (error) {
+} catch {
   // Keep app startup available when native push setup is missing; foreground
-  // polling remains the fallback and this message contains no session data.
+  // polling remains the fallback. Avoid logging native error objects because
+  // third-party SDK errors can include request metadata.
   console.error(
-    'Background FCM handler registration failed; polling fallback remains available.',
-    error,
+    'Background FCM handler registration failed; foreground polling remains available.',
   );
 }

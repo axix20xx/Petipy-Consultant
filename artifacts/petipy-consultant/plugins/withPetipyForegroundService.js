@@ -10,6 +10,19 @@ function withPetipyNativeCallModule(config) {
     'android',
     async (mod) => {
       const projectRoot = mod.modRequest.projectRoot;
+      const proguardRulesPath = path.join(
+        projectRoot,
+        'android/app/proguard-rules.pro',
+      );
+      const optionalWebRtcRule = '-dontwarn org.webrtc.Dav1dDecoder$Natives';
+      const existingRules = fs.readFileSync(proguardRulesPath, 'utf8');
+      if (!existingRules.includes(optionalWebRtcRule)) {
+        fs.appendFileSync(
+          proguardRulesPath,
+          `\n# The bundled WebRTC build omits the optional Dav1d decoder JNI class.\n${optionalWebRtcRule}\n`,
+        );
+      }
+
       const javaDirectory = path.join(
         projectRoot,
         'android/app/src/main/java/com/petipy/consultant',

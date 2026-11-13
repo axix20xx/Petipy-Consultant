@@ -140,3 +140,17 @@ mtime_ms = 1794495064639
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/1c242658-fd8b-466a-bda4-a50199e295d5/dcb30427-c382-4c84-8587-d986c7d024f4"
 storage_version_token = "1794495286761675"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "q7T_a0DaaXWW5xTrfRlvW"
+uri = "file://generated-artifacts/Petipy-Consultant-1.0.8-arm64.apk"
+type = "unspecified"
+title = "Petipy Consultant 1.0.8 Android APK"
+description = "Sideloadable ARM64 APK for Samsung and other 64-bit Android phones."
+logical_id = "2fbb985c-1de6-4f29-8eaa-1438302be465"
+content_hash = "sha256:040a7ee6dda304b941ff0bafaf9b018afca2792f5ec82644705c23566d62a6ea"
+size = 60000373
+mtime_ms = 1794558439303
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/2fbb985c-1de6-4f29-8eaa-1438302be465/eaa70aac-f058-4a4f-8cfd-5601be335d92"
+storage_version_token = "1794558459608845"
+content_type = "application/octet-stream"

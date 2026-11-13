@@ -1,4 +1,8 @@
-const { withAndroidManifest, withDangerousMod } = require('expo/config-plugins');
+const {
+  withAndroidManifest,
+  withDangerousMod,
+  withGradleProperties,
+} = require('expo/config-plugins');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -78,7 +82,25 @@ function withPetipyNativeCallModule(config) {
 }
 
 module.exports = function withPetipyForegroundService(config) {
-  const withManifest = withAndroidManifest(config, (mod) => {
+  const withGradle = withGradleProperties(config, (mod) => {
+    const minifyProperty = mod.modResults.find(
+      (property) =>
+        property.type === 'property' &&
+        property.key === 'android.enableMinifyInReleaseBuilds',
+    );
+    if (minifyProperty) {
+      minifyProperty.value = 'false';
+    } else {
+      mod.modResults.push({
+        type: 'property',
+        key: 'android.enableMinifyInReleaseBuilds',
+        value: 'false',
+      });
+    }
+    return mod;
+  });
+
+  const withManifest = withAndroidManifest(withGradle, (mod) => {
     const manifest = mod.modResults.manifest;
     const app = manifest.application?.[0];
     if (!app) {

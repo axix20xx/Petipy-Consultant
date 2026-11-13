@@ -168,3 +168,17 @@ mtime_ms = 1794562867283
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/1ce8a312-8121-4b26-9bf9-dcacc41f21ab/7fa25c3c-67a8-49b9-878f-ff3880103054"
 storage_version_token = "1794563115727105"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "SwDetnB61dpSRlroRhibh"
+uri = "file://generated-artifacts/Petipy-Consultant-1.1.0-arm64.apk"
+type = "unspecified"
+title = "Petipy Consultant APK 1.1.0"
+description = "ARM64 Android release build targeting the WorkManager launch crash. Signed and verified; install over 1.0.9, then test opening the app on the Flip3."
+logical_id = "8c159c29-e20f-4216-bd21-0e31db0db554"
+content_hash = "sha256:f562152bcfa4b8350df35975330b56d294db251d051a7cf670bcf4036b9c15a8"
+size = 68098522
+mtime_ms = 1794567608997
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/8c159c29-e20f-4216-bd21-0e31db0db554/57d5e586-0cd4-4b99-bfcd-90e40d3d6300"
+storage_version_token = "1794567643581716"
+content_type = "application/octet-stream"

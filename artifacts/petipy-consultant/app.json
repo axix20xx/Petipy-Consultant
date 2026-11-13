@@ -8,6 +8,8 @@
     "scheme": "petipy-consultant",
     "userInterfaceStyle": "light",
     "ios": {
+      "bundleIdentifier": "com.petipy.consultant",
+      "buildNumber": "12",
       "supportsTablet": false,
       "infoPlist": {
         "NSMicrophoneUsageDescription": "برای برقراری تماس مشاوره با کاربران Petipy، دسترسی به میکروفون لازم است."
@@ -59,7 +61,10 @@
       "reactCompiler": true
     },
     "extra": {
-      "petipyAuthMode": "development"
+      "petipyAuthMode": "development",
+      "eas": {
+        "projectId": "90819275-8613-4ee0-8198-8c45fdcfafac"
+      }
     }
   }
 }

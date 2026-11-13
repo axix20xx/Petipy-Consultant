@@ -57,3 +57,4 @@ Thumbs.db
 /.android-sdk/
 /.gradle-cache/
 /.gradle/
+/artifacts/.gradle-cache/

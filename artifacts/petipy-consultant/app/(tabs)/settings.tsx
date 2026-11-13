@@ -1,4 +1,5 @@
 import { useColors } from '@/hooks/useColors';
+import { PetipyPetMark } from '@/components/PetipyPetMark';
 import { setConsultantAvailability } from '@/lib/petipy-api';
 import {
   isAvailabilityServiceRunning,
@@ -168,14 +169,13 @@ export default function SettingsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        <View style={[styles.identitySection, { backgroundColor: colors.secondary }]}>
         <View style={styles.settingsTop}>
           <View style={styles.settingsHeading}>
-            <Text style={[styles.settingsEyebrow, { color: colors.primary }]}>حساب و دستگاه</Text>
-            <Text style={[styles.settingsTitle, { color: colors.foreground }]}>تنظیمات</Text>
+            <Text style={[styles.settingsEyebrow, { color: colors.secondaryForeground }]}>فضای شخصی مشاور</Text>
+            <Text style={[styles.settingsTitle, { color: colors.foreground }]}>حساب و آمادگی</Text>
           </View>
-          <View style={[styles.settingsMark, { backgroundColor: colors.secondary }]}>
-            <Ionicons name="settings-outline" size={20} color={colors.primary} />
-          </View>
+          <PetipyPetMark compact />
         </View>
 
         <View style={styles.sectionHeader}>
@@ -222,6 +222,7 @@ export default function SettingsScreen() {
               </Text>
             </>
           )}
+        </View>
         </View>
 
         <View style={styles.sectionHeader}>
@@ -510,13 +511,14 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { paddingHorizontal: 18, paddingTop: 10, paddingBottom: 30, gap: 13 },
+  content: { width: '100%', maxWidth: 620, alignSelf: 'center', paddingHorizontal: 18, paddingTop: 14, paddingBottom: 38, gap: 15 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  settingsTop: { minHeight: 66, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 },
+  settingsTop: { minHeight: 92, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 },
+  identitySection: { borderRadius: 28, padding: 14, gap: 7, overflow: 'hidden' },
   settingsHeading: { alignItems: 'flex-end', gap: 2 },
   settingsEyebrow: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  settingsTitle: { fontSize: 23, fontWeight: '800', writingDirection: 'rtl' },
-  settingsMark: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  settingsTitle: { fontSize: 26, fontWeight: '800', writingDirection: 'rtl' },
+  settingsMark: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   heroTop: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   brandMark: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   brandLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 1.1, writingDirection: 'rtl' },
@@ -525,12 +527,12 @@ const styles = StyleSheet.create({
   title: { fontSize: 29, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
   subtitle: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl', opacity: 0.82 },
   heroOrnament: { position: 'absolute', width: 144, height: 144, borderWidth: 1, borderRadius: 72, opacity: 0.11, left: -45, top: -62 },
-  sectionHeader: { alignItems: 'flex-end', gap: 3, marginTop: 5 },
+  sectionHeader: { alignItems: 'flex-end', gap: 4, marginTop: 8, paddingHorizontal: 2 },
   sectionKicker: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6, writingDirection: 'rtl' },
   sectionTitle: { fontSize: 18, fontWeight: '800', writingDirection: 'rtl' },
   card: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 14, elevation: 0 },
-  accountCard: { borderRadius: 20, borderWidth: 1, padding: 13, gap: 10 },
-  capabilityPanel: { borderRadius: 20, borderWidth: 1, paddingHorizontal: 13, paddingVertical: 5, elevation: 0 },
+  accountCard: { borderRadius: 25, borderWidth: 1, padding: 15, gap: 12, elevation: 1 },
+  capabilityPanel: { borderRadius: 24, borderWidth: 1, paddingHorizontal: 15, paddingVertical: 7, elevation: 1 },
   serviceSummary: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9, borderRadius: 16, padding: 11, marginVertical: 7 },
   serviceSummaryIcon: { width: 39, height: 39, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   serviceSummaryCopy: { flex: 1, alignItems: 'flex-end', gap: 3 },
@@ -540,8 +542,8 @@ const styles = StyleSheet.create({
   safetyIcon: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   cardTitle: { fontSize: 15, fontWeight: '700', writingDirection: 'rtl' },
   profileName: { fontSize: 17, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
-  profilePanel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14, padding: 13, borderRadius: 17, borderWidth: 1 },
-  profileMark: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  profilePanel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14, padding: 15, borderRadius: 20, borderWidth: 1 },
+  profileMark: { width: 56, height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   profileCopy: { flex: 1, alignItems: 'flex-end', gap: 6 },
   profileStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 8, paddingVertical: 4 },
   profileDot: { width: 6, height: 6, borderRadius: 3 },

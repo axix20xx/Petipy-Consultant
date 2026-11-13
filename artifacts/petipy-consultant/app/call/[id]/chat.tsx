@@ -17,6 +17,7 @@ import { fetch as expoFetch } from 'expo/fetch';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  AppState,
   ActivityIndicator,
   Alert,
   FlatList,
@@ -101,8 +102,29 @@ export default function VoiceCallChatScreen() {
 
   useEffect(() => {
     void loadMessages();
-    const interval = setInterval(() => void loadMessages(true), POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const startPolling = () => {
+      if (interval || AppState.currentState !== 'active') return;
+      interval = setInterval(() => void loadMessages(true), POLL_INTERVAL_MS);
+    };
+    const stopPolling = () => {
+      if (!interval) return;
+      clearInterval(interval);
+      interval = null;
+    };
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        void loadMessages(true);
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    });
+    startPolling();
+    return () => {
+      stopPolling();
+      subscription.remove();
+    };
   }, [loadMessages]);
 
   const chooseFiles = useCallback(async () => {
@@ -502,7 +524,7 @@ export default function VoiceCallChatScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 116,
+    minHeight: 126,
     paddingHorizontal: 14,
     paddingTop: 8,
     paddingBottom: 9,
@@ -531,19 +553,19 @@ const styles = StyleSheet.create({
   messageList: {
     flexGrow: 1,
     justifyContent: 'flex-start',
-    paddingHorizontal: 15,
-    paddingVertical: 18,
-    gap: 10,
+    paddingHorizontal: 17,
+    paddingVertical: 22,
+    gap: 12,
   },
   messageRow: { width: '100%', marginVertical: 5 },
   messageMine: { alignItems: 'flex-end' },
   messageTheirs: { alignItems: 'flex-start' },
   bubble: {
-    maxWidth: '88%',
+    maxWidth: '90%',
     borderWidth: 1,
-    borderRadius: 18,
-    paddingHorizontal: 15,
-    paddingVertical: 13,
+    borderRadius: 21,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     gap: 8,
   },
   bubbleMine: { borderBottomLeftRadius: 6 },
@@ -637,7 +659,7 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   composer: {
-    minHeight: 112,
+    minHeight: 120,
     flexDirection: 'column',
     alignItems: 'stretch',
     gap: 6,
@@ -647,7 +669,7 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     paddingBottom: 8,
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 22,
   },
   composerActions: { minHeight: 44, flexDirection: 'row-reverse', alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 7 },
   attachAction: { minHeight: 36, flexDirection: 'row-reverse', alignItems: 'center', gap: 5, paddingHorizontal: 10, borderRadius: 11 },

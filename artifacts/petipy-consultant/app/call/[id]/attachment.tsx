@@ -241,7 +241,7 @@ export default function VoiceCallAttachmentScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 76,
+    minHeight: 82,
     flexDirection: 'row-reverse',
     alignItems: 'center',
     paddingHorizontal: 14,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 18,
     borderWidth: 1,
-    borderRadius: 24,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 28,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   retryText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
-  previewFrame: { flex: 1, margin: 15, borderWidth: 1, borderRadius: 23, overflow: 'hidden', position: 'relative' },
+  previewFrame: { flex: 1, margin: 15, borderWidth: 1, borderRadius: 28, overflow: 'hidden', position: 'relative', elevation: 1 },
   image: { flex: 1, width: '100%', padding: 10 },
   pdf: { flex: 1, width: '100%' },
   previewCaption: { position: 'absolute', top: 11, right: 11, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8 },

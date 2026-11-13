@@ -1,4 +1,5 @@
 import { useColors } from '@/hooks/useColors';
+import { PetipyPetMark } from '@/components/PetipyPetMark';
 import {
   getCallHistory,
   getConsultantCallAnalytics,
@@ -234,58 +235,12 @@ export default function ConsultantCallActivityScreen() {
         }
       >
         <View style={styles.historyTop}>
+          <PetipyPetMark compact />
           <View style={styles.historyTopCopy}>
-            <Text style={[styles.historyEyebrow, { color: colors.primary }]}>دفتر تماس‌ها</Text>
-            <Text style={[styles.historyPageTitle, { color: colors.foreground }]}>آمار و سوابق</Text>
+            <Text style={[styles.historyEyebrow, { color: colors.primary }]}>ردّ همراهی‌ها</Text>
+            <Text style={[styles.historyPageTitle, { color: colors.foreground }]}>گزارش تماس</Text>
           </View>
           <RefreshButton refreshing={refreshing} onPress={() => void refreshAll()} colors={colors} />
-        </View>
-
-        <View style={styles.periodIntro}>
-          <View style={styles.periodTitleCopy}>
-            <Text style={[styles.periodTitle, { color: colors.foreground }]}>بازه‌ی گزارش</Text>
-            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>برای تغییر، یک بازه را انتخاب کنید</Text>
-          </View>
-          <Ionicons name="calendar-outline" size={18} color={colors.primary} />
-        </View>
-        <View
-          accessibilityRole="tablist"
-          style={[styles.periods, { backgroundColor: colors.muted }]}
-          testID="analytics-period-filter"
-        >
-          {PERIODS.map((period) => {
-            const selected = days === period.days;
-            return (
-              <Pressable
-                key={period.days}
-                accessibilityRole="tab"
-                accessibilityState={{ selected }}
-                onPress={() => setDays(period.days)}
-                style={[
-                  styles.periodButton,
-                  {
-                    backgroundColor: selected ? colors.primary : colors.card,
-                    borderColor: selected ? colors.primary : colors.border,
-                    borderRadius: colors.radius,
-                  },
-                ]}
-                testID={`analytics-period-${period.days}`}
-              >
-                <Text
-                  style={[
-                    styles.periodLabel,
-                    {
-                      color: selected
-                        ? colors.primaryForeground
-                        : colors.mutedForeground,
-                    },
-                  ]}
-                >
-                  {period.label}
-                </Text>
-              </Pressable>
-            );
-          })}
         </View>
 
         <View style={styles.sectionHeading}>
@@ -431,6 +386,53 @@ export default function ConsultantCallActivityScreen() {
           </>
         ) : null}
 
+        <View style={styles.periodIntro}>
+          <View style={styles.periodTitleCopy}>
+            <Text style={[styles.periodTitle, { color: colors.foreground }]}>بازه‌ی گزارش</Text>
+            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>یک بازه برای دیدن روند انتخاب کنید</Text>
+          </View>
+          <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+        </View>
+        <View
+          accessibilityRole="tablist"
+          style={[styles.periods, { backgroundColor: colors.muted }]}
+          testID="analytics-period-filter"
+        >
+          {PERIODS.map((period) => {
+            const selected = days === period.days;
+            return (
+              <Pressable
+                key={period.days}
+                accessibilityRole="tab"
+                accessibilityState={{ selected }}
+                onPress={() => setDays(period.days)}
+                style={[
+                  styles.periodButton,
+                  {
+                    backgroundColor: selected ? colors.primary : colors.card,
+                    borderColor: selected ? colors.primary : colors.border,
+                    borderRadius: colors.radius,
+                  },
+                ]}
+                testID={`analytics-period-${period.days}`}
+              >
+                <Text
+                  style={[
+                    styles.periodLabel,
+                    {
+                      color: selected
+                        ? colors.primaryForeground
+                        : colors.mutedForeground,
+                    },
+                  ]}
+                >
+                  {period.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
         <View style={[styles.sectionHeading, styles.historyHeading]}>
           <View style={styles.sectionTitleCopy}>
             <Text style={[styles.sectionKicker, { color: colors.primary }]}>دفترچه‌ی شخصی</Text>
@@ -572,12 +574,12 @@ export default function ConsultantCallActivityScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  content: { paddingHorizontal: 18, paddingTop: 10, paddingBottom: 26, gap: 11 },
+  content: { width: '100%', maxWidth: 620, alignSelf: 'center', paddingHorizontal: 18, paddingTop: 14, paddingBottom: 34, gap: 13 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  historyTop: { minHeight: 54, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 },
+  historyTop: { minHeight: 88, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 },
   historyTopCopy: { alignItems: 'flex-end', gap: 2 },
   historyEyebrow: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  historyPageTitle: { fontSize: 22, fontWeight: '800', writingDirection: 'rtl' },
+  historyPageTitle: { fontSize: 25, fontWeight: '800', writingDirection: 'rtl' },
   hero: { minHeight: 80, borderRadius: 18, padding: 14, overflow: 'hidden', justifyContent: 'space-between', marginBottom: 4 },
   heroTop: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
   heroMark: { width: 35, height: 35, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
@@ -619,7 +621,7 @@ const styles = StyleSheet.create({
   sectionHint: { fontSize: 11, writingDirection: 'rtl' },
   periodStamp: { borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
   periodStampText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
-  answeredHero: { minHeight: 156, borderRadius: 23, padding: 18, gap: 14, overflow: 'hidden' },
+  answeredHero: { minHeight: 176, borderRadius: 28, padding: 20, gap: 16, overflow: 'hidden', elevation: 2 },
   answeredHeroTop: { flexDirection: 'row-reverse', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
   answeredTitleCopy: { flex: 1, alignItems: 'flex-end', gap: 5 },
   answeredLabel: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
@@ -627,13 +629,13 @@ const styles = StyleSheet.create({
   answeredPeriod: { borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
   answeredPeriodText: { fontSize: 10, fontWeight: '800', writingDirection: 'rtl' },
   answeredValueLine: { flexDirection: 'row-reverse', alignItems: 'baseline', marginTop: 'auto' },
-  answeredValue: { fontSize: 35, fontWeight: '800', writingDirection: 'rtl' },
+  answeredValue: { fontSize: 40, fontWeight: '800', writingDirection: 'rtl' },
   metricsStrip: {
     flexDirection: 'row-reverse',
     borderWidth: 1,
-    borderRadius: 17,
-    paddingVertical: 11,
-    paddingHorizontal: 6,
+    borderRadius: 21,
+    paddingVertical: 15,
+    paddingHorizontal: 8,
     alignItems: 'stretch',
   },
   metricDivider: { width: StyleSheet.hairlineWidth, alignSelf: 'stretch', marginVertical: 2 },
@@ -659,7 +661,7 @@ const styles = StyleSheet.create({
   },
   metricLabel: { flexShrink: 1, fontSize: 11, writingDirection: 'rtl' },
   metricValue: { fontSize: 23, fontWeight: '700', writingDirection: 'rtl' },
-  trendCard: { borderWidth: 1, borderRadius: 17, padding: 14, marginTop: 5, elevation: 0 },
+  trendCard: { borderWidth: 1, borderRadius: 21, padding: 16, marginTop: 5, elevation: 1 },
   trendHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 },
   trendTitle: { fontSize: 14, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
   trendCaption: { fontSize: 10, marginTop: 3, textAlign: 'right', writingDirection: 'rtl' },
@@ -678,7 +680,7 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   historyHeading: { marginTop: 20, marginBottom: 3 },
-  historyList: { marginTop: 4, position: 'relative', paddingRight: 17 },
+  historyList: { marginTop: 4, position: 'relative', paddingRight: 17, paddingLeft: 5 },
   timelineRail: { position: 'absolute', right: 17, top: 8, bottom: 14, width: 1 },
   timelineDot: { position: 'absolute', right: 0, top: 18, width: 9, height: 9, borderWidth: 2, borderRadius: 5 },
   historyRow: {

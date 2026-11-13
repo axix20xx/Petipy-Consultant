@@ -1,4 +1,5 @@
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
+import { PetipyPetMark } from '@/components/PetipyPetMark';
 import { useColors } from '@/hooks/useColors';
 import { normalizeMobileDigits } from '@/lib/consultant-auth';
 import { useConsultantSession } from '@/providers/consultant-session';
@@ -11,6 +12,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -35,6 +37,8 @@ export function SessionLoadingScreen() {
 
 export default function ConsultantSignInScreen() {
   const colors = useColors();
+  const { width } = useWindowDimensions();
+  const wide = width >= 760;
   const {
     state,
     message,
@@ -68,6 +72,8 @@ export default function ConsultantSignInScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <View style={[styles.screenLayout, wide && styles.screenLayoutWide]}>
+        <View style={[styles.brandColumn, wide && styles.brandColumnWide]}>
         <View style={styles.pageTop}>
           <View style={styles.brandLine}>
             <View style={[styles.miniMark, { backgroundColor: colors.primary }]}>
@@ -85,15 +91,19 @@ export default function ConsultantSignInScreen() {
         </View>
 
         <View style={styles.signInIntro}>
+          <PetipyPetMark />
           <View style={styles.panelCopy}>
-            <Text style={[styles.panelKicker, { color: colors.primary }]}>فضای اختصاصی متخصصان حیوانات خانگی</Text>
-            <Text style={[styles.title, { color: colors.foreground }]}>به میز مشاوره{'\n'}خوش آمدید.</Text>
+            <Text style={[styles.panelKicker, { color: colors.primary }]}>میز اختصاصی مشاوران پتی‌پای</Text>
+            <Text style={[styles.title, { color: colors.foreground }]}>حضورِ آرام،{'\n'}پاسخِ به‌موقع.</Text>
             <Text style={[styles.heroCopy, { color: colors.mutedForeground }]}>
-              ورود فقط برای حساب فعال مشاور صوتی پتی‌پای امکان‌پذیر است.
+              یک جای امن برای همراهی با خانواده‌ها و مراقبت بهتر از حیوانات خانگی.
             </Text>
           </View>
         </View>
 
+        </View>
+
+        <View style={[styles.authColumn, { backgroundColor: colors.card, borderColor: colors.border }, wide && styles.authColumnWide]}>
         <View style={styles.formIntro}>
           <View style={styles.formIntroText}>
             <Text style={[styles.formTitle, { color: colors.foreground }]}>مشخصات حساب مشاور</Text>
@@ -232,6 +242,14 @@ export default function ConsultantSignInScreen() {
           </Pressable>
         ) : null}
 
+        {!devAuthAvailable && state !== 'auth-unavailable' && message ? (
+          <Text accessibilityRole="alert" style={[styles.footer, { color: colors.destructive }]}>{message}</Text>
+        ) : null}
+        {!devAuthAvailable && state !== 'auth-unavailable' ? (
+          <Text style={[styles.footerTiny, { color: colors.mutedForeground }]}>
+            فرم آزمایشی فقط هنگام فعال‌بودن حالت توسعه نمایش داده می‌شود.
+          </Text>
+        ) : null}
         <View style={styles.footerBlock}>
           <View style={[styles.footerRule, { backgroundColor: colors.border }]} />
           <Text style={[styles.footer, { color: colors.mutedForeground }]}>
@@ -240,14 +258,8 @@ export default function ConsultantSignInScreen() {
           <Text style={[styles.footerTiny, { color: colors.mutedForeground }]}>
             کد و توکن در گزارش‌ها ثبت نمی‌شوند.
           </Text>
-          {!devAuthAvailable && state !== 'auth-unavailable' && message ? (
-            <Text accessibilityRole="alert" style={[styles.footer, { color: colors.destructive }]}>{message}</Text>
-          ) : null}
-          {!devAuthAvailable && state !== 'auth-unavailable' ? (
-            <Text style={[styles.footerTiny, { color: colors.mutedForeground }]}>
-              فرم آزمایشی فقط هنگام فعال‌بودن حالت توسعه نمایش داده می‌شود.
-            </Text>
-          ) : null}
+        </View>
+        </View>
         </View>
       </KeyboardAwareScrollViewCompat>
     </SafeAreaView>
@@ -256,7 +268,13 @@ export default function ConsultantSignInScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  scrollContent: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 24, gap: 19 },
+  scrollContent: { flexGrow: 1, width: '100%', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
+  screenLayout: { width: '100%', maxWidth: 1040, alignSelf: 'center', flexGrow: 1, gap: 24 },
+  screenLayoutWide: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 54, paddingHorizontal: 22, paddingVertical: 22 },
+  brandColumn: { width: '100%', gap: 12 },
+  brandColumnWide: { flex: 1, maxWidth: 430, justifyContent: 'center', gap: 28 },
+  authColumn: { width: '100%', alignSelf: 'center', maxWidth: 520, borderWidth: 1, borderRadius: 27, padding: 19, gap: 15, elevation: 1 },
+  authColumnWide: { flex: 1, padding: 25, maxWidth: 500 },
   pageTop: { minHeight: 45, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
   brandLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   miniMark: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
@@ -265,10 +283,10 @@ const styles = StyleSheet.create({
   brandSub: { fontSize: 10, writingDirection: 'rtl' },
   securePill: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 8 },
   secureLabel: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  signInIntro: { paddingTop: 25, paddingBottom: 4 },
-  panelCopy: { alignItems: 'flex-end', gap: 8, width: '100%' },
+  signInIntro: { paddingTop: 7, paddingBottom: 2, gap: 18 },
+  panelCopy: { alignItems: 'flex-end', gap: 9, width: '100%', paddingHorizontal: 3 },
   panelKicker: { fontSize: 11, fontWeight: '800', writingDirection: 'rtl' },
-  title: { fontSize: 30, lineHeight: 42, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  title: { fontSize: 34, lineHeight: 48, fontWeight: '900', textAlign: 'right', writingDirection: 'rtl' },
   heroCopy: { maxWidth: 300, fontSize: 12, lineHeight: 21, textAlign: 'right', writingDirection: 'rtl' },
   panelDisc: { position: 'absolute', width: 158, height: 158, borderWidth: 1, borderRadius: 80, opacity: 0.11, top: -67, left: -35 },
   panelDiscSmall: { position: 'absolute', width: 100, height: 100, borderWidth: 1, borderRadius: 50, opacity: 0.1, top: -38, left: -7 },

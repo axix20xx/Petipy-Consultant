@@ -13,6 +13,7 @@ import type { MediaStream } from 'react-native-webrtc';
 import {
   ActivityIndicator,
   Alert,
+  AppState,
   BackHandler,
   Linking,
   PermissionsAndroid,
@@ -189,7 +190,7 @@ export default function ConsultantCallScreen() {
 
   useEffect(() => {
     if (!connected) return;
-    const interval = setInterval(() => {
+    const updateElapsed = () => {
       const connectedAt = connectedAtRef.current;
       if (connectedAt) {
         setElapsed(
@@ -197,8 +198,27 @@ export default function ConsultantCallScreen() {
             Math.floor((Date.now() - connectedAt) / 1000),
         );
       }
-    }, 1000);
-    return () => clearInterval(interval);
+    };
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const startTimer = () => {
+      if (interval || AppState.currentState !== 'active') return;
+      updateElapsed();
+      interval = setInterval(updateElapsed, 1000);
+    };
+    const stopTimer = () => {
+      if (!interval) return;
+      clearInterval(interval);
+      interval = null;
+    };
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') startTimer();
+      else stopTimer();
+    });
+    startTimer();
+    return () => {
+      stopTimer();
+      subscription.remove();
+    };
   }, [connected]);
 
   async function endCall(sendSignal: boolean) {
@@ -346,34 +366,6 @@ export default function ConsultantCallScreen() {
         contentContainerStyle={styles.mainContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.callInfo, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.callInfoTop}>
-            <View style={styles.callTitleBlock}>
-              <Text style={[styles.kicker, { color: colors.primary }]}>مشاوره‌ی صوتی پتی‌پای</Text>
-              <Text style={[styles.name, { color: colors.foreground }]}>{matchingCall?.displayName ?? 'تماس مشاوره'}</Text>
-            </View>
-            <View style={[styles.privateBadge, { backgroundColor: colors.secondary }]}>
-              <Ionicons name="shield-checkmark-outline" size={13} color={colors.primary} />
-              <Text style={[styles.privateBadgeText, { color: colors.secondaryForeground }]}>خصوصی</Text>
-            </View>
-          </View>
-          <View style={[styles.sessionStatusRow, { borderTopColor: colors.border }]}>
-            <View style={[styles.liveStatus, { backgroundColor: connected ? colors.secondary : colors.accent }]}>
-              <View style={[styles.liveDot, { backgroundColor: connected ? colors.success : colors.warning }]} />
-              <Text style={[styles.status, { color: connected ? colors.success : colors.accentForeground }]}>{status}</Text>
-            </View>
-            <View style={[styles.timerTrack, { backgroundColor: colors.muted }]}>
-              <Ionicons name="time-outline" size={16} color={colors.primary} />
-              <Text style={[styles.timerLabel, { color: colors.mutedForeground }]}>
-                {hasConnectedOnce || elapsed > 0 ? 'مدت تماس' : 'پس از اتصال'}
-              </Text>
-              <Text style={[styles.timer, { color: colors.foreground }]}>
-                {hasConnectedOnce || elapsed > 0 ? formatDuration(elapsed) : '—:—'}
-              </Text>
-            </View>
-          </View>
-        </View>
-
         {hasRemoteVideo && remoteStream ? (
           <View style={[styles.videoStage, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <RemoteVideo
@@ -424,6 +416,34 @@ export default function ConsultantCallScreen() {
             ) : null}
           </View>
         )}
+
+        <View style={[styles.callInfo, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.callInfoTop}>
+            <View style={styles.callTitleBlock}>
+              <Text style={[styles.kicker, { color: colors.primary }]}>مشاوره‌ی صوتی پتی‌پای</Text>
+              <Text style={[styles.name, { color: colors.foreground }]}>{matchingCall?.displayName ?? 'تماس مشاوره'}</Text>
+            </View>
+            <View style={[styles.privateBadge, { backgroundColor: colors.secondary }]}>
+              <Ionicons name="shield-checkmark-outline" size={13} color={colors.primary} />
+              <Text style={[styles.privateBadgeText, { color: colors.secondaryForeground }]}>خصوصی</Text>
+            </View>
+          </View>
+          <View style={[styles.sessionStatusRow, { borderTopColor: colors.border }]}>
+            <View style={[styles.liveStatus, { backgroundColor: connected ? colors.secondary : colors.accent }]}>
+              <View style={[styles.liveDot, { backgroundColor: connected ? colors.success : colors.warning }]} />
+              <Text style={[styles.status, { color: connected ? colors.success : colors.accentForeground }]}>{status}</Text>
+            </View>
+            <View style={[styles.timerTrack, { backgroundColor: colors.muted }]}>
+              <Ionicons name="time-outline" size={16} color={colors.primary} />
+              <Text style={[styles.timerLabel, { color: colors.mutedForeground }]}>
+                {hasConnectedOnce || elapsed > 0 ? 'مدت تماس' : 'پس از اتصال'}
+              </Text>
+              <Text style={[styles.timer, { color: colors.foreground }]}>
+                {hasConnectedOnce || elapsed > 0 ? formatDuration(elapsed) : '—:—'}
+              </Text>
+            </View>
+          </View>
+        </View>
 
         {petCardBatches.length > 0 ? (
           <View
@@ -560,8 +580,8 @@ export default function ConsultantCallScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, paddingHorizontal: 15, paddingTop: 6, paddingBottom: 8 },
-  topBar: { minHeight: 49, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
+  safe: { flex: 1, paddingHorizontal: 15, paddingTop: 8, paddingBottom: 10 },
+  topBar: { minHeight: 54, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 },
   topBrand: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   brandMark: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   topBrandCopy: { alignItems: 'flex-end', gap: 1 },
@@ -571,9 +591,9 @@ const styles = StyleSheet.create({
   chatButtonText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   mainScroll: { flex: 1 },
   mainContent: { alignItems: 'stretch', justifyContent: 'flex-start', gap: 12, paddingVertical: 8 },
-  voiceStage: { alignItems: 'center', justifyContent: 'center', gap: 9, minHeight: 255, marginVertical: 1, borderRadius: 26, borderWidth: 1, paddingHorizontal: 18, paddingVertical: 16 },
-  avatarOuter: { width: 124, height: 124, borderRadius: 43, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  avatarInner: { width: 98, height: 98, borderRadius: 34, alignItems: 'center', justifyContent: 'center' },
+  voiceStage: { alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 280, marginVertical: 1, borderRadius: 30, borderWidth: 1, paddingHorizontal: 18, paddingVertical: 18 },
+  avatarOuter: { width: 142, height: 142, borderRadius: 49, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  avatarInner: { width: 112, height: 112, borderRadius: 39, alignItems: 'center', justifyContent: 'center' },
   presenceInitial: { fontSize: 48, fontWeight: '700', writingDirection: 'rtl' },
   audioOnlyBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 5 },
   audioOnlyText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
@@ -586,7 +606,7 @@ const styles = StyleSheet.create({
   videoBadge: { position: 'absolute', right: 11, bottom: 11, zIndex: 1, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 12 },
   videoBadgeText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
   liveDot: { width: 7, height: 7, borderRadius: 4 },
-  callInfo: { width: '100%', borderWidth: 1, borderRadius: 19, paddingHorizontal: 14, paddingVertical: 12, gap: 10, elevation: 0 },
+  callInfo: { width: '100%', borderWidth: 1, borderRadius: 23, paddingHorizontal: 15, paddingVertical: 14, gap: 12, elevation: 1 },
   callInfoTop: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
   callTitleBlock: { alignItems: 'flex-end', gap: 3 },
   sessionStatusRow: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 9 },
@@ -621,8 +641,8 @@ const styles = StyleSheet.create({
   settingsText: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
   rejoinButton: { minHeight: 44, width: '100%', flexDirection: 'row-reverse', gap: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, borderRadius: 14 },
   rejoinText: { fontWeight: '700', fontSize: 11, writingDirection: 'rtl' },
-  controlDock: { borderWidth: 1, borderRadius: 18, padding: 8, marginTop: 5, elevation: 2 },
-  controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 6 },
+  controlDock: { borderWidth: 1, borderRadius: 24, padding: 10, marginTop: 5, elevation: 2 },
+  controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 8 },
   control: { flex: 1, minWidth: 0, minHeight: 67, borderRadius: 15, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 5 },
   controlLabel: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
   endButton: { width: 69, minHeight: 67, borderRadius: 15, alignItems: 'center', justifyContent: 'center', gap: 3 },

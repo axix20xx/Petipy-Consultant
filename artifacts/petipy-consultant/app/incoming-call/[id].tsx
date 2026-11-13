@@ -1,4 +1,5 @@
 import { useColors } from '@/hooks/useColors';
+import { PetipyPetMark } from '@/components/PetipyPetMark';
 import {
   acceptIncomingCall,
   getIncomingCalls,
@@ -18,6 +19,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  AppState,
   ActivityIndicator,
   PermissionsAndroid,
   Platform,
@@ -73,8 +75,29 @@ export default function IncomingCallScreen() {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const startTimer = () => {
+      if (interval) return;
+      interval = setInterval(() => setNow(Date.now()), 1000);
+    };
+    const stopTimer = () => {
+      if (!interval) return;
+      clearInterval(interval);
+      interval = null;
+    };
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        setNow(Date.now());
+        startTimer();
+      } else {
+        stopTimer();
+      }
+    });
+    if (AppState.currentState === 'active') startTimer();
+    return () => {
+      stopTimer();
+      subscription.remove();
+    };
   }, []);
 
   const queue = useQuery({
@@ -82,7 +105,6 @@ export default function IncomingCallScreen() {
     queryFn: () => getIncomingCalls(token as string),
     enabled: sessionState === 'connected' && Boolean(token && callId),
     refetchInterval: 3_000,
-    refetchIntervalInBackground: true,
   });
   const call =
     queue.data && callId
@@ -281,13 +303,9 @@ export default function IncomingCallScreen() {
             </View>
           ) : null}
           <View style={styles.callerIdentity}>
-            <View style={[styles.avatarHalo, { backgroundColor: colors.secondary, borderColor: colors.accent }]}>
-              <View style={[styles.avatar, { backgroundColor: colors.card }]}>
-                <Ionicons name="paw" size={31} color={colors.primary} accessible={false} />
-              </View>
-            </View>
+            <PetipyPetMark compact />
             <View style={styles.identityCopy}>
-              <Text style={[styles.identityLabel, { color: colors.mutedForeground }]}>تماس‌گیرنده</Text>
+              <Text style={[styles.identityLabel, { color: colors.primary }]}>خانواده‌ی همراهِ پتی‌پای</Text>
               <Text style={[styles.callerName, { color: colors.foreground }]}>
                 {call?.callerName || 'درخواست تماس جدید'}
               </Text>
@@ -399,7 +417,7 @@ export default function IncomingCallScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   loadingContainer: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-  page: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 10, paddingBottom: 12 },
+  page: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 12, paddingBottom: 16, gap: 16 },
   brandLine: { minHeight: 43, flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   brandMark: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   brandCopy: { flex: 1, alignItems: 'flex-end', gap: 1 },
@@ -408,7 +426,7 @@ const styles = StyleSheet.create({
   liveChip: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 11, paddingHorizontal: 10, paddingVertical: 7 },
   liveDot: { width: 6, height: 6, borderRadius: 3 },
   liveChipText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  callerCard: { width: '100%', maxWidth: 460, alignSelf: 'center', borderWidth: 1, borderRadius: 21, padding: 16, gap: 14, elevation: 1 },
+  callerCard: { width: '100%', maxWidth: 460, alignSelf: 'center', borderWidth: 1, borderRadius: 28, padding: 18, gap: 17, elevation: 2 },
   requestTopline: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
   requestState: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
   requestStateText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
@@ -418,13 +436,11 @@ const styles = StyleSheet.create({
   deadlineLabel: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl', opacity: 0.85 },
   deadlineTime: { fontSize: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
   deadlineNote: { flex: 1, fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl', opacity: 0.88 },
-  callerIdentity: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12 },
-  identityCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
+  callerIdentity: { flexDirection: 'column', alignItems: 'center', gap: 10, paddingVertical: 4 },
+  identityCopy: { width: '100%', alignItems: 'center', gap: 5 },
   identityLabel: { fontSize: 10, writingDirection: 'rtl' },
   eyebrow: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
-  avatarHalo: { alignItems: 'center', justifyContent: 'center', width: 58, height: 58, borderRadius: 20, borderWidth: 1 },
-  avatar: { alignItems: 'center', borderRadius: 15, width: 46, height: 46, justifyContent: 'center' },
-  callerName: { fontSize: 21, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
+  callerName: { maxWidth: '100%', fontSize: 24, fontWeight: '900', textAlign: 'center', writingDirection: 'rtl' },
   requestContext: { alignItems: 'flex-end', gap: 9 },
   petContext: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
   petName: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
@@ -439,11 +455,11 @@ const styles = StyleSheet.create({
   refreshAction: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   errorBox: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7, borderRadius: 12, padding: 10 },
   errorText: { flex: 1, fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
-  actionDock: { alignItems: 'center', gap: 12, paddingBottom: 5 },
+  actionDock: { alignItems: 'center', gap: 9, paddingBottom: 5 },
   callActions: { width: '100%', flexDirection: 'row-reverse', gap: 10 },
-  rejectButton: { flex: 0.78, minHeight: 58, borderWidth: 1, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7 },
+  rejectButton: { flex: 0.78, minHeight: 62, borderWidth: 1, borderRadius: 19, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7 },
   rejectLabel: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  acceptButton: { flex: 1.22, minHeight: 58, borderRadius: 17, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, elevation: 3 },
+  acceptButton: { flex: 1.22, minHeight: 62, borderRadius: 19, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, elevation: 3 },
   acceptLabel: { fontSize: 13, fontWeight: '800', writingDirection: 'rtl' },
   backButton: { alignItems: 'center', flexDirection: 'row-reverse', gap: 8, minHeight: 43, paddingHorizontal: 12 },
   linkText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },

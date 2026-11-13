@@ -182,3 +182,17 @@ mtime_ms = 1794567608997
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/8c159c29-e20f-4216-bd21-0e31db0db554/57d5e586-0cd4-4b99-bfcd-90e40d3d6300"
 storage_version_token = "1794567643581716"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "Tf7Unev3_6geLgQc_oiGS"
+uri = "file://generated-artifacts/Petipy-Consultant-1.1.1-arm64.apk"
+type = "unspecified"
+title = "Petipy Consultant APK 1.1.1"
+description = "Verified Android 15-compatible ARM64 APK (package com.petipy.consultant, versionCode 12). Signed with the same certificate as 1.1.0 so it can install as an update. Force stop still requires reopening the app; physical-device call delivery has not been tested from this workspace."
+logical_id = "71020567-e851-422a-8a84-f960feb4a04e"
+content_hash = "sha256:11f92a3d6e7248b566ce78bfdf929dfb17b0468c92344d97b24424021d8a3812"
+size = 68107062
+mtime_ms = 1794580818697
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/71020567-e851-422a-8a84-f960feb4a04e/dae6a28b-12e4-4aeb-b610-7503aacc3b70"
+storage_version_token = "1794580868768071"
+content_type = "application/octet-stream"

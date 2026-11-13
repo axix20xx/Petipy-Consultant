@@ -254,6 +254,14 @@ export default function SettingsScreen() {
             </View>
           </View>
           <InfoRow
+            icon="information-circle-outline"
+            title="محدودیت توقف اجباری Android"
+            detail="اگر از تنظیمات Android «توقف اجباری» را بزنید، تماس و اعلان تا بازکردن دوباره‌ی Petipy متوقف می‌شود. برای خروج، از دکمه‌ی خانه استفاده کنید یا صفحه را قفل کنید."
+            color={colors.warning}
+            status="محدودیت سیستم"
+            statusColor={colors.warning}
+          />
+          <InfoRow
             icon="notifications-outline"
             title="اعلان تماس فعال"
             detail={

@@ -31,10 +31,11 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   const router = useRouter();
-  const { token, state } = useConsultantSession();
+  const { token, state, setActiveCall } = useConsultantSession();
   const [pendingNotificationCall, setPendingNotificationCall] = useState<{
     callId: string;
-    action: 'answer' | 'reject' | 'open';
+    action: 'answer' | 'reject' | 'open' | 'ended';
+    nativeRequestId?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -66,6 +67,12 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (!pendingNotificationCall || state === 'loading') return;
+    if (pendingNotificationCall.action === 'ended') {
+      setActiveCall(null);
+      router.replace('/(tabs)');
+      setPendingNotificationCall(null);
+      return;
+    }
     if (state !== 'connected' || !token) {
       setPendingNotificationCall(null);
       return;
@@ -82,7 +89,12 @@ function RootLayoutNav() {
             pathname: '/incoming-call/[id]',
             params: {
               id: route.callId,
-              action: pendingNotificationCall.action,
+              ...(pendingNotificationCall.action !== 'open'
+                ? { action: pendingNotificationCall.action }
+                : {}),
+              ...(pendingNotificationCall.nativeRequestId
+                ? { nativeRequestId: pendingNotificationCall.nativeRequestId }
+                : {}),
             },
           });
         }
@@ -96,7 +108,7 @@ function RootLayoutNav() {
     return () => {
       active = false;
     };
-  }, [pendingNotificationCall, router, state, token]);
+  }, [pendingNotificationCall, router, setActiveCall, state, token]);
 
   useEffect(() => {
     if (state !== 'connected' || !token) return;
@@ -105,8 +117,10 @@ function RootLayoutNav() {
     void import('@/lib/push-notifications')
       .then(({ listenForForegroundIncomingPush }) => {
         if (!active) return;
-        unsubscribe = listenForForegroundIncomingPush(token, (callId) =>
-          router.replace(`/incoming-call/${encodeURIComponent(callId)}`),
+        unsubscribe = listenForForegroundIncomingPush(
+          token,
+          (callId, action = 'open', nativeRequestId) =>
+            setPendingNotificationCall({ callId, action, nativeRequestId }),
         );
       })
       .catch(() => {

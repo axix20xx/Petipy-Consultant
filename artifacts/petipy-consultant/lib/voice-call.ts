@@ -286,6 +286,9 @@ export class VoiceCallClient {
     route: 'earpiece' | 'speaker',
     callId: string,
   ): Promise<boolean> {
+    if (Platform.OS === 'ios') {
+      return setSystemCallAudioRoute(callId, route);
+    }
     if (Platform.OS !== 'android') return false;
 
     const device = route === 'speaker' ? 'SPEAKER_PHONE' : 'EARPIECE';

@@ -30,7 +30,11 @@ import {
 } from '@/lib/incoming-call-alerts';
 import { reportSystemIncomingCall } from '@/lib/system-calling';
 import { requestAvailabilityPermissions } from '@/lib/background-monitor';
-import type { PushSetupState, PushStatusListener } from '@/lib/push-notifications';
+import type {
+  IncomingCallAction,
+  PushSetupState,
+  PushStatusListener,
+} from '@/lib/push-notifications';
 
 const DEVICE_ID_KEY = 'petipy_consultant_push_device_id_v1';
 const activeRegistrationCleanups = new Set<() => void>();
@@ -178,7 +182,11 @@ export function startPushRegistration(
 
 export function listenForForegroundIncomingPush(
   sessionToken: string,
-  onIncomingCall: (callId: string) => void,
+  onIncomingCall: (
+    callId: string,
+    action?: IncomingCallAction,
+    nativeRequestId?: string,
+  ) => void,
 ) {
   return onMessage(getMessaging(), async (message) => {
     const routeCallId = parseIncomingCallId(message.data);

@@ -60,7 +60,7 @@ type SessionContextValue = {
 const LIVE_AUTH_MESSAGE =
   'ورود موبایلی زنده هنوز به Petipy متصل نیست. ورود آزمایشی فقط با فعال‌بودن حالت توسعه‌ی احراز هویت شماره‌موبایل در دسترس است.';
 const WEB_AUTH_MESSAGE =
-  'ورود آزمایشی با کد فقط در برنامه‌ی بومی Expo روی Android در دسترس است؛ پیش‌نمایش وب نشست امن موبایل را پشتیبانی نمی‌کند.';
+  'ورود آزمایشی با کد فقط در نسخه‌ی بومی Expo روی iOS یا Android در دسترس است؛ پیش‌نمایش وب نشست امن موبایل را پشتیبانی نمی‌کند.';
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
@@ -108,7 +108,7 @@ export function ConsultantSessionProvider({
   const [authBusy, setAuthBusy] = useState(false);
   const [devAuthUnavailable, setDevAuthUnavailable] = useState(false);
   const [pushSetupState, setPushSetupState] = useState<PushSetupState>(
-    Platform.OS === 'android' ? 'idle' : 'unsupported',
+    Platform.OS === 'web' ? 'unsupported' : 'idle',
   );
   const [pushSetupMessage, setPushSetupMessage] = useState<string | null>(null);
   const [pushSetupAttempt, setPushSetupAttempt] = useState(0);
@@ -241,9 +241,9 @@ export function ConsultantSessionProvider({
   }, [expireSession, state, tokenExpiresAt]);
 
   useEffect(() => {
-    if (Platform.OS !== 'android') {
+    if (Platform.OS === 'web') {
       setPushSetupState('unsupported');
-      setPushSetupMessage('اعلان FCM فقط در نسخه‌ی Android فعال است.');
+      setPushSetupMessage('ثبت تماس بومی فقط در نسخه‌ی نصب‌شده‌ی موبایل فعال است.');
       return;
     }
     if (state !== 'connected' || !token) {
@@ -267,7 +267,7 @@ export function ConsultantSessionProvider({
         if (!mounted) return;
         setPushSetupState('error');
         setPushSetupMessage(
-          'ثبت اعلان FCM در این دستگاه در دسترس نیست؛ درخواست‌های ورودی هنگام آنلاین‌بودن بررسی می‌شوند.',
+          'ثبت اعلان تماس در این دستگاه در دسترس نیست؛ صف تماس هنگام بازبودن برنامه بررسی می‌شود.',
         );
       });
     return () => {

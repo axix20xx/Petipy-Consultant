@@ -13,6 +13,8 @@ export type PushStatusListener = (
   message: string,
 ) => void;
 
+export type IncomingCallAction = 'open' | 'answer' | 'reject' | 'ended';
+
 export function startPushRegistration(
   _sessionToken: string,
   onStatus: PushStatusListener,
@@ -23,7 +25,11 @@ export function startPushRegistration(
 
 export function listenForForegroundIncomingPush(
   _sessionToken: string,
-  _onIncomingCall: (callId: string) => void,
+  _onIncomingCall: (
+    callId: string,
+    action?: IncomingCallAction,
+    nativeRequestId?: string,
+  ) => void,
 ): () => void {
   return () => {};
 }

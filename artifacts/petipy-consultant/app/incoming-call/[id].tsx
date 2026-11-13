@@ -56,14 +56,18 @@ export default function IncomingCallScreen() {
   const colors = useColors();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { id, answer, action } = useLocalSearchParams<{
+  const { id, answer, action, nativeRequestId: nativeRequestIdParam } = useLocalSearchParams<{
     id?: string | string[];
     answer?: string | string[];
     action?: string | string[];
+    nativeRequestId?: string | string[];
   }>();
   const callId = Array.isArray(id) ? id[0] : id;
   const answerParam = Array.isArray(answer) ? answer[0] : answer;
   const actionParam = Array.isArray(action) ? action[0] : action;
+  const nativeRequestId = Array.isArray(nativeRequestIdParam)
+    ? nativeRequestIdParam[0]
+    : nativeRequestIdParam;
   const {
     token,
     state: sessionState,
@@ -150,6 +154,20 @@ export default function IncomingCallScreen() {
     setAccepting(true);
     setActionError(null);
     try {
+      if (Platform.OS === 'ios' && !nativeRequestId) {
+        try {
+          const { answerCall: answerNativeCall, getActiveCallSession } =
+            await import('expo-callkit-telecom');
+          const systemSession = await getActiveCallSession();
+          if (systemSession?.incomingCallEvent?.serverCallId === callId) {
+            await answerNativeCall(systemSession.id);
+            return;
+          }
+        } catch {
+          // Expo Go has no PushKit/CallKit module; allow foreground API accept.
+        }
+      }
+
       if (Platform.OS === 'android') {
         const result = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
@@ -179,7 +197,13 @@ export default function IncomingCallScreen() {
       void queryClient.invalidateQueries({
         queryKey: ['petipy', 'incoming-requests'],
       });
-      router.replace(`/call/${encodeURIComponent(session.callId)}`);
+      router.replace({
+        pathname: '/call/[id]',
+        params: {
+          id: session.callId,
+          ...(nativeRequestId ? { nativeRequestId } : {}),
+        },
+      });
     } catch (error) {
       setActionError(
         error instanceof Error
@@ -189,13 +213,36 @@ export default function IncomingCallScreen() {
     } finally {
       setAccepting(false);
     }
-  }, [accepting, call, callId, queryClient, router, setActiveCall, token]);
+  }, [
+    accepting,
+    call,
+    callId,
+    nativeRequestId,
+    queryClient,
+    router,
+    setActiveCall,
+    token,
+  ]);
 
   const rejectCall = useCallback(async () => {
     if (!token || !callId || rejecting || accepting || !call) return;
     setRejecting(true);
     setActionError(null);
     try {
+      if (Platform.OS === 'ios') {
+        try {
+          const { endCall: endNativeCall, getActiveCallSession } =
+            await import('expo-callkit-telecom');
+          const systemSession = await getActiveCallSession();
+          if (systemSession?.incomingCallEvent?.serverCallId === callId) {
+            await endNativeCall(systemSession.id);
+            return;
+          }
+        } catch {
+          // Fall back to the authenticated API when CallKit is unavailable.
+        }
+      }
+
       await rejectIncomingCall(token, callId, 'busy');
       await endSystemCall(callId, 'rejected');
       stopIncomingCallRingtone();

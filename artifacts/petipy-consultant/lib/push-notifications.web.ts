@@ -1,5 +1,9 @@
-export type { PushSetupState, PushStatusListener } from './push-notifications';
-import type { PushStatusListener } from './push-notifications';
+export type {
+  IncomingCallAction,
+  PushSetupState,
+  PushStatusListener,
+} from './push-notifications';
+import type { IncomingCallAction, PushStatusListener } from './push-notifications';
 
 export function startPushRegistration(
   _sessionToken: string,
@@ -11,7 +15,11 @@ export function startPushRegistration(
 
 export function listenForForegroundIncomingPush(
   _sessionToken: string,
-  _onIncomingCall: (callId: string) => void,
+  _onIncomingCall: (
+    callId: string,
+    action?: IncomingCallAction,
+    nativeRequestId?: string,
+  ) => void,
 ) {
   return () => {};
 }

@@ -22,6 +22,21 @@ export function parseIncomingCallId(data: unknown): string | null {
       const normalized = value.trim();
       if (normalized.length > 0 && normalized.length <= 200) return normalized;
     }
+    for (const key of ['incomingCall', 'incoming_call']) {
+      const incomingCall = source[key];
+      if (
+        incomingCall === null ||
+        typeof incomingCall !== 'object' ||
+        Array.isArray(incomingCall)
+      ) {
+        continue;
+      }
+      const serverCallId = (incomingCall as Record<string, unknown>).serverCallId;
+      if (typeof serverCallId === 'string') {
+        const normalized = serverCallId.trim();
+        if (normalized.length > 0 && normalized.length <= 200) return normalized;
+      }
+    }
   }
   return null;
 }

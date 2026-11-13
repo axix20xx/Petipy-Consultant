@@ -70,6 +70,12 @@ test('only accepts a bounded non-empty callId signal', () => {
   assert.equal(parseIncomingCallId({ call_id: 'call-123' }), 'call-123');
   assert.equal(parseIncomingCallId({ requestId: 'call-123' }), 'call-123');
   assert.equal(
+    parseIncomingCallId({
+      incomingCall: { serverCallId: 'call-123' },
+    }),
+    'call-123',
+  );
+  assert.equal(
     parseIncomingCallId({ data: { request_id: 'call-123' } }),
     'call-123',
   );

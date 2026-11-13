@@ -379,7 +379,7 @@ export default function SettingsScreen() {
           ) : null}
           <InfoRow
             icon="notifications-outline"
-            title="وضعیت اعلان FCM"
+            title={Platform.OS === 'ios' ? 'وضعیت تماس بومی iOS' : 'وضعیت اعلان FCM'}
             detail={
               pushSetupMessage ??
               (pushSetupState === 'idle'
@@ -446,21 +446,29 @@ export default function SettingsScreen() {
               </View>
             </Pressable>
           ) : null}
-          <InfoRow
-            icon="battery-half-outline"
-            title="محدودیت باتری را بردارید"
-            detail="در تنظیمات Android، مصرف باتری Petipy را روی Unrestricted بگذارید."
-            color={colors.warning}
-          />
-          <InfoRow
-            icon="hand-left-outline"
-            title="Force stop تماس را متوقف می‌کند"
-            detail="پس از Force stop، Android اجرای برنامه و دریافت تماس را تا بازشدن دوباره متوقف می‌کند."
-            color={colors.destructive}
-          />
-          <Text style={[styles.footnote, { color: colors.mutedForeground }]}>
-            اگر FCM یا مجوز اعلان در دسترس نباشد، سرویس foreground هنگام آنلاین‌بودن صف تماس را بررسی می‌کند. پس از Force stop، Android دریافت اعلان و اجرای سرویس را متوقف می‌کند.
-          </Text>
+          {Platform.OS === 'android' ? (
+            <>
+              <InfoRow
+                icon="battery-half-outline"
+                title="محدودیت باتری را بردارید"
+                detail="در تنظیمات Android، مصرف باتری Petipy را روی Unrestricted بگذارید."
+                color={colors.warning}
+              />
+              <InfoRow
+                icon="hand-left-outline"
+                title="Force stop تماس را متوقف می‌کند"
+                detail="پس از Force stop، Android اجرای برنامه و دریافت تماس را تا بازشدن دوباره متوقف می‌کند."
+                color={colors.destructive}
+              />
+              <Text style={[styles.footnote, { color: colors.mutedForeground }]}>
+                اگر FCM یا مجوز اعلان در دسترس نباشد، سرویس foreground هنگام آنلاین‌بودن صف تماس را بررسی می‌کند. پس از Force stop، Android دریافت اعلان و اجرای سرویس را متوقف می‌کند.
+              </Text>
+            </>
+          ) : Platform.OS === 'ios' ? (
+            <Text style={[styles.footnote, { color: colors.mutedForeground }]}>
+              تماس ورودی از PushKit و CallKit سیستم استفاده می‌کند. iOS ممکن است پس از Force Quit دستی، دریافت تماس در پس‌زمینه را متوقف کند.
+            </Text>
+          ) : null}
         </View>
 
         <View style={styles.sectionHeader}>
@@ -475,7 +483,7 @@ export default function SettingsScreen() {
             <Text style={[styles.cardTitle, { color: colors.foreground }]}>حفاظت از اتصال</Text>
           </View>
           <Text style={[styles.body, { color: colors.mutedForeground }]}>
-            تماس با API پتی‌پای برقرار می‌شود و TURN relay-only از نشست دریافت می‌شود. FCM فقط اعلان را می‌رساند و هیچ Google STUN استفاده نمی‌شود.
+            تماس با API پتی‌پای برقرار می‌شود و TURN relay-only از نشست دریافت می‌شود. {Platform.OS === 'ios' ? 'PushKit و CallKit فقط تماس را به iOS می‌رسانند.' : 'FCM فقط اعلان را می‌رساند.'} هیچ Google STUN استفاده نمی‌شود.
           </Text>
           <View style={[styles.statusBadge, { backgroundColor: colors.accent }]}>
             <View style={[styles.badgeDot, { backgroundColor: colors.warning }]} />

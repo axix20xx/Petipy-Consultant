@@ -17,11 +17,18 @@ export type IncomingCall = {
   status?: string;
 };
 
-export type ConsultantPushDevice = {
-  deviceId: string;
-  platform: 'android';
-  pushToken: string;
-};
+export type ConsultantPushDevice =
+  | {
+      deviceId: string;
+      platform: 'android';
+      pushToken: string;
+    }
+  | {
+      deviceId: string;
+      platform: 'ios';
+      pushToken: string;
+      pushEnvironment: 'sandbox' | 'production';
+    };
 
 export type CallHistoryEntry = {
   id: string;

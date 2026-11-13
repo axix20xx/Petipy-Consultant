@@ -84,6 +84,13 @@ export async function setSystemCallAudioRoute(
   }
 }
 
+export async function setSystemCallMuted(
+  _callId: string,
+  _muted: boolean,
+) {
+  return false;
+}
+
 export async function endSystemCall(
   callId: string,
   reason: 'rejected' | 'missed' | 'remote' | 'local' = 'local',

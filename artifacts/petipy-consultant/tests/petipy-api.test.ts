@@ -7,6 +7,7 @@ import {
   getVoiceCallMessages,
   getVoiceChatAttachmentUrl,
   PetipyApiError,
+  registerConsultantPushDevice,
   rejectIncomingCall,
   sendVoiceCallMessage,
 } from '../lib/petipy-api';
@@ -152,6 +153,45 @@ test('sends an authenticated reject request with the documented reason', async (
     assert.deepEqual(result, {
       callId: 'call-1234567890',
       status: 'rejected',
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('registers an iOS PushKit token with its APNs environment', async () => {
+  const originalFetch = globalThis.fetch;
+  let requestUrl = '';
+  let requestInit: RequestInit | undefined;
+  globalThis.fetch = async (input, init) => {
+    requestUrl = String(input);
+    requestInit = init;
+    return new Response(JSON.stringify({ registered: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+
+  try {
+    await registerConsultantPushDevice('redacted-test-token', {
+      deviceId: 'installation-123456',
+      platform: 'ios',
+      pushToken: 'a'.repeat(64),
+      pushEnvironment: 'sandbox',
+    });
+    assert.equal(
+      requestUrl,
+      'https://petipy.com/api/voice/consultant/me/devices',
+    );
+    assert.equal(
+      (requestInit?.headers as Record<string, string>).Authorization,
+      'Bearer redacted-test-token',
+    );
+    assert.deepEqual(JSON.parse(String(requestInit?.body)), {
+      deviceId: 'installation-123456',
+      platform: 'ios',
+      pushToken: 'a'.repeat(64),
+      pushEnvironment: 'sandbox',
     });
   } finally {
     globalThis.fetch = originalFetch;

@@ -1,6 +1,6 @@
 ---
 name: Petipy background call alerts
-description: User constraints and Android limits for consultant incoming-call alerting.
+description: User constraints and Android/iOS limits for consultant incoming-call alerting.
 ---
 
 Petipy Consultant uses FCM for incoming-call signals through the approved device registration/status/revoke API routes. The push payload is only a signal: fetch the authenticated consultant request queue and verify the call is still active before opening the screen. Keep the foreground-service polling fallback when push is disabled or notification permission is denied. Never put session/call/TURN credentials or private call details in push payloads. Firebase Admin credentials belong only in the API deployment's secure secrets; FCM must not add Google STUN.
@@ -34,3 +34,9 @@ Android notification-channel importance is fixed once a channel is created. Reus
 **Why:** Multiple installed APK iterations can leave the device's original channel configuration in force even when the app code now requests high importance.
 
 **How to apply:** Register/refresh/revoke the installation's FCM token through Petipy's existing routes. Require data-only high-priority call signals, verify them via the API queue, and explain physical-device testing, polling fallback, force-stop, battery, and full-screen permission limits plainly. Test full-screen behavior with the device locked or screen-off. When fixing stale channel importance, create a new channel ID and ensure the notification uses it.
+
+iOS native incoming calls require PushKit plus CallKit in a custom native build; Expo Go cannot provide these native capabilities. Petipy's supplied backend snapshot has Android FCM only, so iOS registration and APNs delivery must be deployed separately. Match the app's APNs environment to its Apple provisioning profile, and treat force-quit delivery as best effort.
+
+**Why:** The user approved an iOS PushKit/CallKit contract, and the supplied API source did not include iOS VoIP token registration or APNs sending.
+
+**How to apply:** Keep APNs credentials only in the API deployment's secret store, use the approved generic call payload without REST/call tokens or customer PII, and verify locked/background/terminated behavior on a real iPhone after the backend and Apple Push Notifications capability are configured.

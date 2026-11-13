@@ -2,7 +2,11 @@ import { useColors } from '@/hooks/useColors';
 import { finishCall, joinCall } from '@/lib/petipy-api';
 import { VoiceCallClient } from '@/lib/voice-call';
 import { setAvailabilityCallState } from '@/lib/background-monitor';
-import { endSystemCall, markSystemCallActive } from '@/lib/system-calling';
+import {
+  endSystemCall,
+  markSystemCallActive,
+  setSystemCallMuted,
+} from '@/lib/system-calling';
 import { useConsultantSession } from '@/providers/consultant-session';
 import RemoteVideo from '@/components/RemoteVideo';
 import type { PetCard } from '@/lib/pet-card-protocol';
@@ -34,11 +38,23 @@ function formatDuration(totalSeconds: number) {
 
 export default function ConsultantCallScreen() {
   const colors = useColors();
-  const { id, action } = useLocalSearchParams<{ id: string; action?: string }>();
+  const {
+    id,
+    action,
+    nativeRequestId: nativeRequestIdParam,
+  } = useLocalSearchParams<{
+    id: string;
+    action?: string;
+    nativeRequestId?: string | string[];
+  }>();
+  const nativeRequestId = Array.isArray(nativeRequestIdParam)
+    ? nativeRequestIdParam[0]
+    : nativeRequestIdParam;
   const callId = Array.isArray(id) ? id[0] : id;
   const { token, activeCall, setActiveCall } = useConsultantSession();
   const matchingCall = activeCall?.callId === callId ? activeCall : null;
   const clientRef = useRef<VoiceCallClient | null>(null);
+  const mutedRef = useRef(false);
   const connectedAtRef = useRef<number | null>(null);
   const accumulatedSecondsRef = useRef(0);
   const timerCallIdRef = useRef<string | null>(null);
@@ -112,6 +128,13 @@ export default function ConsultantCallScreen() {
           setStatus('تماس برقرار است');
           setAvailabilityCallState(callId ?? null, 'connected');
           if (callId) void markSystemCallActive(callId);
+          if (Platform.OS === 'ios' && nativeRequestId) {
+            void import('expo-callkit-telecom')
+              .then(({ fulfillIncomingCallConnected }) =>
+                fulfillIncomingCallConnected(nativeRequestId),
+              )
+              .catch(() => {});
+          }
         },
         onDisconnected: () => {
           if (!isMounted) return;
@@ -149,6 +172,9 @@ export default function ConsultantCallScreen() {
           setPetCardBatches((current) => [...current, { shareId, pets }]);
         },
       })
+      .then(() => {
+        if (isMounted && mutedRef.current) client.setMuted(true);
+      })
       .catch((startError: unknown) => {
         client.close();
         if (clientRef.current === client) clientRef.current = null;
@@ -173,7 +199,71 @@ export default function ConsultantCallScreen() {
     };
     // Restart the peer when a rejoin returns a fresh call-session token.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchingCall]);
+  }, [matchingCall, nativeRequestId]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'ios' || !callId) return;
+    let mounted = true;
+    const subscriptions: Array<{ remove: () => void }> = [];
+    void import('expo-callkit-telecom')
+      .then(
+        ({
+          addAudioRouteChangedListener,
+          addSetMutedActionListener,
+          getAudioSession,
+          getActiveCallSession,
+        }) => {
+          if (!mounted) return;
+          subscriptions.push(
+            addSetMutedActionListener((event) => {
+              void getActiveCallSession().then((session) => {
+                if (
+                  !mounted ||
+                  session?.id !== event.id ||
+                  session.incomingCallEvent?.serverCallId !== callId
+                ) {
+                  return;
+                }
+                mutedRef.current = event.isMuted;
+                clientRef.current?.setMuted(event.isMuted);
+                setMuted(event.isMuted);
+              });
+            }),
+            addAudioRouteChangedListener((event) => {
+              void getActiveCallSession().then((session) => {
+                if (
+                  !mounted ||
+                  session?.incomingCallEvent?.serverCallId !== callId
+                ) {
+                  return;
+                }
+                const speakerEnabled = event.currentRoute.outputs.some(
+                  (output) => output.portType === 'builtInSpeaker',
+                );
+                setAudioRoute(speakerEnabled ? 'speaker' : 'earpiece');
+              });
+            }),
+          );
+          void getActiveCallSession().then((session) => {
+            if (
+              mounted &&
+              session?.incomingCallEvent?.serverCallId === callId
+            ) {
+              const audio = getAudioSession();
+              const speakerEnabled = audio.currentRoute.outputs.some(
+                (output) => output.portType === 'builtInSpeaker',
+              );
+              setAudioRoute(speakerEnabled ? 'speaker' : 'earpiece');
+            }
+          });
+        },
+      )
+      .catch(() => {});
+    return () => {
+      mounted = false;
+      for (const subscription of subscriptions) subscription.remove();
+    };
+  }, [callId]);
 
   useEffect(() => {
     if (!matchingCall || petCardBatches.length === 0) return;
@@ -301,7 +391,11 @@ export default function ConsultantCallScreen() {
 
   function toggleMute() {
     const next = !muted;
+    mutedRef.current = next;
     clientRef.current?.setMuted(next);
+    if (Platform.OS === 'ios' && callId) {
+      void setSystemCallMuted(callId, next);
+    }
     setMuted(next);
   }
 

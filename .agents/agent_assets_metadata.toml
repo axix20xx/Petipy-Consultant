@@ -154,3 +154,17 @@ mtime_ms = 1794558439303
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/2fbb985c-1de6-4f29-8eaa-1438302be465/eaa70aac-f058-4a4f-8cfd-5601be335d92"
 storage_version_token = "1794558459608845"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "1VMh4cWlGnJ8HcJIe8L1g"
+uri = "file://generated-artifacts/Petipy-Consultant-1.0.9-arm64.apk"
+type = "unspecified"
+title = "Petipy Consultant APK 1.0.9"
+description = "Signed ARM64 update APK with native call and notification modules deferred from app cold start. Physical-device launch still needs testing."
+logical_id = "1ce8a312-8121-4b26-9bf9-dcacc41f21ab"
+content_hash = "sha256:203483f0d57495e08129ddb652ff47e4e715798c663a0005e95daf437c2f22e8"
+size = 60005797
+mtime_ms = 1794562867283
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/1ce8a312-8121-4b26-9bf9-dcacc41f21ab/7fa25c3c-67a8-49b9-878f-ff3880103054"
+storage_version_token = "1794563115727105"
+content_type = "application/octet-stream"

@@ -17,10 +17,8 @@ import {
 } from '@expo-google-fonts/inter';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { onIncomingCallNotificationOpen } from '@/lib/incoming-call-alerts';
 import { getIncomingCalls } from '@/lib/petipy-api';
 import { resolveIncomingPushRoute } from '@/lib/incoming-push-routing';
-import { listenForForegroundIncomingPush } from '@/lib/push-notifications';
 import { useConsultantSession } from '@/providers/consultant-session';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -48,9 +46,22 @@ function RootLayoutNav() {
   }, []);
 
   useEffect(() => {
-    return onIncomingCallNotificationOpen((callId, action) =>
-      setPendingNotificationCall({ callId, action }),
-    );
+    let active = true;
+    let unsubscribe = () => {};
+    void import('@/lib/incoming-call-alerts')
+      .then(({ onIncomingCallNotificationOpen }) => {
+        if (!active) return;
+        unsubscribe = onIncomingCallNotificationOpen((callId, action) =>
+          setPendingNotificationCall({ callId, action }),
+        );
+      })
+      .catch(() => {
+        // Notification routing is optional at launch; the signed-in app remains usable.
+      });
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -89,9 +100,22 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (state !== 'connected' || !token) return;
-    return listenForForegroundIncomingPush(token, (callId) =>
-      router.replace(`/incoming-call/${encodeURIComponent(callId)}`),
-    );
+    let active = true;
+    let unsubscribe = () => {};
+    void import('@/lib/push-notifications')
+      .then(({ listenForForegroundIncomingPush }) => {
+        if (!active) return;
+        unsubscribe = listenForForegroundIncomingPush(token, (callId) =>
+          router.replace(`/incoming-call/${encodeURIComponent(callId)}`),
+        );
+      })
+      .catch(() => {
+        // Foreground request polling remains available if FCM cannot initialize.
+      });
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [router, state, token]);
 
   return (

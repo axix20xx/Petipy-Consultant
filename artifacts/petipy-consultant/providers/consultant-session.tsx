@@ -14,11 +14,8 @@ import {
   type CallSession,
 } from '@/lib/petipy-api';
 import {
-  revokePushDeviceForSession,
-  startPushRegistration,
   type PushSetupState,
 } from '@/lib/push-notifications';
-import { stopAvailabilityService } from '@/lib/background-monitor';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import { useQueryClient } from '@tanstack/react-query';
@@ -67,6 +64,24 @@ const WEB_AUTH_MESSAGE =
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
+async function stopAvailabilityServiceSafely() {
+  try {
+    const { stopAvailabilityService } = await import('@/lib/background-monitor');
+    await stopAvailabilityService();
+  } catch {
+    // A native service cleanup failure must not prevent session recovery/logout.
+  }
+}
+
+async function revokePushDeviceSafely(sessionToken: string) {
+  try {
+    const { revokePushDeviceForSession } = await import('@/lib/push-notifications');
+    return await revokePushDeviceForSession(sessionToken);
+  } catch {
+    return false;
+  }
+}
+
 function getSessionError(error: unknown) {
   if (error instanceof ConsultantAuthError) return error;
   if (error instanceof PetipyApiError && error.status === 401) {
@@ -110,7 +125,7 @@ export function ConsultantSessionProvider({
   const expireSession = useCallback(async () => {
     await Promise.allSettled([
       clearStoredConsultantSession(SecureStore),
-      stopAvailabilityService(),
+      stopAvailabilityServiceSafely(),
     ]);
     setToken(null);
     setTokenExpiresAt(null);
@@ -238,11 +253,23 @@ export function ConsultantSessionProvider({
     }
 
     let mounted = true;
-    const stop = startPushRegistration(token, (nextState, nextMessage) => {
-      if (!mounted) return;
-      setPushSetupState(nextState);
-      setPushSetupMessage(nextMessage);
-    });
+    let stop = () => {};
+    void import('@/lib/push-notifications')
+      .then(({ startPushRegistration }) => {
+        if (!mounted) return;
+        stop = startPushRegistration(token, (nextState, nextMessage) => {
+          if (!mounted) return;
+          setPushSetupState(nextState);
+          setPushSetupMessage(nextMessage);
+        });
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setPushSetupState('error');
+        setPushSetupMessage(
+          'ثبت اعلان FCM در این دستگاه در دسترس نیست؛ درخواست‌های ورودی هنگام آنلاین‌بودن بررسی می‌شوند.',
+        );
+      });
     return () => {
       mounted = false;
       stop();
@@ -312,10 +339,10 @@ export function ConsultantSessionProvider({
 
   const disconnect = useCallback(async () => {
     const pushRevoked = token
-      ? await revokePushDeviceForSession(token)
+      ? await revokePushDeviceSafely(token)
       : true;
     try {
-      await stopAvailabilityService();
+      await stopAvailabilityServiceSafely();
       await clearStoredConsultantSession(SecureStore);
     } catch {
       setState('error');

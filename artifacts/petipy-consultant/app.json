@@ -2,7 +2,7 @@
   "expo": {
     "name": "Petipy Consultant",
     "slug": "petipy-consultant",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "petipy-consultant",
@@ -15,7 +15,7 @@
     },
     "android": {
       "package": "com.petipy.consultant",
-      "versionCode": 9,
+      "versionCode": 10,
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.RECORD_AUDIO",

@@ -1,8 +1,6 @@
 try {
   const messaging =
     require('@react-native-firebase/messaging') as typeof import('@react-native-firebase/messaging');
-  const pushNotifications =
-    null;
 
   messaging.setBackgroundMessageHandler(
     messaging.getMessaging(),

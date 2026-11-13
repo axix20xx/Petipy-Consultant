@@ -2,11 +2,23 @@ try {
   const messaging =
     require('@react-native-firebase/messaging') as typeof import('@react-native-firebase/messaging');
   const pushNotifications =
-    require('./push-notifications') as typeof import('./push-notifications');
+    null;
 
   messaging.setBackgroundMessageHandler(
     messaging.getMessaging(),
-    pushNotifications.handleBackgroundIncomingMessage,
+    async (message) => {
+      try {
+        const { handleBackgroundIncomingMessage } = await import(
+          './push-notifications.android'
+        );
+        await handleBackgroundIncomingMessage(message);
+      } catch {
+        // Optional native call-alert modules must not prevent React Native startup.
+        console.error(
+          'Background call handling could not load; foreground polling remains available.',
+        );
+      }
+    },
   );
 } catch {
   // Keep app startup available when native push setup is missing; foreground

@@ -238,6 +238,10 @@ jobs:
       - name: Build iOS application
         working-directory: artifacts/petipy-consultant
         shell: bash
+        env:
+          # This workflow produces an internal, unsigned development-auth build.
+          # The server still validates the OTP; no code is hardcoded in the app.
+          EXPO_PUBLIC_PETIPY_AUTH_MODE: development
         run: |
           set -o pipefail
           BUILD_LOG="$RUNNER_TEMP/Petipy-xcodebuild.log"

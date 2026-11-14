@@ -19,10 +19,12 @@
 ## Safety defaults and current blockers
 
 - **Production authentication defaults to `live`.** The available mobile sign-in
-  is development phone/OTP only. That flow is enabled only in the development
-  profile and the Replit development workflow. A release build will not expose
-  the development OTP flow. A supported live consultant sign-in/token exchange
-  is still required before a production user can sign in.
+  is development phone/OTP only. It is enabled in the development profile,
+  Replit development workflow, and the manually triggered unsigned iOS GitHub
+  Actions build. That IPA is for development testing only; its OTP is still
+  validated by Petipy's development-auth endpoint. Preview and production
+  profiles keep live auth, and a supported live consultant sign-in/token
+  exchange is still required before a production user can sign in.
 - **iOS VoIP is disabled in every profile.** The PushKit/CallKit code and config
   plugin are retained. Enabling them requires both
   `EXPO_PUBLIC_IOS_VOIP_ENABLED=true` and an `EXPO_PUBLIC_APNS_ENVIRONMENT`
@@ -88,15 +90,15 @@ downloadable IPA file.
    physical-device tests for foreground, background, locked, expired, and
    duplicate-call cases.
 
-## Optional macOS CI
+## Unsigned iOS CI build
 
-A GitHub Actions macOS workflow was not added. This project has no configured
-GitHub build connection or Apple signing credentials, and a workflow would
-consume external CI capacity while remaining unable to produce an installable
-iPhone build until those prerequisites exist. When a repository and Apple
-credentials are available, the workflow should be manually triggered, use
-GitHub Actions **Secrets** for signing material, and never print or upload
-private keys as build artifacts.
+The manually triggered `.github/workflows/build-ios-unsigned.yml` workflow
+builds the iOS app target on GitHub's macOS runner and uploads an unsigned IPA
+artifact. It enables the development OTP mode only during the app's JS bundle
+build; the committed Expo config and production/preview profiles remain `live`.
+The workflow does not require Apple signing credentials, but the resulting
+unsigned IPA still must be signed with a compatible profile before it can be
+installed on an iPhone.
 
 ## References
 

@@ -1,0 +1,7 @@
+diff --git a/ios/AppDelegateSubscriber.swift b/ios/AppDelegateSubscriber.swift
+index 231086298c45f2b5ede73db57d836e8dea879e75..2b991289c6d5f35f850f8122615782ebaf85aa54 100644
+--- a/ios/AppDelegateSubscriber.swift
++++ b/ios/AppDelegateSubscriber.swift
+@@ -13,2 +13,0 @@
+-    // Register for VoIP push so we can receive pushes when app is launched from terminated state.
+-    VoIPPushManager.shared.register()

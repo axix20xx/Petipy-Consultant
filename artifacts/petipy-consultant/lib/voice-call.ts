@@ -17,7 +17,6 @@ import {
   resolveCallAudioBackend,
   type CallAudioBackend,
 } from '@/lib/call-audio-routing';
-import { isIosNativeVoipEnabled } from '@/lib/ios-voip-config';
 import { setSystemCallAudioRoute } from '@/lib/system-calling';
 import { Platform } from 'react-native';
 
@@ -94,7 +93,6 @@ export class VoiceCallClient {
 
     const callKitOwnsAudioSession =
       Platform.OS === 'ios' &&
-      isIosNativeVoipEnabled() &&
       Boolean(options?.nativeCallKitRequestId);
     this.audioBackend = resolveCallAudioBackend(
       Platform.OS,

@@ -38,6 +38,8 @@ jobs:
 
       - name: Generate iOS project
         working-directory: artifacts/petipy-consultant
+        env:
+          EXPO_PUBLIC_IOS_VOIP_ENABLED: 'false'
         run: |
           pnpm exec expo prebuild --platform ios --no-install
 
@@ -242,6 +244,7 @@ jobs:
           # This workflow produces an internal, unsigned development-auth build.
           # The server still validates the OTP; no code is hardcoded in the app.
           EXPO_PUBLIC_PETIPY_AUTH_MODE: development
+          EXPO_PUBLIC_IOS_VOIP_ENABLED: 'false'
         run: |
           set -o pipefail
           BUILD_LOG="$RUNNER_TEMP/Petipy-xcodebuild.log"

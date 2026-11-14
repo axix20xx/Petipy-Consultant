@@ -7,7 +7,6 @@ import {
   markSystemCallActive,
   setSystemCallMuted,
 } from '@/lib/system-calling';
-import { isIosNativeVoipEnabled } from '@/lib/ios-voip-config';
 import { useConsultantSession } from '@/providers/consultant-session';
 import RemoteVideo from '@/components/RemoteVideo';
 import type { PetCard } from '@/lib/pet-card-protocol';
@@ -131,7 +130,6 @@ export default function ConsultantCallScreen() {
           if (callId) void markSystemCallActive(callId);
           if (
             Platform.OS === 'ios' &&
-            isIosNativeVoipEnabled() &&
             nativeRequestId
           ) {
             void import('expo-callkit-telecom')
@@ -178,7 +176,7 @@ export default function ConsultantCallScreen() {
         },
       }, {
         nativeCallKitRequestId:
-          Platform.OS === 'ios' && isIosNativeVoipEnabled()
+          Platform.OS === 'ios'
             ? nativeRequestId
             : undefined,
       })
@@ -214,7 +212,6 @@ export default function ConsultantCallScreen() {
   useEffect(() => {
     if (
       Platform.OS !== 'ios' ||
-      !isIosNativeVoipEnabled() ||
       !callId
     ) return;
     let mounted = true;

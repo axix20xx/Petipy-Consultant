@@ -20,17 +20,14 @@ function withPetipyIosCallKit(config) {
     if (!nextModes.includes('audio')) nextModes.push('audio');
     if (voipEnabled) nextModes.push('voip');
     mod.modResults.UIBackgroundModes = [...new Set(nextModes)];
-    if (voipEnabled) {
-      mod.modResults.ExpoCallKitTelecomIncomingCallTimeout = 90;
-      mod.modResults.ExpoCallKitTelecomSupportsVideo = false;
-      mod.modResults.ExpoCallKitTelecomIncludesCallsInRecents = false;
-      mod.modResults.ExpoCallKitTelecomDefaultRingtone = 'default';
-    } else {
-      delete mod.modResults.ExpoCallKitTelecomIncomingCallTimeout;
-      delete mod.modResults.ExpoCallKitTelecomSupportsVideo;
-      delete mod.modResults.ExpoCallKitTelecomIncludesCallsInRecents;
-      delete mod.modResults.ExpoCallKitTelecomDefaultRingtone;
-    }
+    // CallKit is used for calls reported while the app is active. Do not add
+    // PushKit background mode or APNs entitlements unless VoIP is explicitly
+    // enabled by a separately provisioned build.
+    mod.modResults.ExpoCallKitTelecomIncomingCallTimeout = 90;
+    mod.modResults.ExpoCallKitTelecomFulfillAnswerCallTimeout = 30;
+    mod.modResults.ExpoCallKitTelecomSupportsVideo = false;
+    mod.modResults.ExpoCallKitTelecomIncludesCallsInRecents = false;
+    mod.modResults.ExpoCallKitTelecomDefaultRingtone = 'default';
     return mod;
   });
 

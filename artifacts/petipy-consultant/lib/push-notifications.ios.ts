@@ -9,6 +9,7 @@ import {
   rejectIncomingCall,
   revokeConsultantPushDevice,
 } from '@/lib/petipy-api';
+import { suppressSystemIncomingCall } from '@/lib/system-calling';
 import {
   findActiveIncomingCall,
   isUnexpiredRequestedCall,
@@ -124,7 +125,7 @@ export function startPushRegistration(
   if (!isIosNativeVoipEnabled()) {
     onStatus(
       'foreground-only',
-      'فاز اول فعال است: صف تماس هنگام بازبودن برنامه بررسی می‌شود. اعلان استاندارد iOS هنوز به مسیر تأییدشدهٔ سرور متصل نیست؛ PushKit و CallKit تا آماده‌شدن اعتبارنامه‌های Apple و ساخت بومی غیرفعال‌اند.',
+      'CallKit برای تماس‌هایی که هنگام بازبودن برنامه از API تأیید می‌شوند فعال است. تماس تازه در پس‌زمینه بدون PushKit و APNs به دستگاه نمی‌رسد.',
     );
     return () => {};
   }
@@ -187,8 +188,6 @@ export function listenForForegroundIncomingPush(
     nativeRequestId?: string,
   ) => void,
 ) {
-  if (!isIosNativeVoipEnabled()) return () => {};
-
   let active = true;
   let callkit: typeof import('expo-callkit-telecom') | null = null;
   const subscriptions: Array<{ remove: () => void }> = [];
@@ -245,6 +244,7 @@ export function listenForForegroundIncomingPush(
             callIdsBySystemId.get(session.id) ?? findCallId(session);
           if (!callId) return;
           callIdsBySystemId.delete(session.id);
+          suppressSystemIncomingCall(callId);
 
           void (async () => {
             try {
@@ -259,7 +259,7 @@ export function listenForForegroundIncomingPush(
                 await finishCall(sessionToken, callId);
               }
             } catch {
-              // The API remains authoritative; an unavailable reject is left visible in the queue.
+              // Keep it suppressed locally until the API reflects the terminal state.
               onIncomingCall(callId, 'open');
               return;
             }

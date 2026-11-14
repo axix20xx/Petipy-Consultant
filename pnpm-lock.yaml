@@ -155,6 +155,11 @@ overrides:
   esbuild: 0.28.2
   js-yaml: 4.3.2
 
+patchedDependencies:
+  expo-callkit-telecom@1.0.1:
+    hash: 039c2f189755a183deb67698b19a22e6e1d56c581f44180baa78de33a6117d54
+    path: patches/expo-callkit-telecom@1.0.1.patch
+
 importers:
 
   .:
@@ -433,7 +438,7 @@ importers:
         version: 58.0.12(expo@58.0.25)
       expo-callkit-telecom:
         specifier: ^1.0.1
-        version: 1.0.1(expo-notifications@58.1.9(expo@58.0.25)(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(expo@58.0.25)(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)
+        version: 1.0.1(patch_hash=039c2f189755a183deb67698b19a22e6e1d56c581f44180baa78de33a6117d54)(expo-notifications@58.1.9(expo@58.0.25)(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(expo@58.0.25)(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)
       expo-crypto:
         specifier: ~58.0.8
         version: 58.0.8(expo@58.0.25)
@@ -8913,7 +8918,7 @@ snapshots:
       resolve-from: 5.0.0
       semver: 7.8.6
 
-  expo-callkit-telecom@1.0.1(expo-notifications@58.1.9(expo@58.0.25)(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(expo@58.0.25)(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0):
+  expo-callkit-telecom@1.0.1(patch_hash=039c2f189755a183deb67698b19a22e6e1d56c581f44180baa78de33a6117d54)(expo-notifications@58.1.9(expo@58.0.25)(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(expo@58.0.25)(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0):
     dependencies:
       expo: 58.0.25(@babel/core@7.29.7)(@expo/metro-runtime@58.0.17)(expo-router@58.0.31)(react-dom@19.3.0(react@19.3.0))(react-native-web@0.21.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-native-worklets@0.13.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
       expo-notifications: 58.1.9(expo@58.0.25)(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)(typescript@6.0.3)

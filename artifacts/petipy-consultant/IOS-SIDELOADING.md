@@ -25,17 +25,21 @@
   validated by Petipy's development-auth endpoint. Preview and production
   profiles keep live auth, and a supported live consultant sign-in/token
   exchange is still required before a production user can sign in.
-- **iOS VoIP is disabled in every profile.** The PushKit/CallKit code and config
-  plugin are retained. Enabling them requires both
-  `EXPO_PUBLIC_IOS_VOIP_ENABLED=true` and an `EXPO_PUBLIC_APNS_ENVIRONMENT`
-  value of `sandbox` or `production`; the plugin fails closed if the environment
-  is missing or invalid.
+- **Foreground iOS incoming calls use CallKit without PushKit.** While the app
+  is open, the consultant queue is verified through the existing Petipy API and
+  a confirmed request is reported to the native CallKit screen. Answer, decline,
+  mute, speaker, and end actions are connected to the existing call flow.
+  This does not require an APNs entitlement and is compatible with a free
+  Personal Team signature.
+- **A new call cannot wake a backgrounded, suspended, or force-closed iOS app.**
+  The app polls the request API while active and refreshes the queue when it
+  returns to the foreground. No background incoming-call delivery is claimed.
+  PushKit/APNs remains disabled in every build profile.
 - Accepted iOS calls now activate the native WebRTC audio session and use the
   native speaker/receiver route controls. `UIBackgroundModes: audio` is already
   configured, but continued audio must still be verified on a physical iPhone.
-  Foreground incoming requests can ring locally; background incoming delivery
-  remains unavailable until the Petipy API supports iOS VoIP token registration
-  and APNs delivery.
+  CallKit supplies the foreground incoming-call UI and ringtone; a local
+  ringtone remains the fallback if the native report cannot be shown.
 - The iOS VoIP API overlay has not been deployed to the live Petipy API. APNs
   provider credentials and the corresponding server-side feature flag are also
   not configured here. A client build alone cannot make background call
@@ -50,9 +54,9 @@
 
 | Profile | Purpose | Important limits |
 | --- | --- | --- |
-| `development` | Internal standalone test build with development OTP | Internal iPhone installation needs Apple signing and device registration. It is not a Metro development client. VoIP stays off. |
-| `preview` | Production-like internal test | Uses the live-auth gate; internal iPhone installation needs an Apple Developer team and registered device. VoIP stays off. |
-| `production` | Future store-signed release | Live authentication and VoIP remain gated until their backend contracts and Apple setup are complete. |
+| `development` | Internal standalone test build with development OTP | CallKit works for calls confirmed while the app is open. The IPA must be signed to install. PushKit stays off. |
+| `preview` | Production-like internal test | Uses the live-auth gate. Foreground CallKit works; background push stays off. |
+| `production` | Future store-signed release | Live authentication remains gated; background incoming delivery still needs an approved APNs backend and Apple setup. |
 | `ios-simulator` | Standalone build for an iOS Simulator | Simulator output is not installable on a physical iPhone and does not verify PushKit delivery. |
 
 The profiles are future configuration only. Replit's current Expo workflow
@@ -80,21 +84,18 @@ downloadable IPA file.
 - AltStore PAL is a separate regional alternative-app marketplace; it is not a
   general way to install an arbitrary Petipy IPA.
 - APNs/PushKit capabilities and TestFlight distribution require Apple developer
-  program access. A free Personal Team build is not a substitute for the
-  production VoIP push entitlement and server credentials.
+  program access. They are not needed for foreground-only CallKit.
 
 ## What is still needed for real iOS incoming calls
 
-1. An enrolled Apple Developer team, the `com.petipy.consultant` app identifier,
-   Push Notifications capability, and matching signing/provisioning.
-2. APNs provider credentials stored only on the Petipy API deployment.
-3. Deployment and verification of the approved iOS VoIP registration and
-   delivery changes on the live API, including queued-call promotion.
-4. A production consultant authentication/token flow. The development OTP
+1. A physical iPhone test of foreground CallKit, answer/decline, microphone,
+   speaker, active-call lock/background audio, expiry, and network changes.
+2. New incoming calls after the app becomes inactive still wait until the app
+   returns to the foreground. Supporting those calls requires an iOS VoIP token
+   route and APNs sender in the Petipy API, plus an enrolled Apple Developer
+   team, PushKit entitlement, and server-held APNs credentials.
+3. A production consultant authentication/token flow. The development OTP
    endpoint is not production authentication.
-5. An explicitly enabled iOS VoIP build with matching APNs environment, then
-   physical-device tests for foreground, background, locked, expired, and
-   duplicate-call cases.
 
 ## Unsigned iOS CI build
 

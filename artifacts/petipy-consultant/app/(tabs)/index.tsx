@@ -15,7 +15,13 @@ import {
   startAvailabilityService,
   stopAvailabilityService,
 } from '@/lib/background-monitor';
-import { markSystemCallActive } from '@/lib/system-calling';
+import {
+  clearSystemIncomingCallSuppression,
+  endSystemCall,
+  isSystemIncomingCallSuppressed,
+  markSystemCallActive,
+  reportSystemIncomingCall,
+} from '@/lib/system-calling';
 import {
   cancelIncomingCallNotification,
   startIncomingCallRingtone,
@@ -25,7 +31,7 @@ import { isUnexpiredRequestedCall } from '@/lib/incoming-push-routing';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   AppState,
   ActivityIndicator,
@@ -75,6 +81,9 @@ export default function ConsultantHome() {
   const [appIsActive, setAppIsActive] = useState(
     AppState.currentState === 'active',
   );
+  const reportedSystemCallsRef = useRef(new Set<string>());
+  const callKitReportedCallsRef = useRef(new Set<string>());
+  const endingSystemCallsRef = useRef(new Set<string>());
   const isConnected = sessionState === 'connected' && Boolean(token);
   const isAvailable = profile?.manualStatus === 'online';
   const refreshServiceState = () => setServiceRunning(isAvailabilityServiceRunning());
@@ -83,10 +92,15 @@ export default function ConsultantHome() {
     refreshServiceState();
     const subscription = AppState.addEventListener('change', (nextState) => {
       setAppIsActive(nextState === 'active');
-      if (nextState === 'active') refreshServiceState();
+      if (nextState === 'active') {
+        refreshServiceState();
+        void queryClient.invalidateQueries({
+          queryKey: ['petipy', 'incoming-requests'],
+        });
+      }
     });
     return () => subscription.remove();
-  }, []);
+  }, [queryClient]);
 
   const queue = useQuery({
     queryKey: ['petipy', 'incoming-requests'],
@@ -103,7 +117,12 @@ export default function ConsultantHome() {
       !activeCall &&
       !acceptingId &&
       !rejectingId
-        ? queue.data?.find((call) => isUnexpiredRequestedCall(call)) ?? null
+        ? queue.data?.find(
+            (call) =>
+              isUnexpiredRequestedCall(call) &&
+              !isSystemIncomingCallSuppressed(call.id) &&
+              !callKitReportedCallsRef.current.has(call.id),
+          ) ?? null
         : null;
     if (pendingCall) startIncomingCallRingtone(pendingCall.expiresAt);
     else stopIncomingCallRingtone();
@@ -122,6 +141,106 @@ export default function ConsultantHome() {
     },
     [],
   );
+  useEffect(() => {
+    if (
+      Platform.OS !== 'ios' ||
+      !appIsActive ||
+      !isConnected ||
+      !queue.data
+    ) {
+      return;
+    }
+
+    const canReportIncoming =
+      isAvailable && !activeCall && !acceptingId && !rejectingId;
+    const pendingCalls = canReportIncoming
+      ? queue.data.filter(
+          (call) =>
+            isUnexpiredRequestedCall(call) &&
+            !isSystemIncomingCallSuppressed(call.id),
+        )
+      : [];
+    const pendingIds = new Set(pendingCalls.map((call) => call.id));
+    let active = true;
+
+    for (const call of pendingCalls) {
+      if (reportedSystemCallsRef.current.has(call.id)) continue;
+      reportedSystemCallsRef.current.add(call.id);
+      void reportSystemIncomingCall(
+        call.id,
+        call.expiresAt,
+        call.callerName,
+      ).then((reported) => {
+        if (reported) {
+          callKitReportedCallsRef.current.add(call.id);
+          stopIncomingCallRingtone();
+        } else {
+          reportedSystemCallsRef.current.delete(call.id);
+        }
+        if (!active) return;
+        if (!reported && (
+          AppState.currentState === 'active' &&
+          isConnected &&
+          isAvailable &&
+          !activeCall
+        )) {
+          startIncomingCallRingtone(call.expiresAt);
+        }
+      });
+    }
+
+    for (const callId of reportedSystemCallsRef.current) {
+      if (
+        pendingIds.has(callId) ||
+        endingSystemCallsRef.current.has(callId)
+      ) {
+        continue;
+      }
+      const current = queue.data.find((call) => call.id === callId);
+      if (
+        current &&
+        isUnexpiredRequestedCall(current) &&
+        isSystemIncomingCallSuppressed(callId)
+      ) {
+        continue;
+      }
+      if (
+        activeCall?.callId === callId ||
+        current?.status === 'connecting' ||
+        current?.status === 'active'
+      ) {
+        continue;
+      }
+
+      const reason =
+        current?.status === 'rejected'
+          ? 'rejected'
+          : current?.status === 'expired' ||
+              (current && !isUnexpiredRequestedCall(current))
+            ? 'missed'
+            : 'remote';
+      endingSystemCallsRef.current.add(callId);
+      void endSystemCall(callId, reason).finally(() => {
+        endingSystemCallsRef.current.delete(callId);
+        if (!active) return;
+        reportedSystemCallsRef.current.delete(callId);
+        callKitReportedCallsRef.current.delete(callId);
+        clearSystemIncomingCallSuppression(callId);
+      });
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [
+    acceptingId,
+    activeCall,
+    appIsActive,
+    isAvailable,
+    isConnected,
+    queue.data,
+    rejectingId,
+  ]);
   const history = useQuery({
     queryKey: ['petipy', 'call-history'],
     queryFn: () => getCallHistory(token as string),

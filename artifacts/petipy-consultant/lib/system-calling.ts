@@ -35,6 +35,7 @@ export async function registerSystemCalling() {
 export async function reportSystemIncomingCall(
   callId: string,
   expiresAt?: string,
+  _callerName?: string,
 ) {
   if (
     Platform.OS !== 'android' ||
@@ -54,6 +55,14 @@ export async function reportSystemIncomingCall(
     return false;
   }
 }
+
+export function suppressSystemIncomingCall(_callId: string) {}
+
+export function isSystemIncomingCallSuppressed(_callId: string) {
+  return false;
+}
+
+export function clearSystemIncomingCallSuppression(_callId: string) {}
 
 export async function markSystemCallActive(callId: string) {
   if (Platform.OS !== 'android' || !nativeTelecom?.markSystemCallActive) {

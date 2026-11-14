@@ -12,6 +12,12 @@ const iosWorkflow = readFileSync(
   '../../.github/workflows/build-ios-unsigned.yml',
   'utf8',
 );
+const callKitPlugin = readFileSync('plugins/withPetipyIosCallKit.js', 'utf8');
+const callKitAppDelegate = readFileSync(
+  'node_modules/expo-callkit-telecom/ios/AppDelegateSubscriber.swift',
+  'utf8',
+);
+const pnpmWorkspace = readFileSync('../../pnpm-workspace.yaml', 'utf8');
 
 test('keeps the consultant app identity and production auth fail-closed', () => {
   assert.equal(expoConfig.ios.bundleIdentifier, 'com.petipy.consultant');
@@ -55,6 +61,36 @@ test('simulator profile is distinct from a device IPA profile', () => {
   assert.equal(
     buildConfig['ios-simulator'].env.EXPO_PUBLIC_IOS_VOIP_ENABLED,
     'false',
+  );
+});
+
+test('foreground CallKit configuration does not add PushKit to free-signing builds', () => {
+  assert.deepEqual(expoConfig.ios.infoPlist.UIBackgroundModes, ['audio']);
+  assert.ok(expoConfig.plugins.includes('./plugins/withPetipyIosCallKit'));
+  assert.ok(!expoConfig.plugins.includes('expo-callkit-telecom'));
+  assert.doesNotMatch(
+    callKitAppDelegate,
+    /VoIPPushManager\.shared\.register\(\)/,
+  );
+  assert.match(
+    pnpmWorkspace,
+    /allowBuilds:\s*\n\s+'@firebase\/util': true\s*\n\s+esbuild: true\s*\n\s+protobufjs: true/,
+  );
+  assert.match(
+    pnpmWorkspace,
+    /patchedDependencies:[\s\S]*expo-callkit-telecom@1\.0\.1/,
+  );
+  assert.match(callKitPlugin, /ExpoCallKitTelecomSupportsVideo = false/);
+  assert.match(callKitPlugin, /ExpoCallKitTelecomIncomingCallTimeout = 90/);
+  assert.match(callKitPlugin, /if \(voipEnabled\) nextModes\.push\('voip'\)/);
+  assert.match(callKitPlugin, /delete mod\.modResults\['aps-environment'\]/);
+  assert.match(
+    iosWorkflow,
+    /- name: Generate iOS project[\s\S]*?EXPO_PUBLIC_IOS_VOIP_ENABLED: 'false'/,
+  );
+  assert.match(
+    iosWorkflow,
+    /- name: Build iOS application[\s\S]*?EXPO_PUBLIC_IOS_VOIP_ENABLED: 'false'/,
   );
 });
 

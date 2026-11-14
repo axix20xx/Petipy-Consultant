@@ -12,7 +12,6 @@ import {
 } from '@/lib/incoming-call-alerts';
 import { setAvailabilityCallState } from '@/lib/background-monitor';
 import { endSystemCall, markSystemCallActive } from '@/lib/system-calling';
-import { isIosNativeVoipEnabled } from '@/lib/ios-voip-config';
 import { findActiveIncomingCall } from '@/lib/incoming-push-routing';
 import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
@@ -157,19 +156,17 @@ export default function IncomingCallScreen() {
     try {
       if (
         Platform.OS === 'ios' &&
-        isIosNativeVoipEnabled() &&
         !nativeRequestId
       ) {
-        try {
-          const { answerCall: answerNativeCall, getActiveCallSession } =
-            await import('expo-callkit-telecom');
-          const systemSession = await getActiveCallSession();
+        const callkit = await import('expo-callkit-telecom').catch(() => null);
+        if (callkit) {
+          const systemSession = await callkit
+            .getActiveCallSession()
+            .catch(() => null);
           if (systemSession?.incomingCallEvent?.serverCallId === callId) {
-            await answerNativeCall(systemSession.id);
+            await callkit.answerCall(systemSession.id);
             return;
           }
-        } catch {
-          // Expo Go has no PushKit/CallKit module; allow foreground API accept.
         }
       }
 
@@ -210,6 +207,21 @@ export default function IncomingCallScreen() {
         },
       });
     } catch (error) {
+      if (Platform.OS === 'ios' && nativeRequestId) {
+        void import('expo-callkit-telecom')
+          .then(async (callkit) => {
+            const systemSession = await callkit
+              .getActiveCallSession()
+              .catch(() => null);
+            if (systemSession?.incomingCallEvent?.serverCallId === callId) {
+              await callkit.failIncomingCallConnected(
+                systemSession.id,
+                nativeRequestId,
+              );
+            }
+          })
+          .catch(() => {});
+      }
       setActionError(
         error instanceof Error
           ? error.message
@@ -234,17 +246,16 @@ export default function IncomingCallScreen() {
     setRejecting(true);
     setActionError(null);
     try {
-      if (Platform.OS === 'ios' && isIosNativeVoipEnabled()) {
-        try {
-          const { endCall: endNativeCall, getActiveCallSession } =
-            await import('expo-callkit-telecom');
-          const systemSession = await getActiveCallSession();
+      if (Platform.OS === 'ios') {
+        const callkit = await import('expo-callkit-telecom').catch(() => null);
+        if (callkit) {
+          const systemSession = await callkit
+            .getActiveCallSession()
+            .catch(() => null);
           if (systemSession?.incomingCallEvent?.serverCallId === callId) {
-            await endNativeCall(systemSession.id);
+            await callkit.endCall(systemSession.id);
             return;
           }
-        } catch {
-          // Fall back to the authenticated API when CallKit is unavailable.
         }
       }
 

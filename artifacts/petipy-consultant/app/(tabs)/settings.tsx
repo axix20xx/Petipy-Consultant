@@ -379,7 +379,7 @@ export default function SettingsScreen() {
           ) : null}
           <InfoRow
             icon="notifications-outline"
-            title={Platform.OS === 'ios' ? 'وضعیت تماس بومی iOS' : 'وضعیت اعلان FCM'}
+            title={Platform.OS === 'ios' ? 'تماس iOS هنگام بازبودن' : 'وضعیت اعلان FCM'}
             detail={
               pushSetupMessage ??
               (pushSetupState === 'idle'
@@ -400,6 +400,8 @@ export default function SettingsScreen() {
                 ? 'ثبت شده'
                 : pushSetupState === 'idle'
                   ? 'در انتظار'
+                    : pushSetupState === 'foreground-only'
+                      ? 'فاز اول'
                   : pushSetupState === 'unsupported'
                     ? 'پشتیبانی نمی‌شود'
                     : pushSetupState === 'error' || pushSetupState === 'permission-denied' || pushSetupState === 'server-disabled'
@@ -408,7 +410,9 @@ export default function SettingsScreen() {
             }
             statusColor={pushSetupState === 'ready' ? colors.success : colors.warning}
           />
-          {isConnected && pushSetupState !== 'ready' ? (
+          {isConnected &&
+          pushSetupState !== 'ready' &&
+          pushSetupState !== 'foreground-only' ? (
             <Pressable
               accessibilityRole="button"
               onPress={retryPushSetup}
@@ -466,7 +470,7 @@ export default function SettingsScreen() {
             </>
           ) : Platform.OS === 'ios' ? (
             <Text style={[styles.footnote, { color: colors.mutedForeground }]}>
-              تماس ورودی از PushKit و CallKit سیستم استفاده می‌کند. iOS ممکن است پس از Force Quit دستی، دریافت تماس در پس‌زمینه را متوقف کند.
+              در فاز اول، تماس هنگام بازبودن برنامه از صف Petipy دریافت می‌شود. اعلان استاندارد iOS هنوز به مسیر سرور متصل نیست؛ PushKit و CallKit آماده اما غیرفعال‌اند تا اعتبارنامه‌های Apple و ساخت بومی فراهم شود. پس از Force Quit دستی، دریافت تماس تضمین نمی‌شود.
             </Text>
           ) : null}
         </View>
@@ -483,7 +487,7 @@ export default function SettingsScreen() {
             <Text style={[styles.cardTitle, { color: colors.foreground }]}>حفاظت از اتصال</Text>
           </View>
           <Text style={[styles.body, { color: colors.mutedForeground }]}>
-            تماس با API پتی‌پای برقرار می‌شود و TURN relay-only از نشست دریافت می‌شود. {Platform.OS === 'ios' ? 'PushKit و CallKit فقط تماس را به iOS می‌رسانند.' : 'FCM فقط اعلان را می‌رساند.'} هیچ Google STUN استفاده نمی‌شود.
+            تماس با API پتی‌پای برقرار می‌شود و TURN relay-only از نشست دریافت می‌شود. {Platform.OS === 'ios' ? 'تماس پیش‌زمینه فعال است؛ PushKit و CallKit تا آماده‌شدن زیرساخت Apple غیرفعال‌اند.' : 'FCM فقط اعلان را می‌رساند.'} هیچ Google STUN استفاده نمی‌شود.
           </Text>
           <View style={[styles.statusBadge, { backgroundColor: colors.accent }]}>
             <View style={[styles.badgeDot, { backgroundColor: colors.warning }]} />

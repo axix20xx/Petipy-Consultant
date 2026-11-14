@@ -35,8 +35,8 @@ Android notification-channel importance is fixed once a channel is created. Reus
 
 **How to apply:** Register/refresh/revoke the installation's FCM token through Petipy's existing routes. Require data-only high-priority call signals, verify them via the API queue, and explain physical-device testing, polling fallback, force-stop, battery, and full-screen permission limits plainly. Test full-screen behavior with the device locked or screen-off. When fixing stale channel importance, create a new channel ID and ensure the notification uses it.
 
-iOS native incoming calls require PushKit plus CallKit in a custom native build; Expo Go cannot provide these native capabilities. Petipy's supplied backend snapshot has Android FCM only, so iOS registration and APNs delivery must be deployed separately. Match the app's APNs environment to its Apple provisioning profile, and treat force-quit delivery as best effort.
+iOS rollout is phased: keep foreground queue polling and the existing in-call WebSocket first; keep PushKit/CallKit dormant until a custom native build and Apple VoIP setup are ready. The supplied backend snapshot has no consultant incoming-request WebSocket or standard iOS push route, so do not claim those background paths work or invent a contract. The prepared VoIP client and server require separate explicit enable flags.
 
-**Why:** The user approved an iOS PushKit/CallKit contract, and the supplied API source did not include iOS VoIP token registration or APNs sending.
+**Why:** The user supplied the hybrid rollout architecture and asked to preserve foreground calling while keeping native VoIP as a later upgrade.
 
-**How to apply:** Keep APNs credentials only in the API deployment's secret store, use the approved generic call payload without REST/call tokens or customer PII, and verify locked/background/terminated behavior on a real iPhone after the backend and Apple Push Notifications capability are configured.
+**How to apply:** In Phase 1, rely on the authenticated request poller while the app is open and existing WebRTC signaling after acceptance. Keep standard-push work blocked on an approved backend contract; only enable PushKit/CallKit when app/server flags, APNs credentials, provisioning, and a custom iOS build are all ready. Never put secrets or customer PII in push payloads.

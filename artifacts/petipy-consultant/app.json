@@ -13,7 +13,7 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": false,
       "infoPlist": {
-        "UIBackgroundModes": ["audio", "voip"],
+        "UIBackgroundModes": ["audio"],
         "NSMicrophoneUsageDescription": "برای برقراری تماس مشاوره با کاربران Petipy، دسترسی به میکروفون لازم است."
       }
     },

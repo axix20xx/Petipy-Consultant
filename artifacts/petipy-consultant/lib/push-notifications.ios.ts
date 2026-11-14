@@ -13,6 +13,7 @@ import {
   findActiveIncomingCall,
   isUnexpiredRequestedCall,
 } from '@/lib/incoming-push-routing';
+import { isIosNativeVoipEnabled } from '@/lib/ios-voip-config';
 import type {
   IncomingCallAction,
   PushSetupState,
@@ -120,6 +121,14 @@ export function startPushRegistration(
   sessionToken: string,
   onStatus: PushStatusListener,
 ) {
+  if (!isIosNativeVoipEnabled()) {
+    onStatus(
+      'foreground-only',
+      'فاز اول فعال است: صف تماس هنگام بازبودن برنامه بررسی می‌شود. اعلان استاندارد iOS هنوز به مسیر تأییدشدهٔ سرور متصل نیست؛ PushKit و CallKit تا آماده‌شدن اعتبارنامه‌های Apple و ساخت بومی غیرفعال‌اند.',
+    );
+    return () => {};
+  }
+
   let active = true;
   let tokenSubscription: { remove: () => void } | null = null;
   onStatus('registering', 'در حال ثبت دستگاه برای تماس بومی iOS…');
@@ -178,6 +187,8 @@ export function listenForForegroundIncomingPush(
     nativeRequestId?: string,
   ) => void,
 ) {
+  if (!isIosNativeVoipEnabled()) return () => {};
+
   let active = true;
   let callkit: typeof import('expo-callkit-telecom') | null = null;
   const subscriptions: Array<{ remove: () => void }> = [];

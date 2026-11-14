@@ -5,6 +5,7 @@ export type PushSetupState =
   | 'server-disabled'
   | 'status-unknown'
   | 'permission-denied'
+  | 'foreground-only'
   | 'error'
   | 'unsupported';
 

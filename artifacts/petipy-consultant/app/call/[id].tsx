@@ -7,6 +7,7 @@ import {
   markSystemCallActive,
   setSystemCallMuted,
 } from '@/lib/system-calling';
+import { isIosNativeVoipEnabled } from '@/lib/ios-voip-config';
 import { useConsultantSession } from '@/providers/consultant-session';
 import RemoteVideo from '@/components/RemoteVideo';
 import type { PetCard } from '@/lib/pet-card-protocol';
@@ -128,7 +129,11 @@ export default function ConsultantCallScreen() {
           setStatus('تماس برقرار است');
           setAvailabilityCallState(callId ?? null, 'connected');
           if (callId) void markSystemCallActive(callId);
-          if (Platform.OS === 'ios' && nativeRequestId) {
+          if (
+            Platform.OS === 'ios' &&
+            isIosNativeVoipEnabled() &&
+            nativeRequestId
+          ) {
             void import('expo-callkit-telecom')
               .then(({ fulfillIncomingCallConnected }) =>
                 fulfillIncomingCallConnected(nativeRequestId),
@@ -202,7 +207,11 @@ export default function ConsultantCallScreen() {
   }, [matchingCall, nativeRequestId]);
 
   useEffect(() => {
-    if (Platform.OS !== 'ios' || !callId) return;
+    if (
+      Platform.OS !== 'ios' ||
+      !isIosNativeVoipEnabled() ||
+      !callId
+    ) return;
     let mounted = true;
     const subscriptions: Array<{ remove: () => void }> = [];
     void import('expo-callkit-telecom')

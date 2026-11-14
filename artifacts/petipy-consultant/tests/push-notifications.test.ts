@@ -18,6 +18,7 @@ import {
   isIncomingCallRejectAction,
   shouldOpenIncomingCallFromNotificationEvent,
 } from '../lib/incoming-call-alert-config';
+import { isIosNativeVoipEnabled } from '../lib/ios-voip-config';
 
 const now = Date.parse('2026-11-07T12:00:00.000Z');
 
@@ -27,6 +28,12 @@ const activeRequest = {
   status: 'requested',
   expiresAt: '2026-11-07T12:01:00.000Z',
 };
+
+test('keeps the native iOS VoIP upgrade dormant unless explicitly enabled', () => {
+  assert.equal(isIosNativeVoipEnabled(undefined), false);
+  assert.equal(isIosNativeVoipEnabled('false'), false);
+  assert.equal(isIosNativeVoipEnabled('true'), true);
+});
 
 test('uses a new high-priority incoming-call channel for Android', () => {
   assert.equal(INCOMING_CALL_CHANNEL_ID, 'incoming-calls-v2');

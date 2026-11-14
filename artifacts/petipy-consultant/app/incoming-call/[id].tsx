@@ -12,6 +12,7 @@ import {
 } from '@/lib/incoming-call-alerts';
 import { setAvailabilityCallState } from '@/lib/background-monitor';
 import { endSystemCall, markSystemCallActive } from '@/lib/system-calling';
+import { isIosNativeVoipEnabled } from '@/lib/ios-voip-config';
 import { findActiveIncomingCall } from '@/lib/incoming-push-routing';
 import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
@@ -154,7 +155,11 @@ export default function IncomingCallScreen() {
     setAccepting(true);
     setActionError(null);
     try {
-      if (Platform.OS === 'ios' && !nativeRequestId) {
+      if (
+        Platform.OS === 'ios' &&
+        isIosNativeVoipEnabled() &&
+        !nativeRequestId
+      ) {
         try {
           const { answerCall: answerNativeCall, getActiveCallSession } =
             await import('expo-callkit-telecom');
@@ -229,7 +234,7 @@ export default function IncomingCallScreen() {
     setRejecting(true);
     setActionError(null);
     try {
-      if (Platform.OS === 'ios') {
+      if (Platform.OS === 'ios' && isIosNativeVoipEnabled()) {
         try {
           const { endCall: endNativeCall, getActiveCallSession } =
             await import('expo-callkit-telecom');

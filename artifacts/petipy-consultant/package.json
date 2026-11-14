@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@config-plugins/react-native-webrtc": "^15.0.2",
+    "@expo-google-fonts/vazirmatn": "0.4.1",
     "@kishannareshpal/expo-pdf": "^0.3.2",
     "@notifee/react-native": "^9.1.8",
     "@react-native-firebase/app": "^27.1.0",

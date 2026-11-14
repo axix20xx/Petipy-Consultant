@@ -418,6 +418,9 @@ importers:
       '@config-plugins/react-native-webrtc':
         specifier: ^15.0.2
         version: 15.0.2(expo@58.0.25)
+      '@expo-google-fonts/vazirmatn':
+        specifier: 0.4.1
+        version: 0.4.1
       '@kishannareshpal/expo-pdf':
         specifier: ^0.3.2
         version: 0.3.2(expo@58.0.25)(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)
@@ -1090,6 +1093,9 @@ packages:
 
   '@expo-google-fonts/material-symbols@0.4.53':
     resolution: {integrity: sha512-SgCSm8rUYvwy+5ABvwlV/h7xbJkWAsenChSKlUwMLVyEw/QoUon055QixCOtGCjrSRWqFGDvR0ghVa5nA2OkIg==}
+
+  '@expo-google-fonts/vazirmatn@0.4.1':
+    resolution: {integrity: sha512-sznMvxt99C4bsEcWCebs3XWb/av8z9a/Y4OQo8F7VPFT0xzzn7Whkkw6dqxcAyLYEiNNpTpa3/vp8t1/koK6Jw==}
 
   '@expo/cli@58.1.20':
     resolution: {integrity: sha512-VXXcqGuXBngzItcP97ERWON3aHJOeAwDxuRlkxgbYfW9m9DpGHM6umGgjOPWWy14xSArUvwGZpg+D5Ms+hnnkg==}
@@ -6085,6 +6091,8 @@ snapshots:
   '@expo-google-fonts/inter@0.4.2': {}
 
   '@expo-google-fonts/material-symbols@0.4.53': {}
+
+  '@expo-google-fonts/vazirmatn@0.4.1': {}
 
   '@expo/cli@58.1.20(@expo/metro-runtime@58.0.17)(expo-constants@58.0.16)(expo-font@58.0.12)(expo-router@58.0.31)(expo@58.0.25)(react-dom@19.3.0(react@19.3.0))(react-native@0.88.1(@babel/core@7.29.7)(@react-native/metro-config@0.88.1(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)(typescript@6.0.3)':
     dependencies:

@@ -5,6 +5,12 @@ description: Product constraints for consultant mobile authentication and pendin
 
 For Android `VOICE_CONSULTANT` accounts, `POST /api/dev-auth/universal/sign-in` can issue a mobile token only when Petipy's development phone-auth mode is enabled and the identity account has consultant role metadata. Its token expires after two hours. This is not production/live sign-in; keep sign-in unavailable in live mode until Petipy provides a live mobile token exchange. Do not invent endpoints, transfer tokens through clipboard/deep links, or present demo auth as official live authentication. Store mobile credentials only in Expo SecureStore, and never log credentials.
 
+At app startup, verify any stored, unexpired consultant session even when new development sign-in is disabled. A temporary network/API failure must not erase SecureStore credentials or route the user to sign-in; keep the session in a clearly labeled offline state and retry while the app is active. Clear credentials only after local expiry or a definitive unauthorized/wrong-role response. Client persistence cannot extend the server's expiry; a longer login requires a real backend refresh or longer-lived session contract.
+
+**Why:** A release-mode auth flag previously caused an existing valid development session to be deleted during restore, while transient API failures were indistinguishable from invalid credentials.
+
+**How to apply:** Keep session restoration separate from whether the sign-in form is available. Preserve the token through temporary outages but continue enforcing its server expiry and consultant-role validation.
+
 The owner wants development consultant mobile tokens to remain valid for 30 days. The supplied VPS snapshot includes `/api/dev-auth/universal/sign-in`; its shared mobile-token helper is called for identity accounts whose resolved role is `VOICE_CONSULTANT`, so that is the right development-login issuer to change. Keep all other mobile sessions at two hours and do not change per-call join tokens. The workspace API artifact is only a health-check stub, and the snapshot is not proof that the live API has been updated.
 
 **Why:** The owner explicitly requested a 30-day development login. The full supplied snapshot contains the consultant-capable universal sign-in flow, but it is separate from the live deployment.

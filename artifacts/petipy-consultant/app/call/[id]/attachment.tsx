@@ -1,5 +1,6 @@
 import { PdfView } from '@kishannareshpal/expo-pdf';
 import { useColors } from '@/hooks/useColors';
+import { PetipyText as Text } from '@/components/PetipyText';
 import { getVoiceCallMessages, getVoiceChatAttachmentUrl } from '@/lib/petipy-api';
 import type { VoiceChatAttachment } from '@/lib/petipy-api';
 import { useConsultantSession } from '@/providers/consultant-session';
@@ -11,7 +12,6 @@ import {
   Image,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -152,7 +152,7 @@ export default function VoiceCallAttachmentScreen() {
         </View>
       </View>
 
-      <View style={styles.body}>
+      <View style={[styles.body, { backgroundColor: colors.muted }]}>
         {loading ? (
           <View style={[styles.centerState, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={[styles.stateIcon, { backgroundColor: colors.secondary }]}>
@@ -257,10 +257,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerCopy: { flex: 1, alignItems: 'flex-end', gap: 2 },
-  headerEyebrow: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  headerEyebrow: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   title: {
     maxWidth: '100%',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '800',
     textAlign: 'right',
     writingDirection: 'rtl',
@@ -280,13 +280,13 @@ const styles = StyleSheet.create({
   stateIcon: { width: 54, height: 54, borderRadius: 19, alignItems: 'center', justifyContent: 'center', marginBottom: 3 },
   stateTitle: { fontSize: 16, fontWeight: '800', textAlign: 'center', writingDirection: 'rtl' },
   stateText: {
-    fontSize: 11,
+    fontSize: 13,
     lineHeight: 18,
     textAlign: 'center',
     writingDirection: 'rtl',
   },
   errorText: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 19,
     textAlign: 'center',
     writingDirection: 'rtl',
@@ -301,12 +301,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginTop: 5,
   },
-  retryText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
-  previewFrame: { flex: 1, margin: 15, borderWidth: 1, borderRadius: 28, overflow: 'hidden', position: 'relative', elevation: 1 },
-  image: { flex: 1, width: '100%', padding: 10 },
+  retryText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
+  previewFrame: { flex: 1, margin: 8, borderWidth: 0, borderRadius: 18, overflow: 'hidden', position: 'relative' },
+  image: { flex: 1, width: '100%', padding: 16 },
   pdf: { flex: 1, width: '100%' },
   previewCaption: { position: 'absolute', top: 11, right: 11, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8 },
-  previewCaptionText: { fontSize: 10, writingDirection: 'rtl' },
+  previewCaptionText: { fontSize: 11, writingDirection: 'rtl' },
   pageBadge: {
     position: 'absolute',
     bottom: 14,
@@ -316,5 +316,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 16,
   },
-  pageText: { fontSize: 10, writingDirection: 'rtl' },
+  pageText: { fontSize: 11, writingDirection: 'rtl' },
 });

@@ -1,5 +1,6 @@
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { PetipyPetMark } from '@/components/PetipyPetMark';
+import { PetipyText as Text } from '@/components/PetipyText';
 import { useColors } from '@/hooks/useColors';
 import { normalizeMobileDigits } from '@/lib/consultant-auth';
 import { useConsultantSession } from '@/providers/consultant-session';
@@ -9,7 +10,6 @@ import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
-  Text,
   TextInput,
   View,
   useWindowDimensions,
@@ -131,11 +131,11 @@ export default function ConsultantSignInScreen() {
           </View>
         </View>
 
-        <View style={styles.signInIntro}>
-          <PetipyPetMark />
+        <View style={[styles.signInIntro, !wide && styles.signInIntroCompact]}>
+          {wide ? <PetipyPetMark /> : <PetipyPetMark compact />}
           <View style={styles.panelCopy}>
             <Text style={[styles.panelKicker, { color: colors.primary }]}>میز اختصاصی مشاوران پتی‌پای</Text>
-            <Text style={[styles.title, { color: colors.foreground }]}>حضورِ آرام،{'\n'}پاسخِ به‌موقع.</Text>
+            <Text style={[styles.title, !wide && styles.titleCompact, { color: colors.foreground }]}>حضورِ آرام،{'\n'}پاسخِ به‌موقع.</Text>
             <Text style={[styles.heroCopy, { color: colors.mutedForeground }]}>
               یک جای امن برای همراهی با خانواده‌ها و مراقبت بهتر از حیوانات خانگی.
             </Text>
@@ -320,14 +320,16 @@ const styles = StyleSheet.create({
   brandLine: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   miniMark: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   brandWords: { alignItems: 'flex-end', gap: 1 },
-  brandName: { fontSize: 12, fontWeight: '800', letterSpacing: 1.3 },
+  brandName: { fontSize: 12, fontWeight: '800', letterSpacing: 1.3, writingDirection: 'ltr', textAlign: 'left' },
   brandSub: { fontSize: 10, writingDirection: 'rtl' },
   securePill: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 8 },
   secureLabel: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
   signInIntro: { paddingTop: 7, paddingBottom: 2, gap: 18 },
-  panelCopy: { alignItems: 'flex-end', gap: 9, width: '100%', paddingHorizontal: 3 },
+  signInIntroCompact: { flexDirection: 'row-reverse', alignItems: 'center', gap: 12, paddingTop: 1, paddingBottom: 0 },
+  panelCopy: { flex: 1, alignItems: 'flex-end', gap: 9, width: '100%', paddingHorizontal: 3 },
   panelKicker: { fontSize: 11, fontWeight: '800', writingDirection: 'rtl' },
   title: { fontSize: 34, lineHeight: 48, fontWeight: '900', textAlign: 'right', writingDirection: 'rtl' },
+  titleCompact: { fontSize: 25, lineHeight: 34 },
   heroCopy: { maxWidth: 300, fontSize: 12, lineHeight: 21, textAlign: 'right', writingDirection: 'rtl' },
   panelDisc: { position: 'absolute', width: 158, height: 158, borderWidth: 1, borderRadius: 80, opacity: 0.11, top: -67, left: -35 },
   panelDiscSmall: { position: 'absolute', width: 100, height: 100, borderWidth: 1, borderRadius: 50, opacity: 0.1, top: -38, left: -7 },
@@ -336,7 +338,7 @@ const styles = StyleSheet.create({
   formTitle: { fontSize: 15, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
   body: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
   roleTag: { borderRadius: 9, paddingHorizontal: 8, paddingVertical: 6 },
-  roleTagText: { fontSize: 9, fontWeight: '700', letterSpacing: 0.3 },
+  roleTagText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3, writingDirection: 'ltr', textAlign: 'left' },
   formCard: { gap: 15 },
   devNotice: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 10, borderRightWidth: 3, borderRadius: 13, paddingHorizontal: 12, paddingVertical: 11 },
   noticeIcon: { width: 31, height: 31, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
@@ -345,7 +347,7 @@ const styles = StyleSheet.create({
   fieldBlock: { gap: 8 },
   label: { fontSize: 11, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
   inputShell: { minHeight: 56, flexDirection: 'row-reverse', alignItems: 'center', gap: 11, borderWidth: 1, borderRadius: 15, paddingHorizontal: 14 },
-  input: { flex: 1, minHeight: 52, fontSize: 15, writingDirection: 'ltr' },
+  input: { flex: 1, minHeight: 52, fontSize: 15, fontFamily: 'Vazirmatn_500Medium', writingDirection: 'ltr' },
   codeInput: { letterSpacing: 9, fontWeight: '700' },
   privacyRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
   privacyText: { flex: 1, fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl' },

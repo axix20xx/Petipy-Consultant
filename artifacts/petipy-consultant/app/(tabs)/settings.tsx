@@ -1,5 +1,6 @@
 import { useColors } from '@/hooks/useColors';
 import { PetipyPetMark } from '@/components/PetipyPetMark';
+import { PetipyText as Text } from '@/components/PetipyText';
 import {
   getIncomingCalls,
   setConsultantAvailability,
@@ -41,7 +42,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -153,6 +153,7 @@ export default function SettingsScreen() {
     active: boolean;
   } | null>(null);
   const isConnected = state === 'connected' && Boolean(token);
+  const hasSession = Boolean(token) && ['connected', 'offline'].includes(state);
 
   const refreshCallAlertStatus = useCallback(async () => {
     if (Platform.OS === 'android') {
@@ -338,7 +339,9 @@ export default function SettingsScreen() {
   };
   const iosMicrophonePermission = iosMicrophonePermissionCopy[iosMicrophoneAccess];
   const iosBackendStatus = !isConnected
-    ? { label: 'نشست موجود نیست', color: colors.warning }
+    ? hasSession
+      ? { label: 'اتصال موقتاً قطع است', color: colors.warning }
+      : { label: 'نشست موجود نیست', color: colors.warning }
     : iosBackendReachable === true
       ? { label: 'متصل', color: colors.success }
       : iosBackendReachable === false
@@ -415,60 +418,60 @@ export default function SettingsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.identitySection, { backgroundColor: colors.secondary }]}>
-        <View style={styles.settingsTop}>
-          <View style={styles.settingsHeading}>
-            <Text style={[styles.settingsEyebrow, { color: colors.secondaryForeground }]}>فضای شخصی مشاور</Text>
-            <Text style={[styles.settingsTitle, { color: colors.foreground }]}>حساب و آمادگی</Text>
+        <View style={styles.settingsIntro}>
+          <View style={styles.settingsTop}>
+            <View style={styles.settingsHeading}>
+              <Text style={[styles.settingsEyebrow, { color: colors.primary }]}>فضای شخصی مشاور</Text>
+              <Text style={[styles.settingsTitle, { color: colors.foreground }]}>حساب و آمادگی</Text>
+            </View>
+            <PetipyPetMark compact />
           </View>
-          <PetipyPetMark compact />
-        </View>
 
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionKicker, { color: colors.primary }]}>پروفایل</Text>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>حساب شما</Text>
-        </View>
-        <View style={[styles.accountCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {isConnected ? (
-            <>
-              <View style={[styles.profilePanel, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <View style={[styles.profileMark, { backgroundColor: colors.secondary }]}>
-                  <Ionicons name="person-outline" size={22} color={colors.primary} />
-                </View>
-                <View style={styles.profileCopy}>
-                  <Text style={[styles.profileName, { color: colors.foreground }]}>{profile?.displayName ?? 'مشاور Petipy'}</Text>
-                  <View style={[styles.profileStatus, { backgroundColor: colors.secondary }]}>
-                    <View style={[styles.profileDot, { backgroundColor: colors.success }]} />
-                    <Text style={[styles.profileStatusText, { color: colors.secondaryForeground }]}>حساب تأییدشده</Text>
+          <View style={[styles.accountCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {hasSession ? (
+              <>
+                <View style={styles.profilePanel}>
+                  <View style={[styles.profileMark, { backgroundColor: colors.secondary }]}>
+                    <Ionicons name="person-outline" size={22} color={colors.primary} />
+                  </View>
+                  <View style={styles.profileCopy}>
+                    <Text style={[styles.profileName, { color: colors.foreground }]}>{profile?.displayName ?? 'مشاور Petipy'}</Text>
+                      <View style={[styles.profileStatus, { backgroundColor: state === 'offline' ? colors.accent : colors.secondary }]}>
+                      <View style={[styles.profileDot, { backgroundColor: state === 'offline' ? colors.warning : colors.success }]} />
+                      <Text style={[styles.profileStatusText, { color: state === 'offline' ? colors.accentForeground : colors.secondaryForeground }]}>
+                        {state === 'offline' ? 'نشست امن ذخیره‌شده' : 'حساب تأییدشده'}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-              <Text style={[styles.body, { color: colors.mutedForeground }]}>
-                حساب فعال از API مشاور تأیید شد. API نقش و دسترسی VOICE_CONSULTANT را بررسی می‌کند.
-              </Text>
-            </>
-          ) : (
-            <>
-              <Text style={[styles.body, { color: colors.foreground }]}>
-                ورود موبایلی زنده با ارائه‌دهنده‌ی رسمی Petipy هنوز به این برنامه متصل نشده است.
-              </Text>
-              <View style={[styles.authNotice, { backgroundColor: colors.accent }]}>
-                <Ionicons name="information-circle-outline" size={17} color={colors.warning} />
-                <Text style={[styles.authNoticeText, { color: colors.accentForeground }]}>
-                  ورود وب فقط کوکی مرورگر می‌سازد. تا آماده‌شدن مسیر رسمی ورود موبایل، از OTP توسعه‌ای یا کپی‌کردن توکن استفاده نمی‌شود.
+                <Text style={[styles.body, { color: colors.mutedForeground }]}>
+                  {state === 'offline'
+                    ? message ?? 'اتصال دوباره بررسی می‌شود؛ دسترسی سرور تا اتصال بعدی تأیید نشده است.'
+                    : 'حساب فعال از API مشاور تأیید شد. API نقش و دسترسی VOICE_CONSULTANT را بررسی می‌کند.'}
                 </Text>
-              </View>
-              {message ? (
-                <Text accessibilityRole="alert" style={[styles.error, { color: colors.destructive }]}>
-                  {message}
+              </>
+            ) : (
+              <>
+                <Text style={[styles.body, { color: colors.foreground }]}>
+                  ورود موبایلی زنده با ارائه‌دهنده‌ی رسمی Petipy هنوز به این برنامه متصل نشده است.
                 </Text>
-              ) : null}
-              <Text style={[styles.footnote, { color: colors.mutedForeground }]}>
-                نشست اپ‌های دیگر قابل‌خواندن نیست و به این برنامه منتقل نمی‌شود. ورود موبایلی زنده پس از فراهم‌شدن مسیر رسمی Petipy فعال خواهد شد.
-              </Text>
-            </>
-          )}
-        </View>
+                <View style={[styles.authNotice, { backgroundColor: colors.accent }]}>
+                  <Ionicons name="information-circle-outline" size={17} color={colors.warning} />
+                  <Text style={[styles.authNoticeText, { color: colors.accentForeground }]}>
+                    ورود وب فقط کوکی مرورگر می‌سازد. تا آماده‌شدن مسیر رسمی ورود موبایل، از OTP توسعه‌ای یا کپی‌کردن توکن استفاده نمی‌شود.
+                  </Text>
+                </View>
+                {message ? (
+                  <Text accessibilityRole="alert" style={[styles.error, { color: colors.destructive }]}>
+                    {message}
+                  </Text>
+                ) : null}
+                <Text style={[styles.footnote, { color: colors.mutedForeground }]}>
+                  نشست اپ‌های دیگر قابل‌خواندن نیست و به این برنامه منتقل نمی‌شود. ورود موبایلی زنده پس از فراهم‌شدن مسیر رسمی Petipy فعال خواهد شد.
+                </Text>
+              </>
+            )}
+          </View>
         </View>
 
         <View style={styles.sectionHeader}>
@@ -863,12 +866,16 @@ export default function SettingsScreen() {
           <View style={[styles.statusBadge, { backgroundColor: colors.accent }]}>
             <View style={[styles.badgeDot, { backgroundColor: colors.warning }]} />
             <Text style={[styles.badgeText, { color: colors.accentForeground }]}>
-              {state === 'connected' ? 'حساب مشاور تأیید شد' : 'در انتظار نشست رسمی Petipy'}
+              {state === 'connected'
+                ? 'حساب مشاور تأیید شد'
+                : state === 'offline' && token
+                  ? 'نشست امن حفظ شد؛ اتصال دوباره بررسی می‌شود'
+                  : 'در انتظار نشست رسمی Petipy'}
             </Text>
           </View>
         </View>
 
-        {isConnected ? (
+        {hasSession ? (
           <View style={styles.secureSessionSection}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionKicker, { color: colors.primary }]}>نشست امن</Text>
@@ -904,10 +911,10 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   content: { width: '100%', maxWidth: 620, alignSelf: 'center', paddingHorizontal: 18, paddingTop: 14, paddingBottom: 38, gap: 15 },
   webContent: { paddingTop: 67, paddingBottom: 34 },
-  settingsTop: { minHeight: 92, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 },
-  identitySection: { borderRadius: 28, padding: 14, gap: 7, overflow: 'hidden' },
+  settingsIntro: { gap: 5, marginBottom: 4 },
+  settingsTop: { minHeight: 76, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 0 },
   settingsHeading: { alignItems: 'flex-end', gap: 2 },
-  settingsEyebrow: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  settingsEyebrow: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   settingsTitle: { fontSize: 26, fontWeight: '800', writingDirection: 'rtl' },
   settingsMark: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   heroTop: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
@@ -919,7 +926,7 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl', opacity: 0.82 },
   heroOrnament: { position: 'absolute', width: 144, height: 144, borderWidth: 1, borderRadius: 72, opacity: 0.11, left: -45, top: -62 },
   sectionHeader: { alignItems: 'flex-end', gap: 4, marginTop: 8, paddingHorizontal: 2 },
-  sectionKicker: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6, writingDirection: 'rtl' },
+  sectionKicker: { fontSize: 11, fontWeight: '800', letterSpacing: 0.6, writingDirection: 'rtl' },
   sectionTitle: { fontSize: 18, fontWeight: '800', writingDirection: 'rtl' },
   card: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 14, elevation: 0 },
   accountCard: { borderRadius: 25, borderWidth: 1, padding: 15, gap: 12, elevation: 1 },
@@ -928,21 +935,21 @@ const styles = StyleSheet.create({
   serviceSummaryIcon: { width: 39, height: 39, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   serviceSummaryCopy: { flex: 1, alignItems: 'flex-end', gap: 3 },
   statePill: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 6 },
-  statePillText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  statePillText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   cardHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   safetyIcon: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   cardTitle: { fontSize: 15, fontWeight: '700', writingDirection: 'rtl' },
   profileName: { fontSize: 17, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
-  profilePanel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14, padding: 15, borderRadius: 20, borderWidth: 1 },
+  profilePanel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14, paddingBottom: 3 },
   profileMark: { width: 56, height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   profileCopy: { flex: 1, alignItems: 'flex-end', gap: 6 },
   profileStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 8, paddingVertical: 4 },
   profileDot: { width: 6, height: 6, borderRadius: 3 },
-  profileStatusText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
-  body: { textAlign: 'right', fontSize: 12, lineHeight: 21, writingDirection: 'rtl' },
+  profileStatusText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  body: { textAlign: 'right', fontSize: 13, lineHeight: 22, writingDirection: 'rtl' },
   authNotice: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 8, borderRadius: 13, padding: 11 },
-  authNoticeText: { flex: 1, fontSize: 10, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
-  error: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
+  authNoticeText: { flex: 1, fontSize: 12, lineHeight: 20, textAlign: 'right', writingDirection: 'rtl' },
+  error: { fontSize: 12, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl' },
   secondaryButton: { minHeight: 48, borderRadius: 16, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 16, alignSelf: 'flex-end' },
   secondaryButtonText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
   secureSessionSection: { gap: 8, marginTop: 4 },
@@ -957,9 +964,9 @@ const styles = StyleSheet.create({
   rowCopy: { flex: 1, alignItems: 'flex-end', gap: 5 },
   rowTitleLine: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   rowStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 7, paddingVertical: 5 },
-  rowStatusText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  rowStatusText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   rowTitle: { flexShrink: 1, fontSize: 12, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
-  rowDetail: { fontSize: 12, lineHeight: 20, textAlign: 'right', writingDirection: 'rtl' },
+  rowDetail: { fontSize: 13, lineHeight: 21, textAlign: 'right', writingDirection: 'rtl' },
   footnote: { fontSize: 11, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl', marginTop: 1 },
 });

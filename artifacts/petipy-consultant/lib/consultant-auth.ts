@@ -53,6 +53,24 @@ export class ConsultantAuthError extends Error {
   }
 }
 
+export type SessionValidationFailure = 'expired' | 'wrong-role' | 'offline';
+
+export function resolveSessionValidationFailure(
+  error: unknown,
+): SessionValidationFailure {
+  if (
+    error instanceof ConsultantAuthError &&
+    (error.code === 'expired' || error.code === 'wrong-role')
+  ) {
+    return error.code;
+  }
+  if (error instanceof PetipyApiError) {
+    if (error.status === 401) return 'expired';
+    if (error.status === 403) return 'wrong-role';
+  }
+  return 'offline';
+}
+
 export function resolvePetipyMobileAuthMode(
   environmentMode: string | undefined,
   bundledMode: unknown,
@@ -86,6 +104,23 @@ export type StoredSessionResult =
   | { status: 'expired' }
   | { status: 'invalid' }
   | { status: 'ready'; session: ConsultantMobileSession };
+
+export type SessionBootstrapAction =
+  | 'verify-stored-session'
+  | 'show-signed-out'
+  | 'show-auth-unavailable'
+  | 'show-expired'
+  | 'show-invalid-session';
+
+export function resolveSessionBootstrapAction(
+  stored: StoredSessionResult,
+  devAuthEnabled: boolean,
+): SessionBootstrapAction {
+  if (stored.status === 'ready') return 'verify-stored-session';
+  if (stored.status === 'expired') return 'show-expired';
+  if (stored.status === 'invalid') return 'show-invalid-session';
+  return devAuthEnabled ? 'show-signed-out' : 'show-auth-unavailable';
+}
 
 export async function readStoredConsultantSession(
   storage: SessionStorage,

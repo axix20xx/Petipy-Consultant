@@ -1,44 +1,124 @@
 import { useColors } from '@/hooks/useColors';
 import { SessionLoadingScreen } from '@/components/ConsultantSignInScreen';
+import { PetipyText as Text } from '@/components/PetipyText';
 import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, Tabs } from 'expo-router';
-import { Platform, StyleSheet, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+import type { ComponentProps } from 'react';
+import { Platform, Pressable, StyleSheet, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+type ConsultantTabBarProps = Parameters<
+  NonNullable<ComponentProps<typeof Tabs>['tabBar']>
+>[0];
+
+function ConsultantTabBar({ state, descriptors, emitter, navigateToTab }: ConsultantTabBarProps) {
+  const colors = useColors();
+  const isDark = useColorScheme() === 'dark';
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={[styles.dockShell, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+      {Platform.OS === 'ios' ? (
+        <BlurView
+          intensity={76}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFill}
+        />
+      ) : null}
+      <View
+        style={[
+          styles.dock,
+          {
+            backgroundColor: Platform.OS === 'ios' ? 'transparent' : colors.card,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        {state.routes.map((route, index) => {
+          const options = descriptors[route.key].options;
+          const focused = state.index === index;
+          const label =
+            typeof options.tabBarLabel === 'string'
+              ? options.tabBarLabel
+              : options.title ?? route.name;
+          const color = focused ? colors.primary : colors.mutedForeground;
+          const icon = options.tabBarIcon?.({
+            focused,
+            color,
+            size: 21,
+          });
+
+          return (
+            <Pressable
+              key={route.key}
+              accessibilityRole="tab"
+              accessibilityLabel={options.tabBarAccessibilityLabel ?? label}
+              accessibilityState={{ selected: focused }}
+              onPress={() => {
+                const event = emitter.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                if (!focused && !event.defaultPrevented) {
+                  navigateToTab(route.key);
+                }
+              }}
+              onLongPress={() => {
+                emitter.emit({ type: 'tabLongPress', target: route.key });
+              }}
+              style={styles.dockItem}
+            >
+              <View
+                style={[
+                  styles.dockItemContent,
+                  focused && { backgroundColor: colors.secondary },
+                ]}
+              >
+                {icon}
+                <Text
+                  style={[
+                    styles.dockLabel,
+                    { color },
+                    focused && styles.dockLabelSelected,
+                  ]}
+                >
+                  {label}
+                </Text>
+              </View>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
 
 export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { state, activeCall } = useConsultantSession();
+  const { state, activeCall, token } = useConsultantSession();
   const isWeb = Platform.OS === 'web';
 
   if (state === 'loading') return <SessionLoadingScreen />;
-  if (state !== 'connected' && !activeCall) {
+  if ((!token || (state !== 'connected' && state !== 'offline')) && !activeCall) {
     return <Redirect href="/sign-in" />;
   }
 
   return (
     <Tabs
+      tabBar={(props) => <ConsultantTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.mutedForeground,
-          tabBarLabelStyle: { fontSize: 10, fontWeight: '800', marginTop: 3 },
-          tabBarItemStyle: { paddingTop: 4, minHeight: 56 },
         tabBarStyle: {
-          height: isWeb ? 82 : 68 + insets.bottom,
-          paddingTop: 7,
-          paddingBottom: isWeb ? 34 : insets.bottom,
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
-          elevation: 5,
-          shadowColor: colors.foreground,
-          shadowOpacity: 0.06,
-          shadowRadius: 14,
-          shadowOffset: { width: 0, height: -4 },
+          height: (isWeb ? 74 : 66) + insets.bottom,
+          padding: 0,
+          backgroundColor: 'transparent',
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
         },
       }}
     >
@@ -47,9 +127,7 @@ export default function TabLayout() {
         options={{
           title: 'خانه',
           tabBarIcon: ({ size, focused }) => (
-            <View style={[styles.iconWell, { backgroundColor: focused ? colors.secondary : colors.card }]}>
-              <Ionicons name={focused ? 'grid' : 'grid-outline'} size={size} color={focused ? colors.primary : colors.mutedForeground} />
-            </View>
+            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={size} color={focused ? colors.primary : colors.mutedForeground} />
           ),
         }}
       />
@@ -58,9 +136,7 @@ export default function TabLayout() {
         options={{
           title: 'گزارش',
           tabBarIcon: ({ size, focused }) => (
-            <View style={[styles.iconWell, { backgroundColor: focused ? colors.secondary : colors.card }]}>
-              <Ionicons name={focused ? 'time' : 'time-outline'} size={size} color={focused ? colors.primary : colors.mutedForeground} />
-            </View>
+            <Ionicons name={focused ? 'time' : 'time-outline'} size={size} color={focused ? colors.primary : colors.mutedForeground} />
           ),
         }}
       />
@@ -69,9 +145,7 @@ export default function TabLayout() {
         options={{
           title: 'تنظیمات',
           tabBarIcon: ({ size, focused }) => (
-            <View style={[styles.iconWell, { backgroundColor: focused ? colors.secondary : colors.card }]}>
-              <Ionicons name={focused ? 'settings' : 'settings-outline'} size={size} color={focused ? colors.primary : colors.mutedForeground} />
-            </View>
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={size} color={focused ? colors.primary : colors.mutedForeground} />
           ),
         }}
       />
@@ -80,5 +154,31 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  iconWell: { width: 42, height: 30, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  dockShell: {
+    paddingHorizontal: 17,
+    paddingTop: 7,
+    overflow: 'hidden',
+  },
+  dock: {
+    minHeight: 56,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 21,
+    padding: 4,
+    overflow: 'hidden',
+  },
+  dockItem: { flex: 1, minWidth: 0, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
+  dockItemContent: {
+    minHeight: 44,
+    minWidth: 48,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    paddingHorizontal: 11,
+    borderRadius: 16,
+  },
+  dockLabel: { fontSize: 11, fontFamily: 'Vazirmatn_500Medium' },
+  dockLabelSelected: { fontFamily: 'Vazirmatn_700Bold' },
 });

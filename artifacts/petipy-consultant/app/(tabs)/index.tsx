@@ -1,5 +1,6 @@
 import { useColors } from '@/hooks/useColors';
 import { PetipyPetMark } from '@/components/PetipyPetMark';
+import { PetipyText as Text } from '@/components/PetipyText';
 import { useConsultantSession } from '@/providers/consultant-session';
 import {
   acceptIncomingCall,
@@ -44,7 +45,6 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -87,6 +87,7 @@ export default function ConsultantHome() {
   const callKitReportedCallsRef = useRef(new Set<string>());
   const endingSystemCallsRef = useRef(new Set<string>());
   const isConnected = sessionState === 'connected' && Boolean(token);
+  const hasSession = Boolean(token) && ['connected', 'offline'].includes(sessionState);
   const isAvailable = profile?.manualStatus === 'online';
   const refreshServiceState = () => setServiceRunning(isAvailabilityServiceRunning());
 
@@ -114,7 +115,12 @@ export default function ConsultantHome() {
     queryFn: () => getIncomingCalls(token as string),
     enabled: isConnected,
     refetchInterval:
-      isConnected && (Platform.OS !== 'ios' || isAvailable) ? 5_000 : false,
+      isConnected &&
+      isAvailable &&
+      appIsActive &&
+      !(Platform.OS === 'android' && serviceRunning)
+        ? 5_000
+        : false,
     refetchIntervalInBackground: false,
     refetchOnReconnect: true,
   });
@@ -504,6 +510,9 @@ export default function ConsultantHome() {
             <Text numberOfLines={1} style={[styles.brandName, { color: colors.foreground }]}>پتی‌پای</Text>
             <Text style={[styles.brandCaption, { color: colors.mutedForeground }]}>میز مشاوره‌ی صوتی</Text>
           </View>
+          <View style={styles.topDate}>
+            <Text style={[styles.dateCaption, { color: colors.mutedForeground }]}>{todayLabel}</Text>
+          </View>
         </View>
 
         {!isConnected ? (
@@ -514,21 +523,6 @@ export default function ConsultantHome() {
             </Text>
           </View>
         ) : null}
-
-        <View style={[styles.shiftHero, { backgroundColor: colors.secondary }]}>
-          <PetipyPetMark compact />
-          <View style={styles.shiftHeroCopy}>
-            <Text style={[styles.shiftHeroEyebrow, { color: colors.secondaryForeground }]}>
-              {todayLabel}
-            </Text>
-            <Text style={[styles.shiftHeroTitle, { color: colors.foreground }]}>
-              {profile?.displayName ? `شیفتِ ${profile.displayName}` : 'همراهِ شیفت امروز'}
-            </Text>
-            <Text style={[styles.shiftHeroText, { color: colors.secondaryForeground }]}>
-              {pendingCount ? `${pendingCount.toLocaleString('fa-IR')} درخواست در صف پاسخ‌گویی است` : 'صف تماس برای همراهی با خانواده‌ها آماده است'}
-            </Text>
-          </View>
-        </View>
 
         <View style={[styles.statusRail, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.statusRailMain}>
@@ -611,7 +605,7 @@ export default function ConsultantHome() {
           </View>
         </View>
 
-        {!isConnected ? (
+        {!hasSession ? (
           <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={[styles.emptyIllustration, { backgroundColor: colors.secondary }]}>
               <Ionicons name="headset-outline" size={26} color={colors.primary} />
@@ -620,6 +614,26 @@ export default function ConsultantHome() {
             <Text style={[styles.emptyDescription, { color: colors.mutedForeground }]}>
               صف پس از تأیید حساب VOICE_CONSULTANT از سوی Petipy نمایش داده می‌شود.
             </Text>
+          </View>
+        ) : sessionState === 'offline' ? (
+          <View style={[styles.emptyState, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.emptyIllustration, { backgroundColor: colors.accent }]}>
+              <Ionicons name="cloud-offline-outline" size={25} color={colors.accentForeground} />
+            </View>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>نشست شما حفظ شده است</Text>
+            <Text style={[styles.emptyDescription, { color: colors.mutedForeground }]}>
+              {sessionMessage ?? 'پس از بازگشت اتصال، صف تماس دوباره بررسی می‌شود.'}
+            </Text>
+            <Pressable
+              testID="retry-session"
+              accessibilityRole="button"
+              accessibilityLabel="بررسی دوباره اتصال Petipy"
+              onPress={() => void refresh()}
+              style={({ pressed }) => [styles.retryButton, { backgroundColor: colors.primary, opacity: pressed ? 0.86 : 1 }]}
+            >
+              <Ionicons name="refresh-outline" size={16} color={colors.primaryForeground} />
+              <Text style={[styles.retryText, { color: colors.primaryForeground }]}>بررسی اتصال</Text>
+            </Pressable>
           </View>
         ) : queue.isLoading ? (
           <View style={styles.skeletonStack} accessibilityLabel="در حال دریافت صف تماس">
@@ -769,6 +783,21 @@ export default function ConsultantHome() {
           </View>
         )}
 
+        <View style={[styles.shiftHero, { backgroundColor: colors.secondary }]}>
+          <PetipyPetMark compact />
+          <View style={styles.shiftHeroCopy}>
+            <Text style={[styles.shiftHeroEyebrow, { color: colors.secondaryForeground }]}>
+              جمع‌بندی شیفت
+            </Text>
+            <Text style={[styles.shiftHeroTitle, { color: colors.foreground }]}>
+              {profile?.displayName ? `شیفتِ ${profile.displayName}` : 'همراهِ شیفت امروز'}
+            </Text>
+            <Text style={[styles.shiftHeroText, { color: colors.secondaryForeground }]}>
+              {pendingCount ? `${pendingCount.toLocaleString('fa-IR')} درخواست در صف پاسخ‌گویی است` : 'صف تماس برای همراهی با خانواده‌ها آماده است'}
+            </Text>
+          </View>
+        </View>
+
         <View style={[styles.footerNote, { borderTopColor: colors.border }]}>
           <Ionicons name="shield-checkmark-outline" size={16} color={colors.mutedForeground} />
           <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
@@ -799,36 +828,36 @@ const styles = StyleSheet.create({
   brandMark: { width: 44, height: 44, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   topBrandCopy: { flex: 1, alignItems: 'flex-end', gap: 3 },
   brandName: { maxWidth: '100%', fontSize: 17, fontWeight: '800', writingDirection: 'rtl', textAlign: 'right' },
-  brandCaption: { fontSize: 10, writingDirection: 'rtl' },
+  brandCaption: { fontSize: 11, writingDirection: 'rtl' },
   topDate: { flex: 1, alignItems: 'flex-start', justifyContent: 'center' },
   dateCaption: { fontSize: 9, writingDirection: 'rtl' },
   shiftHero: { minHeight: 116, flexDirection: 'row-reverse', alignItems: 'center', gap: 13, padding: 13, borderRadius: 24, overflow: 'hidden' },
   shiftHeroCopy: { flex: 1, alignItems: 'flex-end', gap: 5 },
-  shiftHeroEyebrow: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  shiftHeroEyebrow: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   shiftHeroTitle: { fontSize: 18, fontWeight: '900', textAlign: 'right', writingDirection: 'rtl' },
-  shiftHeroText: { fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl' },
+  shiftHeroText: { fontSize: 12, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
   connectionNotice: { flexDirection: 'row-reverse', alignItems: 'center', gap: 9, borderRadius: 15, borderWidth: 1, paddingHorizontal: 13, paddingVertical: 11 },
   noticeText: { flex: 1, textAlign: 'right', lineHeight: 20, fontSize: 11, writingDirection: 'rtl' },
   queueHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10, marginTop: 4 },
   queueTitleGroup: { flex: 1, alignItems: 'flex-end', gap: 3 },
-  sectionKicker: { fontSize: 9, fontWeight: '800', letterSpacing: 0.4, writingDirection: 'rtl' },
+  sectionKicker: { fontSize: 11, fontWeight: '800', letterSpacing: 0.4, writingDirection: 'rtl' },
   sectionHeading: { fontSize: 21, fontWeight: '800', writingDirection: 'rtl' },
   refreshButton: { width: 42, height: 42, borderWidth: 1, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   queueMeta: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7, marginTop: -10 },
   countBadge: { minWidth: 25, height: 24, borderRadius: 9, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5 },
   countText: { fontSize: 11, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  queueMetaText: { fontSize: 10, writingDirection: 'rtl' },
+  queueMetaText: { fontSize: 11, writingDirection: 'rtl' },
   metaSpacer: { flex: 1 },
   pollingLabel: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5 },
   pollingDot: { width: 5, height: 5, borderRadius: 3 },
-  pollingText: { fontSize: 9, writingDirection: 'rtl' },
+  pollingText: { fontSize: 10, writingDirection: 'rtl' },
   statusRail: { borderWidth: 1, borderRadius: 22, paddingHorizontal: 13, paddingVertical: 12, elevation: 1 },
   statusRailMain: { gap: 8 },
   availabilityControl: { minHeight: 58, flexDirection: 'row-reverse', alignItems: 'center', gap: 10 },
   statusIcon: { width: 42, height: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   statusCopy: { flex: 1, alignItems: 'flex-end', gap: 2 },
   readiness: { minHeight: 32, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 7 },
-  readinessText: { flex: 1, fontSize: 10, lineHeight: 15, textAlign: 'right', writingDirection: 'rtl' },
+  readinessText: { flex: 1, fontSize: 11, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl' },
   emptyState: { borderRadius: 22, borderWidth: 1, paddingHorizontal: 22, paddingVertical: 24, alignItems: 'center', gap: 8 },
   emptyIllustration: { width: 52, height: 52, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
   emptyTitle: { fontSize: 15, fontWeight: '800', writingDirection: 'rtl', textAlign: 'center' },
@@ -848,19 +877,19 @@ const styles = StyleSheet.create({
   featuredRequest: { borderWidth: 1, borderRadius: 26, padding: 17, gap: 14, overflow: 'hidden', elevation: 2 },
   featuredTopline: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   featuredStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
-  featuredStatusText: { fontSize: 10, fontWeight: '800', writingDirection: 'rtl' },
+  featuredStatusText: { fontSize: 11, fontWeight: '800', writingDirection: 'rtl' },
   pendingDot: { width: 5, height: 5, borderRadius: 3 },
-  featuredEyebrow: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl', opacity: 0.84 },
+  featuredEyebrow: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl', opacity: 0.84 },
   featuredIdentity: { flexDirection: 'row-reverse', alignItems: 'center', gap: 11 },
   featuredAvatar: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   featuredCopy: { flex: 1, alignItems: 'flex-end', gap: 4 },
   featuredName: { maxWidth: '100%', fontSize: 19, fontWeight: '800', writingDirection: 'rtl', textAlign: 'right' },
-  featuredPet: { fontSize: 11, writingDirection: 'rtl', textAlign: 'right', opacity: 0.88 },
+  featuredPet: { fontSize: 12, writingDirection: 'rtl', textAlign: 'right', opacity: 0.88 },
   featuredSubject: { borderRightWidth: 2, paddingRight: 10, gap: 4 },
-  subjectCaption: { fontSize: 10, writingDirection: 'rtl', textAlign: 'right', opacity: 0.82 },
+  subjectCaption: { fontSize: 11, writingDirection: 'rtl', textAlign: 'right', opacity: 0.82 },
   subjectValue: { fontSize: 14, fontWeight: '700', lineHeight: 21, writingDirection: 'rtl', textAlign: 'right' },
   featuredMeta: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
-  featuredDeadline: { flex: 1, fontSize: 11, fontWeight: '700', writingDirection: 'rtl', textAlign: 'right' },
+  featuredDeadline: { flex: 1, fontSize: 12, fontWeight: '700', writingDirection: 'rtl', textAlign: 'right' },
   featuredActions: { flexDirection: 'row-reverse', gap: 8, marginTop: 1 },
   featuredAccept: { flex: 1.25, minHeight: 49, borderRadius: 14, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7 },
   featuredAcceptText: { fontSize: 12, fontWeight: '800', writingDirection: 'rtl' },
@@ -870,17 +899,17 @@ const styles = StyleSheet.create({
   ledgerIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   ledgerCopy: { flex: 1, minWidth: 95, alignItems: 'flex-end', gap: 4 },
   ledgerName: { maxWidth: '100%', fontSize: 12, fontWeight: '700', writingDirection: 'rtl', textAlign: 'right' },
-  ledgerDetail: { maxWidth: '100%', fontSize: 10, lineHeight: 15, writingDirection: 'rtl', textAlign: 'right' },
+  ledgerDetail: { maxWidth: '100%', fontSize: 11, lineHeight: 16, writingDirection: 'rtl', textAlign: 'right' },
   ledgerActions: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5 },
   ledgerAction: { width: 34, height: 34, borderWidth: 1, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   ledgerError: { width: '100%', textAlign: 'right' },
   shiftTitle: { fontSize: 12, fontWeight: '800', writingDirection: 'rtl' },
-  shiftDetail: { fontSize: 10, lineHeight: 15, textAlign: 'right', writingDirection: 'rtl' },
-  missingAction: { fontSize: 10, textAlign: 'right', writingDirection: 'rtl', lineHeight: 17 },
+  shiftDetail: { fontSize: 11, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl' },
+  missingAction: { fontSize: 11, textAlign: 'right', writingDirection: 'rtl', lineHeight: 18 },
   footerNote: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 13, flexDirection: 'row-reverse', alignItems: 'center', gap: 7, flexWrap: 'wrap' },
-  footerText: { fontSize: 9, flex: 1, textAlign: 'right', writingDirection: 'rtl' },
+  footerText: { fontSize: 11, flex: 1, textAlign: 'right', writingDirection: 'rtl' },
   todaySummary: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', gap: 7, paddingTop: 3 },
   todaySummaryValue: { fontSize: 11, fontWeight: '800', writingDirection: 'rtl' },
-  todaySummaryLabel: { fontSize: 9, writingDirection: 'rtl' },
+  todaySummaryLabel: { fontSize: 10, writingDirection: 'rtl' },
   summaryDivider: { width: 1, height: 17, marginHorizontal: 4 },
 });

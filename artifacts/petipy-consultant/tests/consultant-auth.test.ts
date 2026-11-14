@@ -7,11 +7,14 @@ import {
   CONSULTANT_SESSION_KEY,
   MAX_MOBILE_SESSION_MS,
   readStoredConsultantSession,
+  resolveSessionBootstrapAction,
+  resolveSessionValidationFailure,
   resolvePetipyMobileAuthMode,
   signInDevelopmentConsultant,
   isDevelopmentPhoneAuthEnabled,
   type SessionStorage,
 } from '../lib/consultant-auth';
+import { PetipyApiError } from '../lib/petipy-api';
 
 function makeStorage(initial?: string) {
   const values = new Map<string, string>();
@@ -50,6 +53,36 @@ test('enables the demo login only for an explicit development auth mode', () => 
 test('uses the bundled Expo mode when a release build has no environment value', () => {
   assert.equal(resolvePetipyMobileAuthMode(undefined, 'development'), 'development');
   assert.equal(resolvePetipyMobileAuthMode(undefined, 'live'), 'live');
+});
+
+test('valid remembered sessions are verified even when development sign-in is disabled', () => {
+  const stored = {
+    status: 'ready' as const,
+    session: {
+      accessToken: 'unit-test-only-token',
+      authMode: 'development' as const,
+      role: CONSULTANT_ROLE as typeof CONSULTANT_ROLE,
+      destination: CONSULTANT_DESTINATION as typeof CONSULTANT_DESTINATION,
+      tokenExpiresAt: '2026-11-07T14:00:00.000Z',
+    },
+  };
+  assert.equal(
+    resolveSessionBootstrapAction(stored, false),
+    'verify-stored-session',
+  );
+  assert.equal(
+    resolveSessionBootstrapAction({ status: 'empty' }, false),
+    'show-auth-unavailable',
+  );
+  assert.equal(resolveSessionValidationFailure(new Error('offline')), 'offline');
+  assert.equal(
+    resolveSessionValidationFailure(new PetipyApiError('expired', 401)),
+    'expired',
+  );
+  assert.equal(
+    resolveSessionValidationFailure(new PetipyApiError('forbidden', 403)),
+    'wrong-role',
+  );
 });
 
 test('lets an explicit environment mode override the bundled mode', () => {

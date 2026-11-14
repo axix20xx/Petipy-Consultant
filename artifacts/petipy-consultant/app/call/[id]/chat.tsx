@@ -1,4 +1,5 @@
 import { useColors } from '@/hooks/useColors';
+import { PetipyText as Text } from '@/components/PetipyText';
 import {
   createVoiceChatUpload,
   getVoiceCallMessages,
@@ -23,7 +24,6 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from 'react-native';
@@ -328,6 +328,18 @@ export default function VoiceCallChatScreen() {
     >
       <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
         <View style={styles.headerMain}>
+          <Pressable
+            testID="voice-chat-back"
+            accessibilityRole="button"
+            accessibilityLabel="بازگشت به تماس"
+            onPress={() => router.back()}
+            style={({ pressed }) => [
+              styles.backToCallButton,
+              { backgroundColor: colors.secondary, opacity: pressed ? 0.76 : 1 },
+            ]}
+          >
+            <Ionicons name="arrow-forward" size={18} color={colors.primary} />
+          </Pressable>
           <View style={styles.chatSeal}>
             <Ionicons name="chatbubbles-outline" size={20} color={colors.primary} />
           </View>
@@ -352,19 +364,6 @@ export default function VoiceCallChatScreen() {
           <View style={styles.contextRailSpacer} />
           <Text style={[styles.contextRailLabel, { color: colors.secondaryForeground }]}>خصوصی</Text>
         </View>
-        <Pressable
-          testID="voice-chat-back"
-          accessibilityRole="button"
-          accessibilityLabel="بازگشت به تماس"
-          onPress={() => router.back()}
-          style={({ pressed }) => [
-            styles.backToCallButton,
-            { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.76 : 1 },
-          ]}
-        >
-          <Ionicons name="arrow-forward" size={16} color={colors.primary} />
-          <Text style={[styles.backToCallText, { color: colors.primary }]}>بازگشت به تماس</Text>
-        </Pressable>
       </View>
 
       <KeyboardAvoidingView
@@ -524,7 +523,7 @@ export default function VoiceCallChatScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    minHeight: 126,
+    minHeight: 94,
     paddingHorizontal: 14,
     paddingTop: 8,
     paddingBottom: 9,
@@ -542,13 +541,12 @@ const styles = StyleSheet.create({
   chatSeal: { width: 37, height: 37, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   headerText: { flex: 1, alignItems: 'flex-end', gap: 1 },
   title: { fontSize: 17, fontWeight: '800', writingDirection: 'rtl' },
-  subtitle: { fontSize: 10, writingDirection: 'rtl' },
+  subtitle: { fontSize: 12, writingDirection: 'rtl' },
   contextRail: { minHeight: 34, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, borderRadius: 10 },
-  contextRailText: { fontSize: 10, writingDirection: 'rtl' },
+  contextRailText: { fontSize: 11, writingDirection: 'rtl' },
   contextRailSpacer: { flex: 1 },
-  contextRailLabel: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  backToCallButton: { minHeight: 41, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7, borderWidth: 1, borderRadius: 12 },
-  backToCallText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
+  contextRailLabel: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
+  backToCallButton: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center', borderRadius: 15 },
   keyboardView: { flex: 1 },
   messageList: {
     flexGrow: 1,
@@ -578,7 +576,7 @@ const styles = StyleSheet.create({
   },
   messageTime: {
     alignSelf: 'flex-start',
-    fontSize: 10,
+    fontSize: 11,
     writingDirection: 'rtl',
     marginTop: 2,
   },
@@ -593,7 +591,7 @@ const styles = StyleSheet.create({
   attachmentName: {
     flex: 1,
     maxWidth: 180,
-    fontSize: 11,
+    fontSize: 12,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
@@ -655,7 +653,7 @@ const styles = StyleSheet.create({
   },
   fileChipText: {
     maxWidth: 190,
-    fontSize: 10,
+    fontSize: 11,
     writingDirection: 'rtl',
   },
   composer: {
@@ -673,7 +671,7 @@ const styles = StyleSheet.create({
   },
   composerActions: { minHeight: 44, flexDirection: 'row-reverse', alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 7 },
   attachAction: { minHeight: 36, flexDirection: 'row-reverse', alignItems: 'center', gap: 5, paddingHorizontal: 10, borderRadius: 11 },
-  attachActionText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  attachActionText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   composerActionSpacer: { flex: 1 },
   textInput: {
     width: '100%',
@@ -683,6 +681,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     paddingHorizontal: 3,
     fontSize: 13,
+    fontFamily: 'Vazirmatn_400Regular',
     lineHeight: 20,
     writingDirection: 'rtl',
   },
@@ -696,5 +695,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 12,
   },
-  sendLabel: { fontSize: 11, fontWeight: '800', writingDirection: 'rtl' },
+  sendLabel: { fontSize: 12, fontWeight: '800', writingDirection: 'rtl' },
 });

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { MediaStream } from 'react-native-webrtc';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { PetipyText as Text } from '@/components/PetipyText';
 import { useColors } from '@/hooks/useColors';
 
 export type RemoteVideoProps = {

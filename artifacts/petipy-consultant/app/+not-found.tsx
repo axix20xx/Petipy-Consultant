@@ -1,5 +1,6 @@
 import { Link, Stack } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { PetipyText as Text } from '@/components/PetipyText';
 import { useColors } from '@/hooks/useColors';
 
 export default function NotFoundScreen() {
@@ -7,15 +8,15 @@ export default function NotFoundScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
+        <Stack.Screen options={{ title: 'صفحه پیدا نشد' }} />
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Text style={[styles.title, { color: colors.foreground }]}>
-          This screen doesn&apos;t exist.
+          این صفحه پیدا نشد.
         </Text>
 
         <Link href="/" style={styles.link}>
           <Text style={[styles.linkText, { color: colors.primary }]}>
-            Go to home screen!
+            بازگشت به خانه
           </Text>
         </Link>
       </View>

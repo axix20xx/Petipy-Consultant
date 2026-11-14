@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AppState, I18nManager, Platform } from 'react-native';
+import { AppState, I18nManager, Platform, useColorScheme } from 'react-native';
 import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -8,15 +8,23 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
   ConsultantSessionProvider,
 } from '@/providers/consultant-session';
+import { useFonts } from 'expo-font';
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  useFonts,
-} from '@expo-google-fonts/inter';
+  Vazirmatn_400Regular,
+} from '@expo-google-fonts/vazirmatn/400Regular';
+import {
+  Vazirmatn_500Medium,
+} from '@expo-google-fonts/vazirmatn/500Medium';
+import {
+  Vazirmatn_600SemiBold,
+} from '@expo-google-fonts/vazirmatn/600SemiBold';
+import {
+  Vazirmatn_700Bold,
+} from '@expo-google-fonts/vazirmatn/700Bold';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as SystemUI from 'expo-system-ui';
+import colors from '@/constants/colors';
 import { getIncomingCalls } from '@/lib/petipy-api';
 import { resolveIncomingPushRoute } from '@/lib/incoming-push-routing';
 import { useConsultantSession } from '@/providers/consultant-session';
@@ -150,12 +158,20 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const nativeBackground =
+    colorScheme === 'dark' ? colors.dark.background : colors.light.background;
   const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+    Vazirmatn_400Regular,
+    Vazirmatn_500Medium,
+    Vazirmatn_600SemiBold,
+    Vazirmatn_700Bold,
   });
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    void SystemUI.setBackgroundColorAsync(nativeBackground).catch(() => {});
+  }, [nativeBackground]);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {

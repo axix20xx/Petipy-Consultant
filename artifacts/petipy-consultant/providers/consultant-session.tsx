@@ -3,6 +3,8 @@ import {
   ConsultantAuthError,
   isDevelopmentPhoneAuthEnabled,
   readStoredConsultantSession,
+  resolveSessionBootstrapAction,
+  resolveSessionValidationFailure,
   resolvePetipyMobileAuthMode,
   signInDevelopmentConsultant,
   type ConsultantMobileSession,
@@ -34,6 +36,7 @@ type SessionState =
   | 'loading'
   | 'signed-out'
   | 'connected'
+  | 'offline'
   | 'wrong-role'
   | 'expired'
   | 'auth-unavailable'
@@ -160,21 +163,26 @@ export function ConsultantSessionProvider({
         setMessage(null);
         return true;
       } catch (error) {
-        const authError = getSessionError(error);
-        if (authError?.code === 'expired') {
+        const failure = resolveSessionValidationFailure(error);
+        if (failure === 'expired') {
           await expireSession();
-        } else if (authError?.code === 'wrong-role') {
+        } else if (failure === 'wrong-role') {
           await clearStoredConsultantSession(SecureStore);
           queryClient.clear();
           setToken(null);
           setTokenExpiresAt(null);
           setProfile(null);
           setState('wrong-role');
-          setMessage(authError.message);
+          setMessage(new ConsultantAuthError('wrong-role').message);
         } else {
-          setState('error');
+          // Keep an unexpired, server-issued session in SecureStore and let
+          // the app recover when connectivity returns. Network failure is not
+          // the same as logout or server-side session revocation.
+          setToken(session.accessToken);
+          setTokenExpiresAt(session.tokenExpiresAt);
+          setState('offline');
           setMessage(
-            'بررسی نشست Petipy ممکن نشد. اتصال اینترنت را بررسی و دوباره تلاش کنید.',
+            'نشست امن شما حفظ شده است؛ اتصال Petipy در دسترس نیست و دوباره بررسی می‌شود.',
           );
         }
         return false;
@@ -192,33 +200,33 @@ export function ConsultantSessionProvider({
     setState('loading');
     try {
       const stored = await readStoredConsultantSession(SecureStore);
-      if (!devAuthAvailable) {
-        if (stored.status === 'ready') {
-          await clearStoredConsultantSession(SecureStore);
-          queryClient.clear();
-        }
+      const bootstrapAction = resolveSessionBootstrapAction(
+        stored,
+        devAuthAvailable,
+      );
+      if (bootstrapAction === 'show-auth-unavailable') {
         setState('auth-unavailable');
         setMessage(LIVE_AUTH_MESSAGE);
         return;
       }
-      if (stored.status === 'empty') {
+      if (bootstrapAction === 'show-signed-out') {
         setState('signed-out');
         setMessage(null);
         return;
       }
-      if (stored.status === 'expired') {
+      if (bootstrapAction === 'show-expired') {
         setState('expired');
         setMessage(new ConsultantAuthError('expired').message);
         return;
       }
-      if (stored.status === 'invalid') {
+      if (bootstrapAction === 'show-invalid-session') {
         setState('signed-out');
         setMessage(
           'نشست ذخیره‌شده معتبر نبود و از این دستگاه پاک شد. دوباره وارد شوید.',
         );
         return;
       }
-      await verifySession(stored.session);
+      if (stored.status === 'ready') await verifySession(stored.session);
     } catch {
       setState('error');
       setMessage('نشست امن روی این دستگاه در دسترس نیست.');
@@ -230,7 +238,7 @@ export function ConsultantSessionProvider({
   }, [restoreSession]);
 
   useEffect(() => {
-    if (state !== 'connected' || !tokenExpiresAt) return;
+    if ((state !== 'connected' && state !== 'offline') || !tokenExpiresAt) return;
     const delay = Date.parse(tokenExpiresAt) - Date.now();
     if (delay <= 0) {
       void expireSession();
@@ -280,7 +288,6 @@ export function ConsultantSessionProvider({
     const subscription = AppState.addEventListener('change', (nextState) => {
       if (
         nextState === 'active' &&
-        state === 'connected' &&
         tokenExpiresAt &&
         Date.parse(tokenExpiresAt) <= Date.now()
       ) {
@@ -288,7 +295,45 @@ export function ConsultantSessionProvider({
       }
     });
     return () => subscription.remove();
-  }, [expireSession, state, tokenExpiresAt]);
+  }, [expireSession, tokenExpiresAt]);
+
+  useEffect(() => {
+    if (state !== 'offline') return;
+
+    let active = true;
+    let checking = false;
+    let delayMs = 15_000;
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const retryVerification = async () => {
+      if (!active || checking || AppState.currentState !== 'active') return;
+      checking = true;
+      try {
+        const stored = await readStoredConsultantSession(SecureStore);
+        if (active && stored.status === 'ready') {
+          await verifySession(stored.session);
+        }
+      } catch {
+        // An intermittent storage/network failure must not discard the session.
+      } finally {
+        checking = false;
+        if (active) {
+          timeout = setTimeout(retryVerification, delayMs);
+          delayMs = Math.min(delayMs * 2, 60_000);
+        }
+      }
+    };
+
+    timeout = setTimeout(retryVerification, delayMs);
+    const appStateSubscription = AppState.addEventListener('change', (next) => {
+      if (next === 'active') void retryVerification();
+    });
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+      appStateSubscription.remove();
+    };
+  }, [expireSession, state, verifySession]);
 
   const signIn = useCallback(
     async (phone: string, code: string) => {

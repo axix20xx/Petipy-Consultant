@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
+import { PetipyText as Text } from '@/components/PetipyText';
 import {
   Modal,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 import { Feather } from '@expo/vector-icons';
 import { reloadAppAsync } from 'expo';
+import { useReducedMotion } from 'react-native-reanimated';
 
 export type ErrorFallbackProps = {
   error: Error;
@@ -21,6 +22,7 @@ export type ErrorFallbackProps = {
 export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const reduceMotion = useReducedMotion();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -52,7 +54,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
       {__DEV__ ? (
         <Pressable
           onPress={() => setIsModalVisible(true)}
-          accessibilityLabel="View error details"
+          accessibilityLabel="نمایش جزئیات خطا"
           accessibilityRole="button"
           style={({ pressed }) => [
             styles.topButton,
@@ -69,11 +71,11 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
 
       <View style={styles.content}>
         <Text style={[styles.title, { color: colors.foreground }]}>
-          Something went wrong
+          مشکلی پیش آمد
         </Text>
 
         <Text style={[styles.message, { color: colors.mutedForeground }]}>
-          Please reload the app to continue.
+          برای ادامه، برنامه را دوباره بارگذاری کنید.
         </Text>
 
         <Pressable
@@ -83,14 +85,13 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
             {
               backgroundColor: colors.primary,
               opacity: pressed ? 0.9 : 1,
-              transform: [{ scale: pressed ? 0.98 : 1 }],
             },
           ]}
         >
           <Text
             style={[styles.buttonText, { color: colors.primaryForeground }]}
           >
-            Try Again
+            تلاش دوباره
           </Text>
         </Pressable>
       </View>
@@ -98,11 +99,11 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
       {__DEV__ ? (
         <Modal
           visible={isModalVisible}
-          animationType="slide"
+          animationType={reduceMotion ? 'none' : 'slide'}
           transparent={true}
           onRequestClose={() => setIsModalVisible(false)}
         >
-          <View style={styles.modalOverlay}>
+          <View style={[styles.modalOverlay, { backgroundColor: colors.scrim }]}>
             <View
               style={[
                 styles.modalContainer,
@@ -116,11 +117,11 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                 ]}
               >
                 <Text style={[styles.modalTitle, { color: colors.foreground }]}>
-                  Error Details
+                  جزئیات خطا
                 </Text>
                 <Pressable
                   onPress={() => setIsModalVisible(false)}
-                  accessibilityLabel="Close error details"
+                  accessibilityLabel="بستن جزئیات خطا"
                   accessibilityRole="button"
                   style={({ pressed }) => [
                     styles.closeButton,
@@ -151,6 +152,8 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                       {
                         color: colors.foreground,
                         fontFamily: monoFont,
+                        writingDirection: 'ltr',
+                        textAlign: 'left',
                       },
                     ]}
                     selectable
@@ -187,11 +190,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
+    writingDirection: 'rtl',
     lineHeight: 40,
   },
   message: {
     fontSize: 16,
     textAlign: 'center',
+    writingDirection: 'rtl',
     lineHeight: 24,
   },
   topButton: {
@@ -210,7 +215,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 24,
     minWidth: 200,
-    shadowColor: '#000',
+    shadowColor: 'transparent',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -226,7 +231,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'transparent',
     justifyContent: 'flex-end',
   },
   modalContainer: {

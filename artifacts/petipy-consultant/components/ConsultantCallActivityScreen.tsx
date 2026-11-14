@@ -1,5 +1,6 @@
 import { useColors } from '@/hooks/useColors';
 import { PetipyPetMark } from '@/components/PetipyPetMark';
+import { PetipyText as Text } from '@/components/PetipyText';
 import {
   getCallHistory,
   getConsultantCallAnalytics,
@@ -19,7 +20,6 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -243,6 +243,53 @@ export default function ConsultantCallActivityScreen() {
           <RefreshButton refreshing={refreshing} onPress={() => void refreshAll()} colors={colors} />
         </View>
 
+        <View style={styles.periodIntro}>
+          <View style={styles.periodTitleCopy}>
+            <Text style={[styles.periodTitle, { color: colors.foreground }]}>بازه‌ی گزارش</Text>
+            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>یک بازه برای دیدن روند انتخاب کنید</Text>
+          </View>
+          <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+        </View>
+        <View
+          accessibilityRole="tablist"
+          style={[styles.periods, { backgroundColor: colors.muted }]}
+          testID="analytics-period-filter"
+        >
+          {PERIODS.map((period) => {
+            const selected = days === period.days;
+            return (
+              <Pressable
+                key={period.days}
+                accessibilityRole="tab"
+                accessibilityState={{ selected }}
+                onPress={() => setDays(period.days)}
+                style={[
+                  styles.periodButton,
+                  {
+                    backgroundColor: selected ? colors.primary : 'transparent',
+                    borderColor: selected ? colors.primary : 'transparent',
+                    borderRadius: colors.radius,
+                  },
+                ]}
+                testID={`analytics-period-${period.days}`}
+              >
+                <Text
+                  style={[
+                    styles.periodLabel,
+                    {
+                      color: selected
+                        ? colors.primaryForeground
+                        : colors.mutedForeground,
+                    },
+                  ]}
+                >
+                  {period.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
         <View style={styles.sectionHeading}>
           <View style={styles.sectionTitleCopy}>
             <Text style={[styles.sectionKicker, { color: colors.primary }]}>گزارش زنده</Text>
@@ -385,53 +432,6 @@ export default function ConsultantCallActivityScreen() {
             ) : null}
           </>
         ) : null}
-
-        <View style={styles.periodIntro}>
-          <View style={styles.periodTitleCopy}>
-            <Text style={[styles.periodTitle, { color: colors.foreground }]}>بازه‌ی گزارش</Text>
-            <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>یک بازه برای دیدن روند انتخاب کنید</Text>
-          </View>
-          <Ionicons name="calendar-outline" size={18} color={colors.primary} />
-        </View>
-        <View
-          accessibilityRole="tablist"
-          style={[styles.periods, { backgroundColor: colors.muted }]}
-          testID="analytics-period-filter"
-        >
-          {PERIODS.map((period) => {
-            const selected = days === period.days;
-            return (
-              <Pressable
-                key={period.days}
-                accessibilityRole="tab"
-                accessibilityState={{ selected }}
-                onPress={() => setDays(period.days)}
-                style={[
-                  styles.periodButton,
-                  {
-                    backgroundColor: selected ? colors.primary : colors.card,
-                    borderColor: selected ? colors.primary : colors.border,
-                    borderRadius: colors.radius,
-                  },
-                ]}
-                testID={`analytics-period-${period.days}`}
-              >
-                <Text
-                  style={[
-                    styles.periodLabel,
-                    {
-                      color: selected
-                        ? colors.primaryForeground
-                        : colors.mutedForeground,
-                    },
-                  ]}
-                >
-                  {period.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
 
         <View style={[styles.sectionHeading, styles.historyHeading]}>
           <View style={styles.sectionTitleCopy}>
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
   webContent: { paddingTop: 67, paddingBottom: 34 },
   historyTop: { minHeight: 88, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 },
   historyTopCopy: { alignItems: 'flex-end', gap: 2 },
-  historyEyebrow: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  historyEyebrow: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   historyPageTitle: { fontSize: 25, fontWeight: '800', writingDirection: 'rtl' },
   hero: { minHeight: 80, borderRadius: 18, padding: 14, overflow: 'hidden', justifyContent: 'space-between', marginBottom: 4 },
   heroTop: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
   },
   periodIntro: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginTop: 2 },
   periodTitleCopy: { flex: 1, alignItems: 'flex-end', gap: 2 },
-  periodTitle: { fontSize: 13, fontWeight: '800', writingDirection: 'rtl' },
+  periodTitle: { fontSize: 14, fontWeight: '800', writingDirection: 'rtl' },
   periods: { flexDirection: 'row-reverse', gap: 6, marginBottom: 5, padding: 5, borderRadius: 16 },
   periodButton: {
     alignItems: 'center',
@@ -616,16 +616,16 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sectionTitleCopy: { alignItems: 'flex-end', gap: 2 },
-  sectionKicker: { fontSize: 9, fontWeight: '800', writingDirection: 'rtl' },
+  sectionKicker: { fontSize: 11, fontWeight: '800', writingDirection: 'rtl' },
   sectionTitle: { fontSize: 17, fontWeight: '800', writingDirection: 'rtl' },
-  sectionHint: { fontSize: 11, writingDirection: 'rtl' },
+  sectionHint: { fontSize: 12, writingDirection: 'rtl' },
   periodStamp: { borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
-  periodStampText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  periodStampText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   answeredHero: { minHeight: 176, borderRadius: 28, padding: 20, gap: 16, overflow: 'hidden', elevation: 2 },
   answeredHeroTop: { flexDirection: 'row-reverse', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
   answeredTitleCopy: { flex: 1, alignItems: 'flex-end', gap: 5 },
   answeredLabel: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  answeredCaption: { maxWidth: 230, fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl', opacity: 0.84 },
+  answeredCaption: { maxWidth: 230, fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl', opacity: 0.84 },
   answeredPeriod: { borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
   answeredPeriodText: { fontSize: 10, fontWeight: '800', writingDirection: 'rtl' },
   answeredValueLine: { flexDirection: 'row-reverse', alignItems: 'baseline', marginTop: 'auto' },
@@ -664,15 +664,15 @@ const styles = StyleSheet.create({
   trendCard: { borderWidth: 1, borderRadius: 21, padding: 16, marginTop: 5, elevation: 1 },
   trendHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 },
   trendTitle: { fontSize: 14, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
-  trendCaption: { fontSize: 10, marginTop: 3, textAlign: 'right', writingDirection: 'rtl' },
+  trendCaption: { fontSize: 11, marginTop: 3, textAlign: 'right', writingDirection: 'rtl' },
   trendBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 12 },
   trendBadgeText: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
   chart: { height: 142, flexDirection: 'row-reverse', alignItems: 'stretch', justifyContent: 'space-between', gap: 4, paddingTop: 5 },
   chartColumn: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 5, minWidth: 0 },
-  chartValue: { height: 13, fontSize: 9, fontWeight: '600' },
+  chartValue: { height: 14, fontSize: 10, fontWeight: '600' },
   chartTrack: { width: '70%', flex: 1, justifyContent: 'flex-end', overflow: 'hidden', borderRadius: 7 },
   chartBar: { width: '100%', minHeight: 3, borderRadius: 7 },
-  chartLabel: { maxWidth: '100%', height: 15, fontSize: 9, textAlign: 'center', writingDirection: 'rtl' },
+  chartLabel: { maxWidth: '100%', height: 16, fontSize: 10, textAlign: 'center', writingDirection: 'rtl' },
   emptyHint: {
     fontSize: 12,
     marginTop: 9,
@@ -701,11 +701,11 @@ const styles = StyleSheet.create({
   },
   historyMain: { alignItems: 'flex-end', flex: 1, gap: 5 },
   historyTitle: { fontSize: 13, fontWeight: '700', writingDirection: 'rtl' },
-  historyDate: { fontSize: 10, writingDirection: 'rtl' },
+  historyDate: { fontSize: 11, writingDirection: 'rtl' },
   historyMeta: { alignItems: 'flex-end', gap: 4 },
   durationBadge: { borderRadius: 9, paddingHorizontal: 7, paddingVertical: 4 },
-  duration: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
-  historyStatus: { fontSize: 10, writingDirection: 'rtl' },
+  duration: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
+  historyStatus: { fontSize: 11, writingDirection: 'rtl' },
   stateCard: {
     alignItems: 'center',
     borderRadius: 21,

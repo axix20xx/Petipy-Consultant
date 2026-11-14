@@ -1,4 +1,5 @@
 import { useColors } from '@/hooks/useColors';
+import { PetipyText as Text } from '@/components/PetipyText';
 import { finishCall, joinCall } from '@/lib/petipy-api';
 import { VoiceCallClient } from '@/lib/voice-call';
 import { setAvailabilityCallState } from '@/lib/background-monitor';
@@ -30,7 +31,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -549,6 +549,10 @@ export default function ConsultantCallScreen() {
           </View>
         ) : (
           <View style={[styles.voiceStage, { borderColor: colors.border, backgroundColor: colors.secondary }]}>
+            <View style={[styles.privateBadge, { backgroundColor: colors.card }]}>
+              <Ionicons name="shield-checkmark-outline" size={14} color={colors.primary} />
+              <Text style={[styles.privateBadgeText, { color: colors.secondaryForeground }]}>تماس خصوصی</Text>
+            </View>
             <View style={[styles.avatarOuter, { backgroundColor: colors.secondary, borderColor: connected ? colors.success : colors.accent }]}>
               <View style={[styles.avatarInner, { backgroundColor: colors.card }]}>
                 <Text style={[styles.presenceInitial, { color: colors.primary }]}>
@@ -563,9 +567,23 @@ export default function ConsultantCallScreen() {
             <Text style={[styles.presenceName, { color: colors.foreground }]} numberOfLines={1}>
               {matchingCall?.displayName ?? 'تماس مشاوره'}
             </Text>
-            <Text style={[styles.presenceState, { color: colors.mutedForeground }]} numberOfLines={1}>
-              {connected ? 'تماس صوتی برقرار است' : status}
-            </Text>
+            <View style={[styles.sessionStatusRow, styles.voiceSessionRow]}>
+              <View style={[styles.liveStatus, { backgroundColor: connected ? colors.card : colors.accent }]}>
+                <View style={[styles.liveDot, { backgroundColor: connected ? colors.success : colors.warning }]} />
+                <Text style={[styles.status, { color: connected ? colors.success : colors.accentForeground }]} numberOfLines={1}>
+                  {status}
+                </Text>
+              </View>
+              <View style={[styles.timerTrack, { backgroundColor: colors.card }]}>
+                <Ionicons name="time-outline" size={16} color={colors.primary} />
+                <Text style={[styles.timerLabel, { color: colors.mutedForeground }]}>
+                  {hasConnectedOnce || elapsed > 0 ? 'مدت تماس' : 'پس از اتصال'}
+                </Text>
+                <Text style={[styles.timer, { color: colors.foreground }]}>
+                  {hasConnectedOnce || elapsed > 0 ? formatDuration(elapsed) : '—:—'}
+                </Text>
+              </View>
+            </View>
             <View style={styles.voiceWave} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               {[10, 18, 25, 15, 22, 12, 19, 9, 16].map((height, index) => (
                 <View
@@ -585,6 +603,7 @@ export default function ConsultantCallScreen() {
           </View>
         )}
 
+        {hasRemoteVideo && remoteStream ? (
         <View style={[styles.callInfo, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.callInfoTop}>
             <View style={styles.callTitleBlock}>
@@ -612,6 +631,7 @@ export default function ConsultantCallScreen() {
             </View>
           </View>
         </View>
+        ) : null}
 
         {petCardBatches.length > 0 ? (
           <View
@@ -768,59 +788,59 @@ const styles = StyleSheet.create({
   brandMark: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   topBrandCopy: { alignItems: 'flex-end', gap: 1 },
   topBrandName: { fontSize: 12, fontWeight: '800', writingDirection: 'rtl' },
-  topLabel: { fontSize: 9, writingDirection: 'rtl' },
+  topLabel: { fontSize: 11, writingDirection: 'rtl' },
   chatButton: { minHeight: 46, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7, paddingHorizontal: 13, borderRadius: 14 },
   chatButtonText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   mainScroll: { flex: 1 },
   mainContent: { alignItems: 'stretch', justifyContent: 'flex-start', gap: 12, paddingVertical: 8 },
-  voiceStage: { alignItems: 'center', justifyContent: 'center', gap: 10, minHeight: 280, marginVertical: 1, borderRadius: 30, borderWidth: 1, paddingHorizontal: 18, paddingVertical: 18 },
+  voiceStage: { alignItems: 'center', justifyContent: 'center', gap: 11, minHeight: 330, marginVertical: 1, borderRadius: 30, borderWidth: 1, paddingHorizontal: 18, paddingVertical: 18 },
   avatarOuter: { width: 142, height: 142, borderRadius: 49, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   avatarInner: { width: 112, height: 112, borderRadius: 39, alignItems: 'center', justifyContent: 'center' },
   presenceInitial: { fontSize: 48, fontWeight: '700', writingDirection: 'rtl' },
   audioOnlyBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 5 },
-  audioOnlyText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  audioOnlyText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   presenceName: { maxWidth: '90%', fontSize: 18, fontWeight: '800', writingDirection: 'rtl' },
-  presenceState: { maxWidth: '100%', fontSize: 11, textAlign: 'center', writingDirection: 'rtl' },
   voiceWave: { height: 27, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 2 },
   voiceWaveBar: { width: 3, borderRadius: 2 },
-  presencePet: { maxWidth: '100%', fontSize: 10, textAlign: 'center', writingDirection: 'rtl' },
+  presencePet: { maxWidth: '100%', fontSize: 11, textAlign: 'center', writingDirection: 'rtl' },
   videoStage: { width: '100%', height: 300, maxHeight: 360, borderRadius: 25, borderWidth: 1, overflow: 'hidden', position: 'relative' },
   videoBadge: { position: 'absolute', right: 11, bottom: 11, zIndex: 1, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 12 },
-  videoBadgeText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  videoBadgeText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   liveDot: { width: 7, height: 7, borderRadius: 4 },
   callInfo: { width: '100%', borderWidth: 1, borderRadius: 23, paddingHorizontal: 15, paddingVertical: 14, gap: 12, elevation: 1 },
   callInfoTop: { width: '100%', flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
   callTitleBlock: { alignItems: 'flex-end', gap: 3 },
   sessionStatusRow: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 8, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 9 },
+  voiceSessionRow: { width: '100%', flexDirection: 'column', alignItems: 'stretch', borderTopWidth: 0, paddingTop: 0, gap: 8 },
   privateBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, borderRadius: 9, paddingHorizontal: 7, paddingVertical: 5 },
-  privateBadgeText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
-  kicker: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
+  privateBadgeText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
+  kicker: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   name: { fontSize: 17, fontWeight: '800', textAlign: 'right', writingDirection: 'rtl' },
   liveStatus: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7, borderRadius: 11, paddingHorizontal: 9, paddingVertical: 7 },
   status: { maxWidth: 190, fontSize: 12, fontWeight: '700', textAlign: 'right', writingDirection: 'rtl' },
-  timerTrack: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 7 },
-  timerLabel: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
+  timerTrack: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', gap: 7, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 7 },
+  timerLabel: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
   timerSpacer: { flex: 1 },
   timer: { fontSize: 21, fontWeight: '800', fontVariant: ['tabular-nums'] },
   petCardsPanel: { width: '100%', maxHeight: 174, borderWidth: 1, borderRadius: 18, padding: 10, gap: 8 },
   petCardsHeading: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7 },
   petHeadingIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  petCardsTitle: { flex: 1, fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
-  petCardsCount: { fontSize: 10, fontWeight: '700' },
+  petCardsTitle: { flex: 1, fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
+  petCardsCount: { fontSize: 11, fontWeight: '700' },
   petCardsScroll: { flexGrow: 0 },
   petCardsList: { gap: 7, paddingBottom: 2 },
   petCard: { borderWidth: 1, borderRadius: 12, padding: 9, gap: 4 },
   petCardTop: { flexDirection: 'row-reverse', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' },
   petName: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  petDetails: { fontSize: 10, writingDirection: 'rtl', textAlign: 'right' },
+  petDetails: { fontSize: 11, writingDirection: 'rtl', textAlign: 'right' },
   petHealth: { gap: 2, marginTop: 2 },
-  petHealthText: { fontSize: 10, lineHeight: 15, writingDirection: 'rtl', textAlign: 'right' },
+  petHealthText: { fontSize: 11, lineHeight: 17, writingDirection: 'rtl', textAlign: 'right' },
   errorActions: { width: '100%', alignItems: 'center', gap: 8, borderRadius: 15, padding: 10 },
-  errorText: { maxWidth: 310, textAlign: 'center', lineHeight: 19, fontSize: 11, writingDirection: 'rtl' },
+  errorText: { maxWidth: 310, textAlign: 'center', lineHeight: 20, fontSize: 12, writingDirection: 'rtl' },
   retryButton: { minHeight: 43, minWidth: 190, paddingHorizontal: 16, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  retryText: { fontWeight: '700', fontSize: 11, writingDirection: 'rtl' },
+  retryText: { fontWeight: '700', fontSize: 12, writingDirection: 'rtl' },
   settingsButton: { minHeight: 42, paddingHorizontal: 14, borderWidth: 1, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  settingsText: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl' },
+  settingsText: { fontSize: 12, fontWeight: '600', writingDirection: 'rtl' },
   rejoinButton: { minHeight: 44, width: '100%', flexDirection: 'row-reverse', gap: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, borderRadius: 14 },
   rejoinText: { fontWeight: '700', fontSize: 11, writingDirection: 'rtl' },
   controlDock: { borderWidth: 1, borderRadius: 24, padding: 10, marginTop: 5, elevation: 2 },
@@ -828,9 +848,9 @@ const styles = StyleSheet.create({
   audioRouteNoticeText: { fontSize: 12, textAlign: 'right' },
   controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 8 },
   control: { flex: 1, minWidth: 0, minHeight: 67, borderRadius: 15, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 5 },
-  controlLabel: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  controlLabel: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
   endButton: { width: 69, minHeight: 67, borderRadius: 15, alignItems: 'center', justifyContent: 'center', gap: 3 },
-  endLabel: { fontSize: 9, fontWeight: '800', writingDirection: 'rtl' },
-  routeError: { textAlign: 'center', fontSize: 10, lineHeight: 15, writingDirection: 'rtl', marginTop: 4 },
+  endLabel: { fontSize: 10, fontWeight: '800', writingDirection: 'rtl' },
+  routeError: { textAlign: 'center', fontSize: 11, lineHeight: 16, writingDirection: 'rtl', marginTop: 4 },
   hangupIcon: { transform: [{ rotate: '135deg' }] },
 });

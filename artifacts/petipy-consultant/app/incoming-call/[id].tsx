@@ -1,5 +1,6 @@
 import { useColors } from '@/hooks/useColors';
 import { PetipyPetMark } from '@/components/PetipyPetMark';
+import { PetipyText as Text } from '@/components/PetipyText';
 import {
   acceptIncomingCall,
   getIncomingCalls,
@@ -24,8 +25,8 @@ import {
   PermissionsAndroid,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -345,6 +346,11 @@ export default function IncomingCallScreen() {
           </View>
         </View>
 
+        <ScrollView
+          style={styles.requestScroll}
+          contentContainerStyle={styles.requestScrollContent}
+          showsVerticalScrollIndicator={false}
+        >
         <View style={[styles.callerCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.requestTopline}>
             <Text style={[styles.eyebrow, { color: colors.primary }]}>درخواست مشاوره</Text>
@@ -428,6 +434,7 @@ export default function IncomingCallScreen() {
             </View>
           ) : null}
         </View>
+        </ScrollView>
 
         <View style={styles.actionDock}>
           {call ? (
@@ -480,41 +487,43 @@ export default function IncomingCallScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   loadingContainer: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-  page: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 12, paddingBottom: 16, gap: 16 },
+  page: { flex: 1, justifyContent: 'flex-start', paddingHorizontal: 18, paddingTop: 12, paddingBottom: 16, gap: 10 },
+  requestScroll: { flex: 1 },
+  requestScrollContent: { flexGrow: 1, justifyContent: 'center', paddingVertical: 4 },
   brandLine: { minHeight: 43, flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   brandMark: { width: 37, height: 37, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   brandCopy: { flex: 1, alignItems: 'flex-end', gap: 1 },
   brandName: { fontSize: 13, fontWeight: '800', writingDirection: 'rtl' },
-  brandCaption: { fontSize: 9, writingDirection: 'rtl' },
+  brandCaption: { fontSize: 11, writingDirection: 'rtl' },
   liveChip: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 11, paddingHorizontal: 10, paddingVertical: 7 },
   liveDot: { width: 6, height: 6, borderRadius: 3 },
   liveChipText: { fontSize: 10, fontWeight: '700', writingDirection: 'rtl' },
   callerCard: { width: '100%', maxWidth: 460, alignSelf: 'center', borderWidth: 1, borderRadius: 28, padding: 18, gap: 17, elevation: 2 },
   requestTopline: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
   requestState: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
-  requestStateText: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },
+  requestStateText: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   deadlineCard: { minHeight: 86, flexDirection: 'row-reverse', alignItems: 'center', gap: 11, borderRadius: 17, paddingHorizontal: 13, paddingVertical: 11 },
   deadlineIcon: { width: 44, height: 44, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   deadlineCopy: { alignItems: 'flex-end', gap: 2 },
-  deadlineLabel: { fontSize: 10, fontWeight: '600', writingDirection: 'rtl', opacity: 0.85 },
+  deadlineLabel: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl', opacity: 0.85 },
   deadlineTime: { fontSize: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
   deadlineNote: { flex: 1, fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl', opacity: 0.88 },
   callerIdentity: { flexDirection: 'column', alignItems: 'center', gap: 10, paddingVertical: 4 },
   identityCopy: { width: '100%', alignItems: 'center', gap: 5 },
-  identityLabel: { fontSize: 10, writingDirection: 'rtl' },
+  identityLabel: { fontSize: 11, writingDirection: 'rtl' },
   eyebrow: { fontSize: 11, fontWeight: '700', writingDirection: 'rtl' },
   callerName: { maxWidth: '100%', fontSize: 24, fontWeight: '900', textAlign: 'center', writingDirection: 'rtl' },
   requestContext: { alignItems: 'flex-end', gap: 9 },
   petContext: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6 },
   petName: { fontSize: 11, fontWeight: '600', writingDirection: 'rtl' },
   subjectBlock: { width: '100%', borderRadius: 12, padding: 10, gap: 4 },
-  subjectLabel: { fontSize: 9, textAlign: 'right', writingDirection: 'rtl' },
-  subject: { fontSize: 12, lineHeight: 19, textAlign: 'right', writingDirection: 'rtl' },
+  subjectLabel: { fontSize: 11, textAlign: 'right', writingDirection: 'rtl' },
+  subject: { fontSize: 13, lineHeight: 21, textAlign: 'right', writingDirection: 'rtl' },
   statusCard: { flexDirection: 'row-reverse', alignItems: 'center', borderWidth: 1, borderRadius: 16, gap: 10, marginTop: 4, padding: 11 },
   statusIcon: { width: 37, height: 37, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   statusCopy: { flex: 1, alignItems: 'flex-end', gap: 3 },
   statusTitle: { fontSize: 12, fontWeight: '800', writingDirection: 'rtl' },
-  statusText: { fontSize: 10, lineHeight: 16, textAlign: 'right', writingDirection: 'rtl' },
+  statusText: { fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },
   refreshAction: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   errorBox: { flexDirection: 'row-reverse', alignItems: 'center', gap: 7, borderRadius: 12, padding: 10 },
   errorText: { flex: 1, fontSize: 11, lineHeight: 18, textAlign: 'right', writingDirection: 'rtl' },

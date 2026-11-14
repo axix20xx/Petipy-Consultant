@@ -1,4 +1,5 @@
 import { useColors } from '@/hooks/useColors';
+import { PetipyText as Text } from '@/components/PetipyText';
 import {
   getVoiceCallMessages,
   getVoiceChatAttachmentUrl,
@@ -13,7 +14,6 @@ import {
   Image,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -126,7 +126,7 @@ export default function VoiceCallAttachmentWebScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      <View style={styles.body}>
+      <View style={[styles.body, { backgroundColor: colors.muted }]}>
         {loading ? (
           <View style={styles.centerState}>
             <ActivityIndicator color={colors.primary} size="large" />
@@ -253,8 +253,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   retryText: { fontSize: 12, fontWeight: '700', writingDirection: 'rtl' },
-  previewFrame: { flex: 1, margin: 15, borderWidth: 1, borderRadius: 23, overflow: 'hidden', position: 'relative' },
-  image: { flex: 1, width: '100%', padding: 10 },
+  previewFrame: { flex: 1, margin: 8, borderWidth: 0, borderRadius: 18, overflow: 'hidden', position: 'relative' },
+  image: { flex: 1, width: '100%', padding: 16 },
   previewCaption: { position: 'absolute', top: 11, right: 11, flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8 },
-  previewCaptionText: { fontSize: 10, writingDirection: 'rtl' },
+  previewCaptionText: { fontSize: 11, writingDirection: 'rtl' },
 });

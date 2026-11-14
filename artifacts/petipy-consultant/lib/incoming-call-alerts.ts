@@ -127,7 +127,7 @@ export async function clearIncomingCallNotifications() {
 }
 
 export function startIncomingCallRingtone(expiresAt?: string) {
-  if (Platform.OS !== 'android') return;
+  if (Platform.OS === 'web') return;
   const now = Date.now();
   const expiry = expiresAt === undefined ? null : Date.parse(expiresAt);
   const deadline = getIncomingRingtoneDeadline(now, expiry, ringtoneDeadline);
@@ -155,8 +155,8 @@ export function startIncomingCallRingtone(expiresAt?: string) {
     try {
       InCallManager.startRingtone(
         '_DEFAULT_',
-        [0, 700, 450, 700],
-        'default',
+        Platform.OS === 'android' ? [0, 700, 450, 700] : 0,
+        Platform.OS === 'ios' ? 'playback' : 'default',
         0,
       );
       fallbackRingtoneStarted = true;
@@ -165,7 +165,10 @@ export function startIncomingCallRingtone(expiresAt?: string) {
     }
   };
 
-  const startNative = nativeCallNotifications?.startNativeIncomingRingtone;
+  const startNative =
+    Platform.OS === 'android'
+      ? nativeCallNotifications?.startNativeIncomingRingtone
+      : undefined;
   if (startNative) {
     void startNative(deadline).then((started) => {
       if (
@@ -188,12 +191,14 @@ export function startIncomingCallRingtone(expiresAt?: string) {
 }
 
 export function stopIncomingCallRingtone() {
-  if (Platform.OS !== 'android') return;
+  if (Platform.OS === 'web') return;
   ringtoneGeneration += 1;
   ringtoneDeadline = null;
   if (ringtoneStopTimer) clearTimeout(ringtoneStopTimer);
   ringtoneStopTimer = null;
-  void nativeCallNotifications?.stopNativeIncomingRingtone?.().catch(() => {});
+  if (Platform.OS === 'android') {
+    void nativeCallNotifications?.stopNativeIncomingRingtone?.().catch(() => {});
+  }
   try {
     InCallManager.stopRingtone();
     fallbackRingtoneStarted = false;

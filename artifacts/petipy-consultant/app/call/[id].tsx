@@ -176,6 +176,11 @@ export default function ConsultantCallScreen() {
           if (!isMounted) return;
           setPetCardBatches((current) => [...current, { shareId, pets }]);
         },
+      }, {
+        nativeCallKitRequestId:
+          Platform.OS === 'ios' && isIosNativeVoipEnabled()
+            ? nativeRequestId
+            : undefined,
       })
       .then(() => {
         if (isMounted && mutedRef.current) client.setMuted(true);

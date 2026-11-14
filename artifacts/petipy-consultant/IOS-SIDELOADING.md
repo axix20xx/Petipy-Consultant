@@ -30,6 +30,12 @@
   `EXPO_PUBLIC_IOS_VOIP_ENABLED=true` and an `EXPO_PUBLIC_APNS_ENVIRONMENT`
   value of `sandbox` or `production`; the plugin fails closed if the environment
   is missing or invalid.
+- Accepted iOS calls now activate the native WebRTC audio session and use the
+  native speaker/receiver route controls. `UIBackgroundModes: audio` is already
+  configured, but continued audio must still be verified on a physical iPhone.
+  Foreground incoming requests can ring locally; background incoming delivery
+  remains unavailable until the Petipy API supports iOS VoIP token registration
+  and APNs delivery.
 - The iOS VoIP API overlay has not been deployed to the live Petipy API. APNs
   provider credentials and the corresponding server-side feature flag are also
   not configured here. A client build alone cannot make background call

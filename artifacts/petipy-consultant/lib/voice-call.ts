@@ -13,6 +13,11 @@ import {
   parsePetCardShareMessage,
   type PetCard,
 } from '@/lib/pet-card-protocol';
+import {
+  resolveCallAudioBackend,
+  type CallAudioBackend,
+} from '@/lib/call-audio-routing';
+import { isIosNativeVoipEnabled } from '@/lib/ios-voip-config';
 import { setSystemCallAudioRoute } from '@/lib/system-calling';
 import { Platform } from 'react-native';
 
@@ -59,13 +64,19 @@ export class VoiceCallClient {
   private peer: RTCPeerConnection | null = null;
   private socket: WebSocket | null = null;
   private localStream: MediaStream | null = null;
+  private audioBackend: CallAudioBackend = 'none';
+  private audioManagerStarted = false;
   private pendingCandidates: RTCIceCandidate[] = [];
   private callbacks: VoiceCallCallbacks | null = null;
   private closed = false;
   private petCardShareSequence = 0;
   private remoteVideoStream: MediaStream | null = null;
 
-  async start(session: CallSession, callbacks: VoiceCallCallbacks) {
+  async start(
+    session: CallSession,
+    callbacks: VoiceCallCallbacks,
+    options?: { nativeCallKitRequestId?: string },
+  ) {
     this.callbacks = callbacks;
     this.closed = false;
     this.petCardShareSequence = 0;
@@ -81,8 +92,19 @@ export class VoiceCallClient {
       throw new Error('تماس فقط با TURN امن و relay-only مجاز است.');
     }
 
-    if (Platform.OS === 'android') {
+    const callKitOwnsAudioSession =
+      Platform.OS === 'ios' &&
+      isIosNativeVoipEnabled() &&
+      Boolean(options?.nativeCallKitRequestId);
+    this.audioBackend = resolveCallAudioBackend(
+      Platform.OS,
+      callKitOwnsAudioSession,
+    );
+    if (this.audioBackend === 'incall-manager') {
+      // InCallManager configures AVAudioSession for WebRTC on iOS and keeps
+      // the active audio session available when the app moves to the background.
       InCallManager.start({ media: 'audio', auto: true });
+      this.audioManagerStarted = true;
     }
 
     this.localStream = await mediaDevices.getUserMedia({
@@ -287,7 +309,16 @@ export class VoiceCallClient {
     callId: string,
   ): Promise<boolean> {
     if (Platform.OS === 'ios') {
-      return setSystemCallAudioRoute(callId, route);
+      if (this.audioBackend === 'callkit') {
+        return setSystemCallAudioRoute(callId, route);
+      }
+      if (this.audioBackend !== 'incall-manager') return false;
+      try {
+        InCallManager.setSpeakerphoneOn(route === 'speaker');
+        return true;
+      } catch {
+        return false;
+      }
     }
     if (Platform.OS !== 'android') return false;
 
@@ -321,6 +352,10 @@ export class VoiceCallClient {
     this.callbacks?.onRemoteVideo(null);
     this.pendingCandidates = [];
     this.petCardShareSequence = 0;
-    if (Platform.OS === 'android') InCallManager.stop();
+    if (this.audioManagerStarted) {
+      InCallManager.stop();
+      this.audioManagerStarted = false;
+    }
+    this.audioBackend = 'none';
   }
 }

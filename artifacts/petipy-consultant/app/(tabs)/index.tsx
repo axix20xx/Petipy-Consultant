@@ -18,8 +18,10 @@ import {
 import { markSystemCallActive } from '@/lib/system-calling';
 import {
   cancelIncomingCallNotification,
+  startIncomingCallRingtone,
   stopIncomingCallRingtone,
 } from '@/lib/incoming-call-alerts';
+import { isUnexpiredRequestedCall } from '@/lib/incoming-push-routing';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
@@ -60,6 +62,7 @@ export default function ConsultantHome() {
     state: sessionState,
     message: sessionMessage,
     setActiveCall,
+    activeCall,
     refresh,
     pushSetupState,
     pushSetupMessage,
@@ -69,6 +72,9 @@ export default function ConsultantHome() {
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectError, setRejectError] = useState<{ callId: string; message: string } | null>(null);
   const [serviceRunning, setServiceRunning] = useState(false);
+  const [appIsActive, setAppIsActive] = useState(
+    AppState.currentState === 'active',
+  );
   const isConnected = sessionState === 'connected' && Boolean(token);
   const isAvailable = profile?.manualStatus === 'online';
   const refreshServiceState = () => setServiceRunning(isAvailabilityServiceRunning());
@@ -76,6 +82,7 @@ export default function ConsultantHome() {
   useEffect(() => {
     refreshServiceState();
     const subscription = AppState.addEventListener('change', (nextState) => {
+      setAppIsActive(nextState === 'active');
       if (nextState === 'active') refreshServiceState();
     });
     return () => subscription.remove();
@@ -87,6 +94,34 @@ export default function ConsultantHome() {
     enabled: isConnected,
     refetchInterval: isConnected ? 5_000 : false,
   });
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    const pendingCall =
+      appIsActive &&
+      isConnected &&
+      isAvailable &&
+      !activeCall &&
+      !acceptingId &&
+      !rejectingId
+        ? queue.data?.find((call) => isUnexpiredRequestedCall(call)) ?? null
+        : null;
+    if (pendingCall) startIncomingCallRingtone(pendingCall.expiresAt);
+    else stopIncomingCallRingtone();
+  }, [
+    acceptingId,
+    activeCall,
+    appIsActive,
+    isAvailable,
+    isConnected,
+    queue.data,
+    rejectingId,
+  ]);
+  useEffect(
+    () => () => {
+      if (Platform.OS === 'ios') stopIncomingCallRingtone();
+    },
+    [],
+  );
   const history = useQuery({
     queryKey: ['petipy', 'call-history'],
     queryFn: () => getCallHistory(token as string),

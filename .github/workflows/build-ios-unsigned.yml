@@ -50,20 +50,47 @@ jobs:
             exit 1
           fi
 
-          ruby -rjson -e '
-            podfile = File.read("ios/Podfile")
-            properties = JSON.parse(File.read("ios/Podfile.properties.json"))
+          # SDK 58's Podfile template reads linkage from Podfile.properties.json.
+          node <<'NODE'
+          const fs = require("node:fs");
+          const podfile = fs.readFileSync("ios/Podfile", "utf8");
+          const properties = JSON.parse(
+            fs.readFileSync("ios/Podfile.properties.json", "utf8"),
+          );
 
-            unless podfile.include?("use_frameworks!")
-              abort "Generated Podfile does not configure CocoaPods frameworks"
-            end
+          if (properties["ios.useFrameworks"] !== "dynamic") {
+            throw new Error(
+              "Expected ios.useFrameworks=dynamic in Podfile.properties.json",
+            );
+          }
 
-            unless properties["ios.useFrameworks"] == "dynamic"
-              abort "Expected ios.useFrameworks=dynamic in Podfile.properties.json"
-            end
+          const linkageHook =
+            "use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym";
+          if (!podfile.includes(linkageHook)) {
+            throw new Error(
+              "Generated Podfile does not apply Expo's ios.useFrameworks property",
+            );
+          }
 
-            puts "Generated Podfile is configured for dynamic framework linkage."
-          '
+          if (/use_frameworks!\s*:linkage\s*=>\s*:static/.test(podfile)) {
+            throw new Error(
+              "Generated Podfile contains an explicit static framework linkage",
+            );
+          }
+
+          if (
+            process.env.USE_FRAMEWORKS &&
+            process.env.USE_FRAMEWORKS !== "dynamic"
+          ) {
+            throw new Error(
+              "USE_FRAMEWORKS overrides the Expo dynamic framework setting",
+            );
+          }
+
+          console.log(
+            "Generated Podfile is configured for dynamic framework linkage.",
+          );
+          NODE
 
       - name: Install CocoaPods
         working-directory: artifacts/petipy-consultant/ios

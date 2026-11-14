@@ -196,3 +196,17 @@ mtime_ms = 1794580818697
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/71020567-e851-422a-8a84-f960feb4a04e/dae6a28b-12e4-4aeb-b610-7503aacc3b70"
 storage_version_token = "1794580868768071"
 content_type = "application/octet-stream"
+
+[[outputs]]
+id = "U-BPJoroz-WAz76lyshi_"
+uri = "file://generated-artifacts/Petipy-Consultant-Development-Unsigned.ipa"
+type = "unspecified"
+title = "Petipy Consultant — development IPA"
+description = "Unsigned iOS IPA for development OTP testing. It must be signed before installing on an iPhone."
+logical_id = "f84094a3-433f-4970-8200-da4bd7b762d0"
+content_hash = "sha256:b9e17d954ef93c30d8493e8ee01e1461dbf5cba884a1e5453f5751b581fcf1d9"
+size = 28082803
+mtime_ms = 1794655858220
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:3e5c2658-180f-4e0b-afe5-8d1fe3cf923e/f84094a3-433f-4970-8200-da4bd7b762d0/d5ac8d45-b9a2-4fe0-b78c-ab82c1108051"
+storage_version_token = "1794655878097249"
+content_type = "application/octet-stream"

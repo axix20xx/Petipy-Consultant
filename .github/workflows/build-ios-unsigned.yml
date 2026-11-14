@@ -102,26 +102,152 @@ jobs:
         working-directory: artifacts/petipy-consultant
         shell: bash
         run: |
-          WORKSPACE=$(find ios -maxdepth 1 -name '*.xcworkspace' | head -n 1)
-          if [ -z "$WORKSPACE" ]; then
-            echo "No Xcode workspace found"
+          set -o pipefail
+
+          WORKSPACE="ios/PetipyConsultant.xcworkspace"
+          PROJECT="ios/PetipyConsultant.xcodeproj"
+          APP_SCHEME="PetipyConsultant"
+          APP_TARGET="PetipyConsultant"
+
+          if [ ! -d "$WORKSPACE" ]; then
+            echo "Expected Expo CocoaPods workspace was not generated: $WORKSPACE"
+            find ios -maxdepth 2 -print | sort || true
             exit 1
           fi
 
-          SCHEME=$(xcodebuild -list -json -workspace "$WORKSPACE" | ruby -rjson -e 'j=JSON.parse(STDIN.read); puts j.dig("workspace","schemes")&.first')
-
-          if [ -z "$SCHEME" ]; then
-            echo "No Xcode scheme found"
+          if [ ! -d "$PROJECT" ]; then
+            echo "Expected Expo Xcode project was not generated: $PROJECT"
+            find ios -maxdepth 2 -print | sort || true
             exit 1
           fi
+
+          EXPECTED_BUNDLE_ID="$(
+            pnpm exec expo config --json --type prebuild |
+              node -e '
+                let input = "";
+                process.stdin.setEncoding("utf8");
+                process.stdin.on("data", (chunk) => (input += chunk));
+                process.stdin.on("end", () => {
+                  const config = JSON.parse(input);
+                  const bundleId = config.ios?.bundleIdentifier;
+                  if (!bundleId) {
+                    console.error("Resolved Expo config has no iOS bundle identifier");
+                    process.exitCode = 1;
+                    return;
+                  }
+                  process.stdout.write(bundleId);
+                });
+              '
+          )"
+          if [ "$EXPECTED_BUNDLE_ID" != "com.petipy.consultant" ]; then
+            echo "Unexpected Expo bundle identifier: $EXPECTED_BUNDLE_ID"
+            echo "Expected: com.petipy.consultant"
+            exit 1
+          fi
+
+          SCHEME_LIST_JSON="$RUNNER_TEMP/Petipy-xcode-schemes.json"
+          if ! xcodebuild -list -json -workspace "$WORKSPACE" > "$SCHEME_LIST_JSON"; then
+            echo "xcodebuild could not list schemes in $WORKSPACE"
+            cat "$SCHEME_LIST_JSON" || true
+            exit 1
+          fi
+
+          AVAILABLE_SCHEMES="$(
+            node -e '
+              const fs = require("node:fs");
+              const result = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+              for (const scheme of result.workspace?.schemes ?? []) {
+                console.log(scheme);
+              }
+            ' "$SCHEME_LIST_JSON"
+          )"
+          echo "Generated workspace: $WORKSPACE"
+          echo "Generated project: $PROJECT"
+          echo "Available workspace schemes:"
+          printf '%s\n' "$AVAILABLE_SCHEMES" | sed 's/^/  /'
+
+          if ! printf '%s\n' "$AVAILABLE_SCHEMES" | grep -Fxq "$APP_SCHEME"; then
+            echo "Required application scheme '$APP_SCHEME' is missing."
+            echo "The app target must be built; dependency schemes such as 'boost' are not valid substitutes."
+            exit 1
+          fi
+
+          SETTINGS_FILE="$RUNNER_TEMP/PetipyConsultant-build-settings.txt"
+          if ! xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$APP_SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            -showBuildSettings > "$SETTINGS_FILE" 2>&1; then
+            echo "Could not inspect build settings for app scheme '$APP_SCHEME'."
+            tail -n 100 "$SETTINGS_FILE" || true
+            exit 1
+          fi
+
+          node - "$SETTINGS_FILE" "$APP_TARGET" "$EXPECTED_BUNDLE_ID" <<'NODE'
+          const fs = require("node:fs");
+          const text = fs.readFileSync(process.argv[2], "utf8");
+          const expectedTarget = process.argv[3];
+          const expectedBundleId = process.argv[4];
+          const headers = [...text.matchAll(/^Build settings for action .+ and target (.+):\s*$/gm)];
+          const targets = headers.map((header) => header[1]);
+          const appHeader = headers.find((header) => header[1] === expectedTarget);
+
+          if (!appHeader) {
+            throw new Error(
+              `App target '${expectedTarget}' is not in the scheme build settings. Targets: ${targets.join(", ")}`,
+            );
+          }
+
+          const start = appHeader.index + appHeader[0].length;
+          const nextHeader = headers.find((header) => header.index > appHeader.index);
+          const section = text.slice(start, nextHeader?.index ?? text.length);
+          const settings = Object.fromEntries(
+            [...section.matchAll(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/gm)].map(
+              (match) => [match[1], match[2]],
+            ),
+          );
+          const bundleId = settings.PRODUCT_BUNDLE_IDENTIFIER;
+          const productType = settings.PRODUCT_TYPE;
+
+          if (bundleId !== expectedBundleId) {
+            throw new Error(
+              `App target bundle ID mismatch: expected ${expectedBundleId}, found ${bundleId ?? "<missing>"}`,
+            );
+          }
+          if (productType !== "com.apple.product-type.application") {
+            throw new Error(
+              `Target ${expectedTarget} is not an iOS application (PRODUCT_TYPE=${productType ?? "<missing>"})`,
+            );
+          }
+
+          console.log(`Verified app target: ${expectedTarget}`);
+          console.log(`Verified app scheme: ${expectedTarget}`);
+          console.log(`Verified application bundle ID: ${bundleId}`);
+          console.log(`Verified application product type: ${productType}`);
+          NODE
 
           echo "workspace=$WORKSPACE" >> "$GITHUB_OUTPUT"
-          echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
+          echo "project=$PROJECT" >> "$GITHUB_OUTPUT"
+          echo "scheme=$APP_SCHEME" >> "$GITHUB_OUTPUT"
+          echo "target=$APP_TARGET" >> "$GITHUB_OUTPUT"
+          echo "bundle_id=$EXPECTED_BUNDLE_ID" >> "$GITHUB_OUTPUT"
 
       - name: Build iOS application
         working-directory: artifacts/petipy-consultant
+        shell: bash
         run: |
-          xcodebuild \
+          set -o pipefail
+          BUILD_LOG="$RUNNER_TEMP/Petipy-xcodebuild.log"
+          PRODUCTS_ROOT="$RUNNER_TEMP/PetipyBuild/Build/Products"
+
+          echo "Building application target '${{ steps.xcode.outputs.target }}' with scheme '${{ steps.xcode.outputs.scheme }}'"
+          echo "Workspace: ${{ steps.xcode.outputs.workspace }}"
+          echo "Expected bundle identifier: ${{ steps.xcode.outputs.bundle_id }}"
+
+          if ! xcodebuild \
             -workspace "${{ steps.xcode.outputs.workspace }}" \
             -scheme "${{ steps.xcode.outputs.scheme }}" \
             -configuration Release \
@@ -129,7 +255,27 @@ jobs:
             -destination 'generic/platform=iOS' \
             -derivedDataPath "$RUNNER_TEMP/PetipyBuild" \
             CODE_SIGNING_ALLOWED=NO \
-            build
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee "$BUILD_LOG"; then
+            echo "The Petipy Consultant application target failed to build."
+            echo "Relevant Xcode diagnostics:"
+            grep -E '(^| )error:|warning:|BUILD FAILED|CompileAssetCatalog|SwiftCompile|CompileC' "$BUILD_LOG" | tail -n 100 || true
+            echo "Build products available for diagnosis:"
+            if [ -d "$PRODUCTS_ROOT" ]; then
+              find "$PRODUCTS_ROOT" -maxdepth 5 -print | sort | head -n 300
+            else
+              echo "Xcode did not create the products directory: $PRODUCTS_ROOT"
+            fi
+            exit 1
+          fi
+
+          if [ ! -d "$PRODUCTS_ROOT" ]; then
+            echo "xcodebuild succeeded but created no products directory: $PRODUCTS_ROOT"
+            exit 1
+          fi
+          echo "Xcode application build completed. Products:"
+          find "$PRODUCTS_ROOT" -maxdepth 5 -print | sort | head -n 300
 
       - name: Package unsigned IPA
         shell: bash

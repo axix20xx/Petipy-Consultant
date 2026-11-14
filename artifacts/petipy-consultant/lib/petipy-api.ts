@@ -26,8 +26,9 @@ export type ConsultantPushDevice =
   | {
       deviceId: string;
       platform: 'ios';
+      pushType: 'voip';
       pushToken: string;
-      pushEnvironment: 'sandbox' | 'production';
+      environment: 'sandbox' | 'production';
     };
 
 export type CallHistoryEntry = {

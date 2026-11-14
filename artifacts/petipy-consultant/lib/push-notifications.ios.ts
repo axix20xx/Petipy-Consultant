@@ -42,9 +42,8 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function serverVoipConfigured(value: unknown): boolean | null {
   const root = asRecord(value);
-  return typeof root.iosVoipConfigured === 'boolean'
-    ? root.iosVoipConfigured
-    : null;
+  if (typeof root.apnsConfigured === 'boolean') return root.apnsConfigured;
+  return typeof root.iosVoipConfigured === 'boolean' ? root.iosVoipConfigured : null;
 }
 
 function apiErrorMessage(error: unknown) {
@@ -88,8 +87,9 @@ async function registerToken(
   await registerConsultantPushDevice(sessionToken, {
     deviceId,
     platform: 'ios',
+    pushType: 'voip',
     pushToken,
-    pushEnvironment,
+    environment: pushEnvironment,
   });
   if (!isActive()) return;
 

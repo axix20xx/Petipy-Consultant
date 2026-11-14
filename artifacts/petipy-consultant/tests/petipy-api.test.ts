@@ -176,8 +176,9 @@ test('registers an iOS PushKit token with its APNs environment', async () => {
     await registerConsultantPushDevice('redacted-test-token', {
       deviceId: 'installation-123456',
       platform: 'ios',
+      pushType: 'voip',
       pushToken: 'a'.repeat(64),
-      pushEnvironment: 'sandbox',
+      environment: 'sandbox',
     });
     assert.equal(
       requestUrl,
@@ -190,8 +191,9 @@ test('registers an iOS PushKit token with its APNs environment', async () => {
     assert.deepEqual(JSON.parse(String(requestInit?.body)), {
       deviceId: 'installation-123456',
       platform: 'ios',
+      pushType: 'voip',
       pushToken: 'a'.repeat(64),
-      pushEnvironment: 'sandbox',
+      environment: 'sandbox',
     });
   } finally {
     globalThis.fetch = originalFetch;

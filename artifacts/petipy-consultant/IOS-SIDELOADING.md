@@ -12,6 +12,12 @@
 - Expo Go remains the Replit preview client, not the standalone application.
   The EAS `development` profile is an internal standalone build, not a custom
   Metro development client.
+- The iOS launch screen uses a white background and the existing Petipy mark;
+  Android retains its current lavender splash. Settings display only the native
+  controls and permissions relevant to the running platform.
+- iOS notification permission is read without prompting on launch. Since the
+  current API has no iOS APNs/PushKit device registration or sender, the app
+  does not request a permission that cannot yet enable incoming-call delivery.
 - Build profiles are declared in `eas.json`: `development`, `preview`,
   `production`, and `ios-simulator`. EAS profiles are future configuration;
   this workspace does not run EAS CLI builds.

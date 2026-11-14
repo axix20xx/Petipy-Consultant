@@ -1,5 +1,5 @@
 import BackgroundService from 'react-native-background-actions';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { Alert, PermissionsAndroid, Platform } from 'react-native';
 import { getIncomingCalls, PetipyApiError } from '@/lib/petipy-api';
 import colors from '@/constants/colors';
 import {
@@ -78,8 +78,28 @@ async function ensureForegroundNotificationPermission() {
 
   const permission = PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS;
   if (await PermissionsAndroid.check(permission)) return true;
+  const shouldRequest = await new Promise<boolean>((resolve) => {
+    Alert.alert(
+      'اجازه اعلان تماس',
+      'برای نمایش تماس‌های مشاوره وقتی Petipy باز نیست، اجازه اعلان لازم است. این درخواست فقط پس از انتخاب شما برای آنلاین‌شدن یا زدن دکمه فعال‌سازی نمایش داده می‌شود.',
+      [
+        { text: 'بعداً', style: 'cancel', onPress: () => resolve(false) },
+        { text: 'ادامه', onPress: () => resolve(true) },
+      ],
+      { cancelable: true, onDismiss: () => resolve(false) },
+    );
+  });
+  if (!shouldRequest) return false;
   const result = await PermissionsAndroid.request(permission);
   return result === PermissionsAndroid.RESULTS.GRANTED;
+}
+
+export async function hasAvailabilityNotificationPermission() {
+  if (Platform.OS !== 'android') return false;
+  if (Number(Platform.Version) < 33) return true;
+  return PermissionsAndroid.check(
+    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+  );
 }
 
 export async function requestAvailabilityPermissions() {

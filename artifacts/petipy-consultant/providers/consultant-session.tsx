@@ -359,9 +359,24 @@ export function ConsultantSessionProvider({
     return { pushRevoked };
   }, [queryClient, token]);
 
-  const retryPushSetup = useCallback(() => {
+  const retryPushSetup = useCallback(async () => {
+    if (Platform.OS === 'android' && pushSetupState === 'permission-denied') {
+      try {
+        const { requestAvailabilityPermissions } = await import(
+          '@/lib/background-monitor'
+        );
+        const granted = await requestAvailabilityPermissions();
+        if (!granted) return;
+      } catch {
+        setPushSetupState('error');
+        setPushSetupMessage(
+          'درخواست مجوز اعلان انجام نشد؛ تنظیمات برنامه را در Android بررسی کنید.',
+        );
+        return;
+      }
+    }
     setPushSetupAttempt((attempt) => attempt + 1);
-  }, []);
+  }, [pushSetupState]);
 
   const value = useMemo(
     () => ({

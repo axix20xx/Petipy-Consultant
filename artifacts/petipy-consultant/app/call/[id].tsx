@@ -10,6 +10,10 @@ import {
 import { useConsultantSession } from '@/providers/consultant-session';
 import RemoteVideo from '@/components/RemoteVideo';
 import type { PetCard } from '@/lib/pet-card-protocol';
+import {
+  resolveCallAudioRoute,
+  type CallAudioRoute,
+} from '@/lib/call-audio-route';
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -63,9 +67,7 @@ export default function ConsultantCallScreen() {
   const [connected, setConnected] = useState(false);
   const [hasConnectedOnce, setHasConnectedOnce] = useState(false);
   const [muted, setMuted] = useState(false);
-  const [audioRoute, setAudioRoute] = useState<'earpiece' | 'speaker'>(
-    'earpiece',
-  );
+  const [audioRoute, setAudioRoute] = useState<CallAudioRoute>('earpiece');
   const [routeChanging, setRouteChanging] = useState(false);
   const [routeError, setRouteError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -248,10 +250,9 @@ export default function ConsultantCallScreen() {
                 ) {
                   return;
                 }
-                const speakerEnabled = event.currentRoute.outputs.some(
-                  (output) => output.portType === 'builtInSpeaker',
+                setAudioRoute(
+                  resolveCallAudioRoute(event.currentRoute.outputs),
                 );
-                setAudioRoute(speakerEnabled ? 'speaker' : 'earpiece');
               });
             }),
           );
@@ -261,10 +262,7 @@ export default function ConsultantCallScreen() {
               session?.incomingCallEvent?.serverCallId === callId
             ) {
               const audio = getAudioSession();
-              const speakerEnabled = audio.currentRoute.outputs.some(
-                (output) => output.portType === 'builtInSpeaker',
-              );
-              setAudioRoute(speakerEnabled ? 'speaker' : 'earpiece');
+              setAudioRoute(resolveCallAudioRoute(audio.currentRoute.outputs));
             }
           });
         },
@@ -624,6 +622,20 @@ export default function ConsultantCallScreen() {
       </ScrollView>
 
       <View style={[styles.controlDock, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        {audioRoute === 'bluetooth' || audioRoute === 'external' ? (
+          <View style={styles.audioRouteNotice}>
+            <Ionicons
+              name={audioRoute === 'bluetooth' ? 'bluetooth' : 'headset-outline'}
+              size={16}
+              color={colors.primary}
+            />
+            <Text style={[styles.audioRouteNoticeText, { color: colors.mutedForeground }]}>
+              {audioRoute === 'bluetooth'
+                ? 'صدا از مسیر بلوتوث پخش می‌شود؛ مدیریت این مسیر با iOS است.'
+                : 'صدا از وسیلهٔ صوتی متصل پخش می‌شود.'}
+            </Text>
+          </View>
+        ) : null}
         <View style={styles.controls}>
           <Pressable
             testID="call-earpiece"
@@ -747,6 +759,8 @@ const styles = StyleSheet.create({
   rejoinButton: { minHeight: 44, width: '100%', flexDirection: 'row-reverse', gap: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, borderRadius: 14 },
   rejoinText: { fontWeight: '700', fontSize: 11, writingDirection: 'rtl' },
   controlDock: { borderWidth: 1, borderRadius: 24, padding: 10, marginTop: 5, elevation: 2 },
+  audioRouteNotice: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 5 },
+  audioRouteNoticeText: { fontSize: 12, textAlign: 'right' },
   controls: { flexDirection: 'row-reverse', justifyContent: 'center', alignItems: 'center', gap: 8 },
   control: { flex: 1, minWidth: 0, minHeight: 67, borderRadius: 15, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 5 },
   controlLabel: { fontSize: 9, fontWeight: '700', writingDirection: 'rtl' },

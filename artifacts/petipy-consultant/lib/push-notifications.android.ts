@@ -29,7 +29,7 @@ import {
   stopIncomingCallRingtone,
 } from '@/lib/incoming-call-alerts';
 import { reportSystemIncomingCall } from '@/lib/system-calling';
-import { requestAvailabilityPermissions } from '@/lib/background-monitor';
+import { hasAvailabilityNotificationPermission } from '@/lib/background-monitor';
 import type {
   IncomingCallAction,
   PushSetupState,
@@ -146,12 +146,12 @@ export function startPushRegistration(
 
   void (async () => {
     try {
-      const permissionGranted = await requestAvailabilityPermissions();
+      const permissionGranted = await hasAvailabilityNotificationPermission();
       if (!active) return;
       if (!permissionGranted) {
         onStatus(
           'permission-denied',
-          'مجوز اعلان رد شده است. سرویس foreground هنگام آنلاین‌بودن polling را ادامه می‌دهد، اما Android ممکن است اعلان تماس را پنهان کند؛ اعلان Petipy را در تنظیمات فعال کنید.',
+          'اعلان تماس هنوز فعال نشده است. برای درخواست مجوز، دکمهٔ فعال‌سازی را در این صفحه بزنید یا Petipy را در تنظیمات Android مجاز کنید.',
         );
         return;
       }

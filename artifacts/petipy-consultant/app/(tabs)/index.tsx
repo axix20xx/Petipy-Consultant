@@ -9,6 +9,7 @@ import {
   setConsultantAvailability,
 } from '@/lib/petipy-api';
 import {
+  hasAvailabilityNotificationPermission,
   requestAvailabilityPermissions,
   isAvailabilityServiceRunning,
   setAvailabilityCallState,
@@ -72,6 +73,7 @@ export default function ConsultantHome() {
     refresh,
     pushSetupState,
     pushSetupMessage,
+    retryPushSetup,
   } = useConsultantSession();
   const [availabilityBusy, setAvailabilityBusy] = useState(false);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
@@ -264,6 +266,7 @@ export default function ConsultantHome() {
       !isAvailable ||
       !token ||
       !tokenExpiresAt ||
+      !appIsActive ||
       Platform.OS !== 'android'
     ) {
       return;
@@ -271,18 +274,14 @@ export default function ConsultantHome() {
     let cancelled = false;
     void (async () => {
       try {
-        const microphoneGranted = await requestMicrophone();
-        if (!microphoneGranted) {
-          throw new Error(
-            'برای دریافت تماس، دسترسی میکروفون را در تنظیمات Android فعال کنید.',
-          );
-        }
-        const notificationGranted = await requestAvailabilityPermissions();
-        if (!notificationGranted && !cancelled) {
-          Alert.alert(
-            'اعلان‌ها محدود هستند',
-            'سرویس foreground همچنان صف تماس را بررسی می‌کند، اما Android ممکن است اعلان تماس را نمایش ندهد.',
-          );
+        const [microphoneGranted, notificationGranted] = await Promise.all([
+          PermissionsAndroid.check(
+            PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+          ),
+          hasAvailabilityNotificationPermission(),
+        ]);
+        if (!microphoneGranted || !notificationGranted) {
+          return;
         }
         await startAvailabilityService(token, tokenExpiresAt);
         if (!cancelled) refreshServiceState();
@@ -308,10 +307,25 @@ export default function ConsultantHome() {
     return () => {
       cancelled = true;
     };
-  }, [isConnected, isAvailable, token, tokenExpiresAt, refresh]);
+  }, [
+    appIsActive,
+    isConnected,
+    isAvailable,
+    pushSetupState,
+    token,
+    tokenExpiresAt,
+    refresh,
+  ]);
 
   async function requestMicrophone() {
     if (Platform.OS !== 'android') return true;
+    if (
+      await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      )
+    ) {
+      return true;
+    }
     const result = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
       {
@@ -343,6 +357,8 @@ export default function ConsultantHome() {
             'اعلان‌ها محدود هستند',
             'دستگاه آنلاین می‌شود و سرویس foreground صف تماس را بررسی می‌کند؛ اما ممکن است Android اعلان تماس را پنهان کند.',
           );
+        } else if (pushSetupState === 'permission-denied') {
+          void retryPushSetup();
         }
       }
 

@@ -18,6 +18,7 @@ const callKitAppDelegate = readFileSync(
   'utf8',
 );
 const pnpmWorkspace = readFileSync('../../pnpm-workspace.yaml', 'utf8');
+const settingsScreen = readFileSync('app/(tabs)/settings.tsx', 'utf8');
 
 test('keeps the consultant app identity and production auth fail-closed', () => {
   assert.equal(expoConfig.ios.bundleIdentifier, 'com.petipy.consultant');
@@ -92,6 +93,26 @@ test('foreground CallKit configuration does not add PushKit to free-signing buil
     iosWorkflow,
     /- name: Build iOS application[\s\S]*?EXPO_PUBLIC_IOS_VOIP_ENABLED: 'false'/,
   );
+});
+
+test('uses a dedicated white iOS splash and preserves the Android splash', () => {
+  const splashPlugin = expoConfig.plugins.find(
+    (plugin: unknown) =>
+      Array.isArray(plugin) && plugin[0] === 'expo-splash-screen',
+  );
+  assert.ok(Array.isArray(splashPlugin));
+  const splash = splashPlugin[1];
+  assert.equal(splash.ios.backgroundColor, '#FFFFFF');
+  assert.equal(splash.ios.image, './assets/images/icon.png');
+  assert.equal(splash.ios.imageWidth, 120);
+  assert.equal(splash.ios.resizeMode, 'contain');
+  assert.equal(splash.android.backgroundColor, '#F7F4FC');
+  assert.equal(splash.android.image, './assets/images/icon.png');
+  assert.equal(splash.android.imageWidth, 120);
+  assert.equal(splash.android.resizeMode, 'contain');
+
+  assert.match(settingsScreen, /Platform\.OS === 'android'/);
+  assert.match(settingsScreen, /Platform\.OS === 'ios'/);
 });
 
 test('unsigned iOS GitHub build enables development OTP only while bundling', () => {

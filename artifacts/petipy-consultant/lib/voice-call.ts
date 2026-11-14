@@ -17,6 +17,7 @@ import {
   resolveCallAudioBackend,
   type CallAudioBackend,
 } from '@/lib/call-audio-routing';
+import { setCallKitAudioRoute } from '@/lib/callkit-audio-control';
 import { setSystemCallAudioRoute } from '@/lib/system-calling';
 import { Platform } from 'react-native';
 
@@ -308,7 +309,8 @@ export class VoiceCallClient {
   ): Promise<boolean> {
     if (Platform.OS === 'ios') {
       if (this.audioBackend === 'callkit') {
-        return setSystemCallAudioRoute(callId, route);
+        const callkit = await import('expo-callkit-telecom');
+        return setCallKitAudioRoute(callId, route, callkit);
       }
       if (this.audioBackend !== 'incall-manager') return false;
       try {

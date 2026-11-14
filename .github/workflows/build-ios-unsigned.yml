@@ -134,33 +134,132 @@ jobs:
       - name: Package unsigned IPA
         shell: bash
         run: |
-          APP_DIR="$RUNNER_TEMP/PetipyBuild/Build/Products/Release-iphoneos"
+          PRODUCTS_ROOT="$RUNNER_TEMP/PetipyBuild/Build/Products"
+          RELEASE_DIR="$PRODUCTS_ROOT/Release-iphoneos"
+          EXPECTED_BUNDLE_ID="$(
+            pnpm --filter @workspace/petipy-consultant exec expo config --json --type prebuild |
+              node -e '
+                let input = "";
+                process.stdin.setEncoding("utf8");
+                process.stdin.on("data", (chunk) => (input += chunk));
+                process.stdin.on("end", () => {
+                  const config = JSON.parse(input);
+                  const bundleId = config.ios?.bundleIdentifier;
+                  if (!bundleId) {
+                    console.error("Resolved Expo config has no iOS bundle identifier");
+                    process.exitCode = 1;
+                    return;
+                  }
+                  process.stdout.write(bundleId);
+                });
+              '
+          )"
 
-          mkdir -p Payload
+          echo "Expected bundle identifier from Expo config: $EXPECTED_BUNDLE_ID"
+          echo "Release-iphoneos directory contents:"
+          if [ -d "$RELEASE_DIR" ]; then
+            find "$RELEASE_DIR" -maxdepth 4 -print | sort
+          else
+            echo "Missing directory: $RELEASE_DIR"
+          fi
 
-          FOUND=false
-
-          while IFS= read -r -d '' APP; do
-            BUNDLE_ID=$(/usr/libexec/PlistBuddy \
-              -c 'Print CFBundleIdentifier' \
-              "$APP/Info.plist")
-
-            if [ "$BUNDLE_ID" = "com.petipy.consultant" ]; then
-              cp -R "$APP" Payload/Petipy.app
-              FOUND=true
-              break
-            fi
-          done < <(find "$APP_DIR" -maxdepth 1 -name '*.app' -print0)
-
-          if [ "$FOUND" != "true" ]; then
-            echo "Petipy application bundle not found"
+          if [ ! -d "$PRODUCTS_ROOT" ]; then
+            echo "Xcode products directory does not exist: $PRODUCTS_ROOT"
             exit 1
           fi
+
+          ALL_APP_BUNDLES=()
+          MATCHING_APP_BUNDLES=()
+          echo "Scanning compiled application bundles under $PRODUCTS_ROOT:"
+          while IFS= read -r -d '' APP; do
+            case "$APP" in
+              *.appex|*.appex/*)
+                echo "Skipping extension: $APP"
+                continue
+                ;;
+            esac
+
+            ALL_APP_BUNDLES+=("$APP")
+            INFO_PLIST="$APP/Info.plist"
+            if [ ! -f "$INFO_PLIST" ]; then
+              echo "Candidate has no Info.plist: $APP"
+              continue
+            fi
+
+            BUNDLE_ID=$(/usr/libexec/PlistBuddy \
+              -c 'Print CFBundleIdentifier' \
+              "$INFO_PLIST" 2>/dev/null || true)
+            APP_NAME=$(/usr/libexec/PlistBuddy \
+              -c 'Print CFBundleDisplayName' \
+              "$INFO_PLIST" 2>/dev/null || true)
+            if [ -z "$APP_NAME" ]; then
+              APP_NAME=$(/usr/libexec/PlistBuddy \
+                -c 'Print CFBundleName' \
+                "$INFO_PLIST" 2>/dev/null || true)
+            fi
+
+            echo "Discovered app: path=$APP | name=${APP_NAME:-<unnamed>} | bundleId=${BUNDLE_ID:-<unreadable>}"
+            if [ "$BUNDLE_ID" = "$EXPECTED_BUNDLE_ID" ]; then
+              MATCHING_APP_BUNDLES+=("$APP")
+            fi
+          done < <(find "$PRODUCTS_ROOT" -type d -name '*.app' -print0)
+
+          if [ "${#MATCHING_APP_BUNDLES[@]}" -ne 1 ]; then
+            echo "Expected exactly one app with bundle identifier $EXPECTED_BUNDLE_ID; found ${#MATCHING_APP_BUNDLES[@]}."
+            echo "All discovered .app bundles:"
+            if [ "${#ALL_APP_BUNDLES[@]}" -eq 0 ]; then
+              echo "No .app bundles were found under $PRODUCTS_ROOT"
+            else
+              printf '  %s\n' "${ALL_APP_BUNDLES[@]}"
+            fi
+            exit 1
+          fi
+
+          MATCHED_APP="${MATCHING_APP_BUNDLES[0]}"
+          echo "Selected application path: $MATCHED_APP"
+          echo "Selected bundle identifier: $EXPECTED_BUNDLE_ID"
+
+          rm -rf Payload
+          mkdir -p Payload
+          cp -R "$MATCHED_APP" Payload/Petipy.app
 
           ditto -c -k --sequesterRsrc --keepParent \
             Payload Petipy-unsigned.ipa
 
           unzip -t Petipy-unsigned.ipa
+
+          VALIDATION_DIR="$(mktemp -d "$RUNNER_TEMP/PetipyIPAValidation.XXXXXX")"
+          trap 'rm -rf "$VALIDATION_DIR"' EXIT
+          unzip -q Petipy-unsigned.ipa -d "$VALIDATION_DIR"
+
+          PACKAGED_APP="$VALIDATION_DIR/Payload/Petipy.app"
+          if [ ! -d "$PACKAGED_APP" ]; then
+            echo "IPA does not contain Payload/Petipy.app"
+            exit 1
+          fi
+          if [ ! -f "$PACKAGED_APP/Info.plist" ]; then
+            echo "Packaged Petipy.app is missing Info.plist"
+            exit 1
+          fi
+
+          PACKAGED_BUNDLE_ID=$(/usr/libexec/PlistBuddy \
+            -c 'Print CFBundleIdentifier' \
+            "$PACKAGED_APP/Info.plist")
+          if [ "$PACKAGED_BUNDLE_ID" != "$EXPECTED_BUNDLE_ID" ]; then
+            echo "IPA bundle identifier mismatch: expected $EXPECTED_BUNDLE_ID, found $PACKAGED_BUNDLE_ID"
+            exit 1
+          fi
+
+          EXECUTABLE=$(/usr/libexec/PlistBuddy \
+            -c 'Print CFBundleExecutable' \
+            "$PACKAGED_APP/Info.plist")
+          if [ -z "$EXECUTABLE" ] || [ ! -f "$PACKAGED_APP/$EXECUTABLE" ]; then
+            echo "Packaged app executable is missing: ${EXECUTABLE:-<empty>}"
+            exit 1
+          fi
+
+          echo "Validated IPA app: Payload/Petipy.app ($PACKAGED_BUNDLE_ID)"
+          echo "Validated executable: $EXECUTABLE"
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4

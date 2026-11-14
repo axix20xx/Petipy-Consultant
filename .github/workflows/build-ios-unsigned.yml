@@ -31,21 +31,24 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Check Expo configuration
+        working-directory: artifacts/petipy-consultant
         run: |
           pnpm exec expo config --type public
           pnpm exec expo-doctor || true
 
       - name: Generate iOS project
+        working-directory: artifacts/petipy-consultant
         run: |
           pnpm exec expo prebuild --platform ios --no-install
 
       - name: Install CocoaPods
+        working-directory: artifacts/petipy-consultant/ios
         run: |
-          cd ios
           pod install
 
       - name: Discover Xcode workspace and scheme
         id: xcode
+        working-directory: artifacts/petipy-consultant
         shell: bash
         run: |
           WORKSPACE=$(find ios -maxdepth 1 -name '*.xcworkspace' | head -n 1)
@@ -65,6 +68,7 @@ jobs:
           echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
 
       - name: Build iOS application
+        working-directory: artifacts/petipy-consultant
         run: |
           xcodebuild \
             -workspace "${{ steps.xcode.outputs.workspace }}" \

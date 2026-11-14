@@ -4,3 +4,4 @@
 - [Petipy background call alerts](petipy-consultant-background-alerts.md) — self-managed Telecom plus CallStyle; full-screen remains OS-gated, and channel settings need versioned IDs to reset.
 - [Petipy call media contracts](petipy-consultant-media.md) — use real API contracts; receive customer video only; gate connected status on WebRTC state.
 - [Petipy consultant UI direction](petipy-consultant-ui.md) — the user wants a white-purple light theme and materially new screen structures, not a palette-only restyle.
+- [Petipy production approval](petipy-production-approval.md) — do not deploy Petipy changes to production without the user's explicit approval.

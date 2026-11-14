@@ -9,6 +9,7 @@
     "serve": "node server/serve.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:auth": "tsx --test tests/consultant-auth.test.ts",
+    "test:ios-build-config": "tsx --test tests/ios-build-config.test.ts",
     "test:push": "tsx --test tests/push-notifications.test.ts",
     "test:api": "tsx --test tests/petipy-api.test.ts"
   },

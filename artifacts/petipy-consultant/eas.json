@@ -1,0 +1,33 @@
+{
+  "build": {
+    "development": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_PETIPY_AUTH_MODE": "development",
+        "EXPO_PUBLIC_IOS_VOIP_ENABLED": "false"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_PETIPY_AUTH_MODE": "live",
+        "EXPO_PUBLIC_IOS_VOIP_ENABLED": "false"
+      }
+    },
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_PETIPY_AUTH_MODE": "live",
+        "EXPO_PUBLIC_IOS_VOIP_ENABLED": "false"
+      }
+    },
+    "ios-simulator": {
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_PETIPY_AUTH_MODE": "development",
+        "EXPO_PUBLIC_IOS_VOIP_ENABLED": "false"
+      }
+    }
+  }
+}

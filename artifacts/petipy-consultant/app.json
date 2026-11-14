@@ -64,7 +64,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "petipyAuthMode": "development",
+      "petipyAuthMode": "live",
       "eas": {
         "projectId": "90819275-8613-4ee0-8198-8c45fdcfafac"
       }

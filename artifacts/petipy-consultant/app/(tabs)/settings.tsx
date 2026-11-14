@@ -1,6 +1,10 @@
 import { useColors } from '@/hooks/useColors';
 import { PetipyPetMark } from '@/components/PetipyPetMark';
-import { setConsultantAvailability } from '@/lib/petipy-api';
+import {
+  getIncomingCalls,
+  setConsultantAvailability,
+} from '@/lib/petipy-api';
+import { canReceiveForegroundCall } from '@/lib/ios-call-recovery';
 import {
   isAvailabilityServiceRunning,
   stopAvailabilityService,
@@ -25,7 +29,7 @@ import { useConsultantSession } from '@/providers/consultant-session';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
   AppState,
@@ -138,6 +142,16 @@ export default function SettingsScreen() {
     useState<IosNotificationPermission>('unavailable');
   const [iosMicrophoneAccess, setIosMicrophoneAccess] =
     useState<MicrophonePermission>('unavailable');
+  const [iosBackendReachable, setIosBackendReachable] = useState<
+    boolean | null
+  >(null);
+  const [iosCallKitAvailable, setIosCallKitAvailable] = useState<
+    boolean | null
+  >(null);
+  const [iosAudioSession, setIosAudioSession] = useState<{
+    configured: boolean;
+    active: boolean;
+  } | null>(null);
   const isConnected = state === 'connected' && Boolean(token);
 
   const refreshCallAlertStatus = useCallback(async () => {
@@ -170,6 +184,9 @@ export default function SettingsScreen() {
       }
       setIosNotificationAccess('unavailable');
       setIosMicrophoneAccess('unavailable');
+      setIosBackendReachable(null);
+      setIosCallKitAvailable(null);
+      setIosAudioSession(null);
       return;
     }
 
@@ -180,12 +197,26 @@ export default function SettingsScreen() {
     setServiceRunning(null);
 
     if (Platform.OS === 'ios') {
-      const [notificationResult, microphoneResult] = await Promise.allSettled([
-        Notifications.getPermissionsAsync(),
-        import('react-native-webrtc').then(({ permissions }) =>
-          permissions.query({ name: 'microphone' }),
-        ),
-      ]);
+      const [notificationResult, microphoneResult, callKitResult, apiResult] =
+        await Promise.allSettled([
+          Notifications.getPermissionsAsync(),
+          import('react-native-webrtc').then(({ permissions }) =>
+            permissions.query({ name: 'microphone' }),
+          ),
+          import('expo-callkit-telecom').then(({ getAudioSession }) => {
+            const audio = getAudioSession();
+            return {
+              configured:
+                audio.useManualAudio === true &&
+                Boolean(audio.category) &&
+                Boolean(audio.mode),
+              active: audio.isActive === true,
+            };
+          }),
+          isConnected && token
+            ? getIncomingCalls(token).then(() => true)
+            : Promise.resolve(false),
+        ]);
       if (notificationResult.status === 'fulfilled') {
         const permission = notificationResult.value;
         setIosNotificationAccess(
@@ -203,26 +234,32 @@ export default function SettingsScreen() {
           ? normalizeMicrophonePermission(microphoneResult.value)
           : 'unavailable',
       );
+      setIosCallKitAvailable(callKitResult.status === 'fulfilled');
+      setIosAudioSession(
+        callKitResult.status === 'fulfilled' ? callKitResult.value : null,
+      );
+      setIosBackendReachable(
+        apiResult.status === 'fulfilled' ? apiResult.value : false,
+      );
       return;
     }
 
     setIosNotificationAccess('unavailable');
     setIosMicrophoneAccess('unavailable');
-  }, []);
+    setIosBackendReachable(null);
+    setIosCallKitAvailable(null);
+    setIosAudioSession(null);
+  }, [isConnected, token]);
 
   useFocusEffect(
     useCallback(() => {
       void refreshCallAlertStatus();
+      const subscription = AppState.addEventListener('change', (nextState) => {
+        if (nextState === 'active') void refreshCallAlertStatus();
+      });
+      return () => subscription.remove();
     }, [refreshCallAlertStatus]),
   );
-
-  useEffect(() => {
-    void refreshCallAlertStatus();
-    const subscription = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active') void refreshCallAlertStatus();
-    });
-    return () => subscription.remove();
-  }, [refreshCallAlertStatus]);
 
   const pushStatusLabel =
     pushSetupState === 'ready'
@@ -300,6 +337,33 @@ export default function SettingsScreen() {
     },
   };
   const iosMicrophonePermission = iosMicrophonePermissionCopy[iosMicrophoneAccess];
+  const iosBackendStatus = !isConnected
+    ? { label: 'نشست موجود نیست', color: colors.warning }
+    : iosBackendReachable === true
+      ? { label: 'متصل', color: colors.success }
+      : iosBackendReachable === false
+        ? { label: 'قطع', color: colors.warning }
+        : { label: 'در حال بررسی', color: colors.mutedForeground };
+  const iosCallKitStatus =
+    iosCallKitAvailable === true
+      ? { label: 'در دسترس', color: colors.success }
+      : iosCallKitAvailable === false
+        ? { label: 'در دسترس نیست', color: colors.warning }
+        : { label: 'در حال بررسی', color: colors.mutedForeground };
+  const iosAudioStatus = !iosCallKitAvailable
+    ? { label: 'نامشخص', color: colors.mutedForeground }
+    : iosAudioSession?.configured
+      ? {
+          label: iosAudioSession.active ? 'فعال در تماس' : 'آماده برای تماس',
+          color: colors.success,
+        }
+      : { label: 'پیکربندی نشده', color: colors.warning };
+  const iosForegroundCallsReady = canReceiveForegroundCall({
+    apiReachable: iosBackendReachable === true,
+    callKitAvailable: iosCallKitAvailable === true,
+    microphoneGranted: iosMicrophoneAccess === 'granted',
+    consultantOnline: profile?.manualStatus === 'online',
+  });
 
   const openSystemSettings = useCallback(() => {
     void Linking.openSettings().catch(() =>
@@ -700,28 +764,64 @@ export default function SettingsScreen() {
                 statusColor={iosMicrophonePermission.color}
               />
               <InfoRow
+                icon="cloud-done-outline"
+                title="اتصال API تماس"
+                detail="وضعیت از پاسخ واقعی صف درخواست‌های مشاور بررسی می‌شود."
+                color={iosBackendStatus.color}
+                status={iosBackendStatus.label}
+                statusColor={iosBackendStatus.color}
+              />
+              <InfoRow
                 icon="call-outline"
                 title="رابط تماس بومی CallKit"
-                detail="تماس ورودیِ تأییدشده وقتی برنامه باز است با رابط سیستمی iOS نمایش داده می‌شود."
-                color={colors.primary}
-                status="فعال در پیش‌زمینه"
-                statusColor={colors.success}
+                detail="در دسترس‌بودن ماژول نصب‌شده خوانده می‌شود؛ نمایش واقعی باید روی iPhone آزمایش شود."
+                color={iosCallKitStatus.color}
+                status={iosCallKitStatus.label}
+                statusColor={iosCallKitStatus.color}
+              />
+              <InfoRow
+                icon="radio-outline"
+                title="تماس ورودی هنگام بازبودن برنامه"
+                detail="برای آماده‌بودن، API باید در دسترس باشد، حساب آنلاین و میکروفون مجاز باشد؛ صف فقط در پیش‌زمینه بررسی می‌شود."
+                color={
+                  iosForegroundCallsReady ? colors.success : colors.warning
+                }
+                status={iosForegroundCallsReady ? 'آماده' : 'نیاز به بررسی'}
+                statusColor={
+                  iosForegroundCallsReady ? colors.success : colors.warning
+                }
               />
               <InfoRow
                 icon="volume-high-outline"
-                title="ادامه تماس فعال در پس‌زمینه"
-                detail="حالت صوتی پس‌زمینه برای تماس پاسخ‌داده‌شده پیکربندی شده است؛ ادامه‌ی واقعی باید روی iPhone آزمایش شود."
-                color={colors.primary}
-                status="پیکربندی شده"
-                statusColor={colors.success}
+                title="پیکربندی نشست صوتی"
+                detail="وضعیت Audio Session و هماهنگی WebRTC از ماژول بومی خوانده می‌شود؛ صدا فعال می‌شود فقط هنگام تماس."
+                color={iosAudioStatus.color}
+                status={iosAudioStatus.label}
+                statusColor={iosAudioStatus.color}
               />
               <InfoRow
-                icon="call-outline"
-                title="تماس جدید در پس‌زمینه"
-                detail="API موجود فقط FCM اندروید دارد و مسیر APNs/PushKit برای iOS ندارد؛ تماس تازه تا بازکردن Petipy نمایش داده نمی‌شود، از جمله پس از Force Quit."
+                icon="headset-outline"
+                title="ادامه تماس فعال در پس‌زمینه"
+                detail="CallKit و حالت صوتی پس‌زمینه برای ادامه تماس پذیرفته‌شده پیکربندی شده‌اند؛ رفتار واقعی به iOS و آزمون دستگاه وابسته است."
                 color={colors.warning}
-                status="فعال نیست"
+                status="نیازمند آزمون"
                 statusColor={colors.warning}
+              />
+              <InfoRow
+                icon="notifications-off-outline"
+                title="تماس تازه در پس‌زمینه"
+                detail="سرور موجود PushKit/APNs ندارد؛ iOS برنامه را برای درخواست تازه بیدار نمی‌کند. تماس هنگام بازگشت برنامه بررسی می‌شود."
+                color={colors.warning}
+                status="پشتیبانی نمی‌شود"
+                statusColor={colors.warning}
+              />
+              <InfoRow
+                icon="power-outline"
+                title="تماس پس از بستن اجباری"
+                detail="پس از Force Quit تماس تازه دریافت نمی‌شود؛ با بازکردن دوباره برنامه، صف و تاریخچه برای همگام‌سازی خوانده می‌شوند."
+                color={colors.destructive}
+                status="در دسترس نیست"
+                statusColor={colors.destructive}
               />
               <SettingsActionRow
                 icon="settings-outline"

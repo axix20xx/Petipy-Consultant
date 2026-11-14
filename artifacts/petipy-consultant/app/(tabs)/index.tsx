@@ -99,6 +99,11 @@ export default function ConsultantHome() {
         void queryClient.invalidateQueries({
           queryKey: ['petipy', 'incoming-requests'],
         });
+        if (Platform.OS === 'ios') {
+          void queryClient.invalidateQueries({
+            queryKey: ['petipy', 'call-history'],
+          });
+        }
       }
     });
     return () => subscription.remove();
@@ -108,7 +113,10 @@ export default function ConsultantHome() {
     queryKey: ['petipy', 'incoming-requests'],
     queryFn: () => getIncomingCalls(token as string),
     enabled: isConnected,
-    refetchInterval: isConnected ? 5_000 : false,
+    refetchInterval:
+      isConnected && (Platform.OS !== 'ios' || isAvailable) ? 5_000 : false,
+    refetchIntervalInBackground: false,
+    refetchOnReconnect: true,
   });
   useEffect(() => {
     if (Platform.OS !== 'ios') return;
@@ -248,6 +256,8 @@ export default function ConsultantHome() {
     queryFn: () => getCallHistory(token as string),
     enabled: isConnected,
     refetchInterval: isConnected ? 60_000 : false,
+    refetchIntervalInBackground: false,
+    refetchOnReconnect: true,
   });
   const todayCount =
     history.data?.filter((item) => {

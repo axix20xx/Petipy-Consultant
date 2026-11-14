@@ -2,6 +2,7 @@ import { useColors } from '@/hooks/useColors';
 import { finishCall, joinCall } from '@/lib/petipy-api';
 import { VoiceCallClient } from '@/lib/voice-call';
 import { setAvailabilityCallState } from '@/lib/background-monitor';
+import { getIosCallRecoveryMode } from '@/lib/ios-call-recovery';
 import {
   endSystemCall,
   markSystemCallActive,
@@ -16,7 +17,7 @@ import {
 } from '@/lib/call-audio-route';
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MediaStream } from 'react-native-webrtc';
 import {
   ActivityIndicator,
@@ -153,6 +154,11 @@ export default function ConsultantCallScreen() {
           setConnected(false);
           setError('ارتباط تماس قطع شد؛ برای ادامه، دوباره وصل شوید.');
           setAvailabilityCallState(callId ?? null, 'reconnecting');
+        },
+        onSignalingDisconnected: () => {
+          if (AppState.currentState === 'active') {
+            setError('ارتباط پیام‌رسانی تماس قطع شد؛ در حال آماده‌سازی بازیابی…');
+          }
         },
         onEnded: () => {
           if (isMounted) {
@@ -351,7 +357,7 @@ export default function ConsultantCallScreen() {
     void endCall(true);
   }, [action, matchingCall]);
 
-  async function reconnect() {
+  const reconnect = useCallback(async () => {
     if (!token || !callId || joining) return;
     setJoining(true);
     setError(null);
@@ -368,7 +374,66 @@ export default function ConsultantCallScreen() {
     } finally {
       setJoining(false);
     }
-  }
+  }, [callId, joining, setActiveCall, token]);
+
+  const restoreCallOnForeground = useCallback(async () => {
+    if (
+      Platform.OS !== 'ios' ||
+      !token ||
+      !callId ||
+      !matchingCall ||
+      joining
+    ) {
+      return;
+    }
+    const client = clientRef.current;
+    if (!client) return;
+    const mode = getIosCallRecoveryMode(
+      client.isSignalingOpen(),
+      client.getPeerConnectionState(),
+    );
+    if (mode === 'none') return;
+
+    setJoining(true);
+    setError(null);
+    setAvailabilityCallState(callId, 'reconnecting');
+    try {
+      const session = await joinCall(token, callId);
+      if (mode === 'media') {
+        setActiveCall(session);
+      } else {
+        const restored = await client.reconnectSignaling(
+          session.callId,
+          session.token,
+        );
+        if (!restored) {
+          throw new Error('ارتباط پیام‌رسانی تماس بازیابی نشد؛ دوباره تلاش کنید.');
+        }
+        setStatus('ارتباط امن تماس بازیابی شد');
+        setError(null);
+      }
+    } catch (resumeError) {
+      setError(
+        resumeError instanceof Error
+          ? resumeError.message
+          : 'پس از بازگشت برنامه، تماس دوباره متصل نشد.',
+      );
+    } finally {
+      setJoining(false);
+    }
+  }, [callId, joining, matchingCall, setActiveCall, token]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    let previousState = AppState.currentState;
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      const returnedToForeground =
+        previousState !== 'active' && nextState === 'active';
+      previousState = nextState;
+      if (returnedToForeground) void restoreCallOnForeground();
+    });
+    return () => subscription.remove();
+  }, [restoreCallOnForeground]);
 
   async function retryConnection() {
     if (Platform.OS === 'android') {

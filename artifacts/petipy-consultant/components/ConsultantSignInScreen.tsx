@@ -24,12 +24,53 @@ export function SessionLoadingScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <View style={styles.loading}>
-        <View style={[styles.loadingMark, { backgroundColor: colors.secondary }]}>
-          <Ionicons name="paw" size={26} color={colors.primary} />
+        <View
+          style={[
+            styles.loadingAura,
+            { backgroundColor: colors.secondary },
+          ]}
+        />
+        <View
+          style={[
+            styles.loadingCard,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <View style={styles.loadingBrand}>
+            <View
+              style={[
+                styles.loadingMark,
+                { backgroundColor: colors.primary },
+              ]}
+            >
+              <Ionicons name="paw" size={25} color={colors.primaryForeground} />
+            </View>
+            <Text style={[styles.loadingBrandName, { color: colors.foreground }]}>
+              PETIPY
+            </Text>
+            <Text style={[styles.loadingBrandSub, { color: colors.mutedForeground }]}>
+              میز مشاوره
+            </Text>
+          </View>
+          <View style={[styles.loadingDivider, { backgroundColor: colors.border }]} />
+          <Text style={[styles.loadingTitle, { color: colors.foreground }]}>
+            خوش آمدید
+          </Text>
+          <Text style={[styles.loadingCopy, { color: colors.mutedForeground }]}>
+            نشست امن و وضعیت حساب مشاور در حال بررسی است.
+          </Text>
+          <View
+            style={[
+              styles.loadingProgress,
+              { backgroundColor: colors.secondary },
+            ]}
+          >
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={[styles.body, { color: colors.secondaryForeground }]}>
+              در حال اتصال امن به Petipy
+            </Text>
+          </View>
         </View>
-        <Text style={[styles.body, { color: colors.mutedForeground }]}>
-          در حال بررسی نشست امن Petipy…
-        </Text>
       </View>
     </SafeAreaView>
   );
@@ -322,6 +363,15 @@ const styles = StyleSheet.create({
   footerRule: { width: 42, height: 2, borderRadius: 2, marginBottom: 3 },
   footer: { fontSize: 12, lineHeight: 19, textAlign: 'center', writingDirection: 'rtl' },
   footerTiny: { fontSize: 10, lineHeight: 17, textAlign: 'center', writingDirection: 'rtl' },
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 13, paddingHorizontal: 22 },
-  loadingMark: { width: 62, height: 62, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, overflow: 'hidden' },
+  loadingAura: { position: 'absolute', width: 270, height: 270, borderRadius: 135, opacity: 0.55, top: '27%' },
+  loadingCard: { width: '100%', maxWidth: 390, alignItems: 'center', borderWidth: 1, borderRadius: 30, paddingHorizontal: 25, paddingVertical: 29, gap: 17, elevation: 2 },
+  loadingBrand: { alignItems: 'center', gap: 6 },
+  loadingMark: { width: 58, height: 58, borderRadius: 21, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  loadingBrandName: { fontSize: 12, fontWeight: '900', letterSpacing: 2.2 },
+  loadingBrandSub: { fontSize: 11, writingDirection: 'rtl' },
+  loadingDivider: { width: 38, height: 2, borderRadius: 2 },
+  loadingTitle: { fontSize: 22, lineHeight: 31, fontWeight: '900', writingDirection: 'rtl' },
+  loadingCopy: { maxWidth: 250, fontSize: 12, lineHeight: 21, textAlign: 'center', writingDirection: 'rtl' },
+  loadingProgress: { minHeight: 42, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16 },
 });

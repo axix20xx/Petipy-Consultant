@@ -25,6 +25,7 @@ export type VoiceCallCallbacks = {
   onStatus: (message: string) => void;
   onConnected: () => void;
   onDisconnected: () => void;
+  onSignalingDisconnected?: () => void;
   onEnded: () => void;
   onError: (message: string) => void;
   onRemoteVideo: (stream: MediaStream | null) => void;
@@ -193,30 +194,115 @@ export class VoiceCallClient {
       }
     };
 
+    this.createSignalingSocket(session.callId, session.token);
+  }
+
+  private createSignalingSocket(
+    callId: string,
+    callToken: string,
+    onOpen?: () => void,
+    onFailure?: () => void,
+  ) {
     const WebSocketWithOptions =
       WebSocket as unknown as NativeWebSocketConstructor;
-    const url = `wss://petipy.com/api/voice/ws/${encodeURIComponent(session.callId)}`;
-    this.socket =
+    const url = `wss://petipy.com/api/voice/ws/${encodeURIComponent(callId)}`;
+    const socket =
       Platform.OS === 'web'
-        ? new WebSocket(url, ['voice-v1', `auth.${session.token}`])
+        ? new WebSocket(url, ['voice-v1', `auth.${callToken}`])
         : new WebSocketWithOptions(
             url,
-            ['voice-v1', `auth.${session.token}`],
+            ['voice-v1', `auth.${callToken}`],
             { headers: { Origin: 'https://petipy.com' } },
           );
+    this.socket = socket;
 
-    this.socket.onopen = () => {
-      callbacks.onStatus('در انتظار اتصال مشتری…');
+    socket.onopen = () => {
+      if (this.socket !== socket || this.closed) return;
+      this.callbacks?.onStatus('در انتظار اتصال مشتری…');
+      onOpen?.();
     };
-    this.socket.onerror = () => {
-      callbacks.onError('اتصال امن تماس با Petipy برقرار نشد.');
+    socket.onerror = () => {
+      if (this.socket !== socket || this.closed) return;
+      this.callbacks?.onError('اتصال امن تماس با Petipy برقرار نشد.');
+      onFailure?.();
     };
-    this.socket.onclose = () => {
-      if (!this.closed) callbacks.onStatus('ارتباط تماس قطع شد.');
+    socket.onclose = () => {
+      if (this.socket !== socket || this.closed) return;
+      this.callbacks?.onStatus('ارتباط تماس قطع شد.');
+      this.callbacks?.onSignalingDisconnected?.();
+      onFailure?.();
     };
-    this.socket.onmessage = (event) => {
-      void this.handleSignal(event.data);
+    socket.onmessage = (event) => {
+      if (this.socket === socket && !this.closed) {
+        void this.handleSignal(event.data);
+      }
     };
+    return socket;
+  }
+
+  isSignalingOpen() {
+    return this.socket?.readyState === WebSocket.OPEN;
+  }
+
+  getPeerConnectionState() {
+    return this.peer?.connectionState ?? 'closed';
+  }
+
+  async reconnectSignaling(callId: string, callToken: string) {
+    if (this.closed || !this.peer || !callId) return false;
+    if (this.isSignalingOpen()) return true;
+
+    const previousSocket = this.socket;
+    this.socket = null;
+    if (previousSocket) {
+      previousSocket.onopen = null;
+      previousSocket.onerror = null;
+      previousSocket.onclose = null;
+      previousSocket.onmessage = null;
+      previousSocket.close();
+    }
+
+    this.callbacks?.onStatus('در حال بازیابی ارتباط امن…');
+    return new Promise<boolean>((resolve) => {
+      let settled = false;
+      let timeout: ReturnType<typeof setTimeout> | null = null;
+      let reconnectingSocket: WebSocket | null = null;
+      const finish = (connected: boolean) => {
+        if (settled) return;
+        settled = true;
+        if (timeout) clearTimeout(timeout);
+        resolve(connected);
+      };
+      const fail = () => {
+        if (reconnectingSocket && this.socket === reconnectingSocket) {
+          this.socket = null;
+          reconnectingSocket.onopen = null;
+          reconnectingSocket.onerror = null;
+          reconnectingSocket.onclose = null;
+          reconnectingSocket.onmessage = null;
+          reconnectingSocket.close();
+        }
+        finish(false);
+      };
+      reconnectingSocket = this.createSignalingSocket(
+        callId,
+        callToken,
+        () => finish(true),
+        fail,
+      );
+      timeout = setTimeout(() => {
+        if (reconnectingSocket && this.socket === reconnectingSocket) {
+          reconnectingSocket.onopen = null;
+          reconnectingSocket.onerror = null;
+          reconnectingSocket.onclose = null;
+          reconnectingSocket.onmessage = null;
+          this.socket = null;
+          reconnectingSocket.close();
+        }
+        this.callbacks?.onError('بازیابی ارتباط امن زمان‌بر شد؛ دوباره تلاش کنید.');
+        finish(false);
+      }, 10_000);
+    });
   }
 
   private send(message: { type: string; payload?: unknown }): boolean {

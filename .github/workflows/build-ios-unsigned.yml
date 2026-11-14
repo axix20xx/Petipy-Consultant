@@ -41,6 +41,30 @@ jobs:
         run: |
           pnpm exec expo prebuild --platform ios --no-install
 
+      - name: Verify dynamic Firebase pod linkage
+        working-directory: artifacts/petipy-consultant
+        shell: bash
+        run: |
+          if [ ! -f ios/Podfile ] || [ ! -f ios/Podfile.properties.json ]; then
+            echo "Expo prebuild did not generate the iOS Podfile and its properties file"
+            exit 1
+          fi
+
+          ruby -rjson -e '
+            podfile = File.read("ios/Podfile")
+            properties = JSON.parse(File.read("ios/Podfile.properties.json"))
+
+            unless podfile.include?("use_frameworks!")
+              abort "Generated Podfile does not configure CocoaPods frameworks"
+            end
+
+            unless properties["ios.useFrameworks"] == "dynamic"
+              abort "Expected ios.useFrameworks=dynamic in Podfile.properties.json"
+            end
+
+            puts "Generated Podfile is configured for dynamic framework linkage."
+          '
+
       - name: Install CocoaPods
         working-directory: artifacts/petipy-consultant/ios
         run: |

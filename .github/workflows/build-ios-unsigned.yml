@@ -1,0 +1,115 @@
+
+name: Build iOS Unsigned
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Petipy IPA
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check Expo configuration
+        run: |
+          pnpm exec expo config --type public
+          pnpm exec expo-doctor || true
+
+      - name: Generate iOS project
+        run: |
+          pnpm exec expo prebuild --platform ios --no-install
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      - name: Discover Xcode workspace and scheme
+        id: xcode
+        shell: bash
+        run: |
+          WORKSPACE=$(find ios -maxdepth 1 -name '*.xcworkspace' | head -n 1)
+          if [ -z "$WORKSPACE" ]; then
+            echo "No Xcode workspace found"
+            exit 1
+          fi
+
+          SCHEME=$(xcodebuild -list -json -workspace "$WORKSPACE" | ruby -rjson -e 'j=JSON.parse(STDIN.read); puts j.dig("workspace","schemes")&.first')
+
+          if [ -z "$SCHEME" ]; then
+            echo "No Xcode scheme found"
+            exit 1
+          fi
+
+          echo "workspace=$WORKSPACE" >> "$GITHUB_OUTPUT"
+          echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
+
+      - name: Build iOS application
+        run: |
+          xcodebuild \
+            -workspace "${{ steps.xcode.outputs.workspace }}" \
+            -scheme "${{ steps.xcode.outputs.scheme }}" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/PetipyBuild" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package unsigned IPA
+        shell: bash
+        run: |
+          APP_DIR="$RUNNER_TEMP/PetipyBuild/Build/Products/Release-iphoneos"
+
+          mkdir -p Payload
+
+          FOUND=false
+
+          while IFS= read -r -d '' APP; do
+            BUNDLE_ID=$(/usr/libexec/PlistBuddy \
+              -c 'Print CFBundleIdentifier' \
+              "$APP/Info.plist")
+
+            if [ "$BUNDLE_ID" = "com.petipy.consultant" ]; then
+              cp -R "$APP" Payload/Petipy.app
+              FOUND=true
+              break
+            fi
+          done < <(find "$APP_DIR" -maxdepth 1 -name '*.app' -print0)
+
+          if [ "$FOUND" != "true" ]; then
+            echo "Petipy application bundle not found"
+            exit 1
+          fi
+
+          ditto -c -k --sequesterRsrc --keepParent \
+            Payload Petipy-unsigned.ipa
+
+          unzip -t Petipy-unsigned.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Petipy-iOS-Unsigned
+          path: Petipy-unsigned.ipa
+          retention-days: 7

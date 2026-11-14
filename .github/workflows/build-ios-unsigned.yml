@@ -263,7 +263,9 @@ jobs:
             grep -E '(^| )error:|warning:|BUILD FAILED|CompileAssetCatalog|SwiftCompile|CompileC' "$BUILD_LOG" | tail -n 100 || true
             echo "Build products available for diagnosis:"
             if [ -d "$PRODUCTS_ROOT" ]; then
-              find "$PRODUCTS_ROOT" -maxdepth 5 -print | sort | head -n 300
+              PRODUCTS_INVENTORY="$RUNNER_TEMP/Petipy-products.txt"
+              find "$PRODUCTS_ROOT" -maxdepth 5 -print | sort > "$PRODUCTS_INVENTORY"
+              sed -n '1,300p' "$PRODUCTS_INVENTORY"
             else
               echo "Xcode did not create the products directory: $PRODUCTS_ROOT"
             fi
@@ -275,7 +277,9 @@ jobs:
             exit 1
           fi
           echo "Xcode application build completed. Products:"
-          find "$PRODUCTS_ROOT" -maxdepth 5 -print | sort | head -n 300
+          PRODUCTS_INVENTORY="$RUNNER_TEMP/Petipy-products.txt"
+          find "$PRODUCTS_ROOT" -maxdepth 5 -print | sort > "$PRODUCTS_INVENTORY"
+          sed -n '1,300p' "$PRODUCTS_INVENTORY"
 
       - name: Package unsigned IPA
         shell: bash

@@ -77,6 +77,11 @@ onlyBuiltDependencies:
   - msw
   - unrs-resolver
 
+allowBuilds:
+  '@firebase/util': true
+  esbuild: true
+  protobufjs: true
+
 overrides:
   "proxy-addr@^2": "^2.0.8"
   "source-map-js@^1": "^1.2.2"
